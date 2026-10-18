@@ -1,0 +1,1859 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="theme-color" content="#f2f2f7">
+  <title>日本雙城刷卡決策與記帳助手</title>
+  <style>
+    :root {
+      --bg: #f2f2f7;
+      --card-bg: #ffffff;
+      --card-sub-bg: #f9f9fb;
+      --primary: #007aff;
+      --primary-hover: #0056b3;
+      --primary-light: #e8f2ff;
+      --text: #1c1c1e;
+      --text-secondary: #8e8e93;
+      --border: #e5e5ea;
+      --accent: #ff3b30;
+      --warning: #ff9500;
+      --green: #34c759;
+      --green-light: #eaf8ee;
+      --purple: #af52de;
+      --shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+      --radius-lg: 18px;
+      --radius-md: 12px;
+      --radius-sm: 8px;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #000000;
+        --card-bg: #1c1c1e;
+        --card-sub-bg: #2c2c2e;
+        --text: #f2f2f7;
+        --text-secondary: #98989d;
+        --border: #38383a;
+        --primary-light: #1a2c42;
+        --green-light: #16301d;
+        --shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+      }
+    }
+
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      padding: 12px 14px 90px;
+      margin: 0;
+      line-height: 1.45;
+      font-size: 15px;
+    }
+
+    /* Header */
+    .app-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 4px 14px;
+    }
+    .app-title h1 {
+      margin: 0;
+      font-size: 1.25rem;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .app-title p {
+      margin: 2px 0 0;
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+    }
+    .rate-pill {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      cursor: pointer;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.03);
+    }
+    .sync-pill {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.03);
+      transition: all 0.2s ease;
+    }
+    .sync-pill.online {
+      border-color: #34c759;
+      background: rgba(52, 199, 89, 0.12);
+      color: #248a3d;
+    }
+    @media (prefers-color-scheme: dark) {
+      .sync-pill.online { color: #34c759; }
+    }
+    .sync-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--text-secondary);
+      display: inline-block;
+    }
+    .sync-pill.online .sync-dot {
+      background: #34c759;
+      box-shadow: 0 0 6px #34c759;
+    }
+
+    /* Navigation Tabs */
+    .nav-tabs {
+      display: flex;
+      background: rgba(142, 142, 147, 0.14);
+      padding: 3px;
+      border-radius: 12px;
+      margin-bottom: 14px;
+      gap: 2px;
+    }
+    .tab-btn {
+      flex: 1;
+      border: none;
+      background: transparent;
+      padding: 8px 4px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+      border-radius: 9px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      text-align: center;
+    }
+    .tab-btn.active {
+      background: var(--card-bg);
+      color: var(--text);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+    }
+
+    /* Cards */
+    .card {
+      background: var(--card-bg);
+      border-radius: var(--radius-lg);
+      padding: 16px;
+      box-shadow: var(--shadow);
+      margin-bottom: 14px;
+      border: 1px solid var(--border);
+    }
+    .card-title {
+      margin: 0 0 12px;
+      font-size: 1.05rem;
+      font-weight: 700;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    /* Quick Presets */
+    .quick-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 14px;
+    }
+    .quick-tag {
+      background: var(--card-sub-bg);
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-size: 0.78rem;
+      padding: 5px 10px;
+      border-radius: 16px;
+      cursor: pointer;
+      font-weight: 500;
+      transition: all 0.15s;
+    }
+    .quick-tag:active, .quick-tag.active {
+      background: var(--primary);
+      color: #fff;
+      border-color: var(--primary);
+    }
+
+    /* Form */
+    .form-group {
+      margin-bottom: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    label {
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    select, input {
+      padding: 12px 14px;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border);
+      background: var(--card-sub-bg);
+      color: var(--text);
+      font-size: 0.98rem;
+      outline: none;
+      width: 100%;
+      -webkit-appearance: none;
+      transition: border-color 0.2s;
+    }
+    select:focus, input:focus {
+      border-color: var(--primary);
+    }
+
+    .amount-input-wrap {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+    .amount-input-wrap input {
+      font-size: 1.35rem;
+      font-weight: 700;
+      padding-right: 50px;
+      letter-spacing: 0.5px;
+    }
+    .currency-tag {
+      position: absolute;
+      right: 14px;
+      font-weight: 700;
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+    }
+
+    .amount-shortcuts {
+      display: flex;
+      gap: 6px;
+      margin-top: 6px;
+    }
+    .shortcut-btn {
+      flex: 1;
+      background: var(--card-sub-bg);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 6px 0;
+      border-radius: var(--radius-sm);
+      font-size: 0.75rem;
+      font-weight: 600;
+      cursor: pointer;
+      text-align: center;
+    }
+    .shortcut-btn:active { background: var(--border); }
+
+    .twd-estimate {
+      font-size: 0.82rem;
+      color: var(--text-secondary);
+      margin-top: 4px;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    /* Warning / Notice */
+    .alert-box {
+      background: rgba(255, 149, 0, 0.12);
+      border: 1px solid rgba(255, 149, 0, 0.35);
+      color: #b86200;
+      padding: 8px 12px;
+      border-radius: var(--radius-md);
+      font-size: 0.8rem;
+      margin-top: 6px;
+      display: none;
+      align-items: center;
+      gap: 6px;
+    }
+    @media (prefers-color-scheme: dark) {
+      .alert-box { color: #ffab38; }
+    }
+
+    /* Result Card */
+    .result-box {
+      background: var(--primary-light);
+      border-left: 5px solid var(--primary);
+      padding: 14px;
+      border-radius: var(--radius-md);
+      margin-top: 14px;
+      transition: all 0.25s;
+    }
+    .result-box.kuma { border-color: #ff3b30; background: rgba(255, 59, 48, 0.08); }
+    .result-box.jcard { border-color: #007aff; background: rgba(0, 122, 255, 0.08); }
+    .result-box.costco { border-color: #ff9500; background: rgba(255, 149, 0, 0.08); }
+    .result-box.paypay { border-color: #af52de; background: rgba(175, 82, 222, 0.08); }
+    .result-box.backup { border-color: #8e8e93; background: rgba(142, 142, 147, 0.1); }
+
+    .result-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+    }
+    .result-card-name {
+      font-size: 1.2rem;
+      font-weight: 800;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+    .rate-badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      font-weight: 800;
+      color: #fff;
+      background: var(--primary);
+    }
+    .result-reward {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--green);
+      margin-top: 4px;
+    }
+    .result-desc {
+      font-size: 0.85rem;
+      margin-top: 6px;
+      color: var(--text-secondary);
+      line-height: 1.4;
+    }
+    .result-sub-advice {
+      margin-top: 8px;
+      padding-top: 8px;
+      border-top: 1px dashed rgba(142, 142, 147, 0.3);
+      font-size: 0.78rem;
+      color: var(--text-secondary);
+    }
+
+    /* Buttons */
+    .btn-main {
+      background: var(--primary);
+      color: white;
+      border: none;
+      padding: 14px;
+      border-radius: var(--radius-md);
+      font-size: 1.05rem;
+      font-weight: 700;
+      cursor: pointer;
+      width: 100%;
+      margin-top: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      box-shadow: 0 4px 12px rgba(0, 122, 255, 0.3);
+      transition: transform 0.1s, background-color 0.15s;
+    }
+    .btn-main:active { transform: scale(0.98); }
+    .btn-secondary {
+      background: var(--card-sub-bg);
+      color: var(--text);
+      border: 1px solid var(--border);
+      padding: 10px;
+      border-radius: var(--radius-md);
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      width: 100%;
+      margin-top: 8px;
+    }
+
+    /* Quota Section */
+    .quota-item {
+      padding: 12px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .quota-item:last-child { border-bottom: none; }
+    .quota-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 6px;
+    }
+    .card-label {
+      font-weight: 700;
+      font-size: 0.95rem;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .cycle-tag {
+      font-size: 0.7rem;
+      color: var(--text-secondary);
+      background: var(--card-sub-bg);
+      border: 1px solid var(--border);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-weight: normal;
+    }
+    .btn-small {
+      background: var(--card-sub-bg);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 4px 8px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    .btn-small:active { background: var(--border); }
+    .progress-bar {
+      height: 8px;
+      background: var(--card-sub-bg);
+      border-radius: 4px;
+      overflow: hidden;
+      margin-top: 6px;
+      border: 1px solid var(--border);
+    }
+    .progress-fill {
+      height: 100%;
+      background: var(--green);
+      width: 100%;
+      transition: width 0.3s ease, background-color 0.3s ease;
+      border-radius: 4px;
+    }
+    .quota-numbers {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 4px;
+      font-size: 0.8rem;
+    }
+    .quota-remaining { font-weight: 700; color: var(--text); }
+    .quota-limit { color: var(--text-secondary); }
+    .reward-cap-line {
+      font-size: 0.76rem;
+      font-weight: 600;
+      color: var(--primary);
+      margin-top: 5px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .config-card-box {
+      background: var(--card-sub-bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 10px 12px;
+      margin-bottom: 10px;
+    }
+    .config-header {
+      font-weight: 700;
+      font-size: 0.88rem;
+      margin-bottom: 6px;
+      color: var(--text);
+    }
+    .config-inputs {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+    .config-inputs label {
+      font-size: 0.72rem;
+      margin-bottom: 3px;
+    }
+    .config-inputs input {
+      padding: 8px 10px;
+      font-size: 0.85rem;
+    }
+    .config-result {
+      margin-top: 6px;
+      font-size: 0.78rem;
+      color: var(--text-secondary);
+      text-align: right;
+    }
+    .config-result b {
+      color: var(--primary);
+      font-size: 0.95rem;
+    }
+
+    /* History & Ledger */
+    .ledger-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      max-height: 480px;
+      overflow-y: auto;
+    }
+    .ledger-item {
+      background: var(--card-sub-bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 10px 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .ledger-info h4 {
+      margin: 0;
+      font-size: 0.9rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .ledger-info span {
+      font-size: 0.72rem;
+      color: var(--text-secondary);
+    }
+    .ledger-amount {
+      text-align: right;
+    }
+    .ledger-jpy {
+      font-weight: 800;
+      font-size: 0.95rem;
+    }
+    .ledger-twd {
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+    }
+    .ledger-del {
+      background: transparent;
+      border: none;
+      color: var(--accent);
+      cursor: pointer;
+      font-size: 0.85rem;
+      padding: 4px 6px;
+      margin-left: 6px;
+    }
+
+    /* Modal */
+    .modal-backdrop {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.45);
+      backdrop-filter: blur(4px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 999;
+      padding: 16px;
+    }
+    .modal-box {
+      background: var(--card-bg);
+      border-radius: var(--radius-lg);
+      padding: 20px;
+      width: 100%;
+      max-width: 360px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    }
+    .modal-title {
+      margin: 0 0 12px;
+      font-size: 1.1rem;
+      font-weight: 700;
+    }
+
+    /* Toast */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      background: rgba(28, 28, 30, 0.92);
+      color: #fff;
+      padding: 10px 18px;
+      border-radius: 24px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      z-index: 1000;
+      transition: transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+      pointer-events: none;
+    }
+    .toast.show {
+      transform: translateX(-50%) translateY(0);
+    }
+
+    .badge-soft {
+      display: inline-block;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 0.72rem;
+      font-weight: 600;
+    }
+    .badge-soft.kuma { background: #ffebeb; color: #d70015; }
+    .badge-soft.jcard { background: #e8f2ff; color: #007aff; }
+    .badge-soft.costco { background: #fff4e5; color: #c97100; }
+    .badge-soft.paypay { background: #f5e8ff; color: #8928c2; }
+    .badge-soft.backup { background: #e5e5ea; color: #555; }
+  </style>
+  <!-- Firebase App & Firestore Compat SDK -->
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+</head>
+<body>
+
+  <!-- Header -->
+  <header class="app-header">
+    <div class="app-title">
+      <h1>🇯🇵 雙城刷卡決策</h1>
+      <p>旅日神卡額度監控・陷阱防呆・實時記帳</p>
+    </div>
+    <div style="display:flex; gap:6px; align-items:center;">
+      <div class="sync-pill" id="syncStatusPill" onclick="openSyncModal()" title="點擊設定旅程房間碼與雲端同步">
+        <span class="sync-dot" id="syncDot"></span>
+        <span id="syncLabel">本地</span>
+      </div>
+      <div class="rate-pill" onclick="openRateModal()">
+        <span>💴</span>
+        <span id="rateDisplay">0.2070</span>
+        <span style="font-size:0.7rem; color:var(--text-secondary);">✎</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Segment Tabs -->
+  <nav class="nav-tabs">
+    <button class="tab-btn active" onclick="switchTab('decision')">🛒 櫃檯決策</button>
+    <button class="tab-btn" onclick="switchTab('quotas')">💳 額度看板</button>
+    <button class="tab-btn" onclick="switchTab('ledger')">📝 記帳明細</button>
+    <button class="tab-btn" onclick="switchTab('guide')">💡 攻略守則</button>
+  </nav>
+
+  <!-- TAB 1: 決策計算器 -->
+  <main id="tab-decision">
+    <div class="card">
+      <div class="card-title">
+        <span>⚡ 櫃檯速查 & 決策</span>
+        <span style="font-size:0.75rem; font-weight:normal; color:var(--text-secondary);">即時比對 4 卡回饋</span>
+      </div>
+
+      <!-- Quick Preset Tags -->
+      <label>常用情境一鍵套用：</label>
+      <div class="quick-tags">
+        <button type="button" class="quick-tag" onclick="applyPreset('matsukiyo', this)">💊 松本清 / 藥妝</button>
+        <button type="button" class="quick-tag" onclick="applyPreset('bic', this)">🔌 BicCamera / 電器</button>
+        <button type="button" class="quick-tag" onclick="applyPreset('donki', this)">🐧 唐吉訶德</button>
+        <button type="button" class="quick-tag" onclick="applyPreset('suica', this)">🐧 Suica / 交通卡</button>
+        <button type="button" class="quick-tag" onclick="applyPreset('dept', this)">🏬 百貨 / 美食街</button>
+        <button type="button" class="quick-tag" onclick="applyPreset('dining', this)">🍣 一般餐廳 / 居酒屋</button>
+        <button type="button" class="quick-tag" onclick="applyPreset('paypay', this)">📱 PayPay 掃碼店</button>
+      </div>
+
+      <!-- 1. 付款管道 -->
+      <div class="form-group">
+        <label for="payType">1. 付款管道</label>
+        <select id="payType" onchange="calculate()">
+          <option value="card">💳 實體卡片 / Apple Pay 感應</option>
+          <option value="paypay">📱 PayPay 條碼支付 (玉山 Wallet / 街口 / 全支付)</option>
+        </select>
+      </div>
+
+      <!-- 2. 店家類別 -->
+      <div class="form-group" id="storeGroup">
+        <label for="storeType">
+          <span>2. 是否為熊本熊指定加碼店？</span>
+          <span style="font-size:0.72rem; color:var(--primary); cursor:pointer;" onclick="switchTab('guide')">查看完整名單 ℹ️</span>
+        </label>
+        <select id="storeType" onchange="calculate()">
+          <option value="normal">否 (一般店家 / 餐廳 / 服飾 / 超商)</option>
+          <option value="kuma_shop">🌟 是 (松本清 / 唐吉訶德 / Bic Camera / Suica加值等)</option>
+        </select>
+      </div>
+
+      <!-- 3. 店家位置 (陷阱防呆) -->
+      <div class="form-group" id="locationGroup">
+        <label for="locationType">
+          <span>3. 店家位置 (重要陷阱防呆)</span>
+        </label>
+        <select id="locationType" onchange="calculate()">
+          <option value="street">🏠 獨立路邊門市 (獨立特店 MCC)</option>
+          <option value="department">🏬 百貨公司 / 商場美食街內 (觸發統收陷阱條款)</option>
+        </select>
+      </div>
+
+      <!-- 百貨陷阱提示 -->
+      <div class="alert-box" id="deptAlert">
+        <span>⚠️</span>
+        <span><b>陷阱警示：</b>開在百貨商場內的指定店，結帳機台多為百貨統收，玉山熊本熊將<b>無法判定指定特店</b> (喪失 5% 加碼)，系統已自動幫您改派最優解！</span>
+      </div>
+
+      <!-- 滿千門檻提示 -->
+      <div class="alert-box" id="jcardAlert">
+        <span>💡</span>
+        <span><b>未滿千提示：</b>金額未達 NT$1,000，不符合富邦 J 卡加碼門檻，已自動轉派富邦 Costco (5%) 或其他備援卡！</span>
+      </div>
+
+      <!-- 4. 結帳金額 -->
+      <div class="form-group" style="margin-top: 10px;">
+        <label for="jpyAmount">
+          <span>4. 結帳金額 (日幣 JPY)</span>
+          <span id="quickClear" style="cursor:pointer; color:var(--accent); font-size:0.75rem;" onclick="clearAmount()">清除 ✕</span>
+        </label>
+        <div class="amount-input-wrap">
+          <input type="number" id="jpyAmount" placeholder="0" inputmode="numeric" oninput="calculate()">
+          <span class="currency-tag">JPY</span>
+        </div>
+        <div class="amount-shortcuts">
+          <button type="button" class="shortcut-btn" onclick="addAmount(1000)">+1,000</button>
+          <button type="button" class="shortcut-btn" onclick="addAmount(5000)">+5,000</button>
+          <button type="button" class="shortcut-btn" onclick="addAmount(10000)">+10,000</button>
+          <button type="button" class="shortcut-btn" onclick="addAmount(30000)">+30,000</button>
+        </div>
+        <div class="twd-estimate">
+          <span>折合約：<b id="twdDisplay" style="color:var(--text); font-size:0.95rem;">NT$ 0</b></span>
+          <span style="font-size:0.75rem; color:var(--text-secondary);">匯率: <span id="rateLabel">0.2070</span></span>
+        </div>
+      </div>
+
+      <!-- 備註 (選填) -->
+      <div class="form-group">
+        <label for="memo">消費項目 / 店名 (記帳備註，選填)</label>
+        <input type="text" id="memo" placeholder="例如：松本清合利他命、敘敘苑燒肉">
+      </div>
+
+      <!-- 決策建議框 -->
+      <div class="result-box" id="resultBox">
+        <div class="result-header">
+          <div>
+            <div class="result-card-name">
+              <span id="bestCardIcon">💳</span>
+              <span id="bestCard">請輸入金額</span>
+            </div>
+            <div class="result-reward" id="bestReward"></div>
+          </div>
+          <span class="rate-badge" id="rateBadge">8.5%</span>
+        </div>
+        <div class="result-desc" id="cardDesc">輸入日幣金額後，立即計算最佳刷卡組合</div>
+        <div class="result-sub-advice" id="subAdvice"></div>
+      </div>
+
+      <!-- 確認記帳按鈕 -->
+      <button class="btn-main" onclick="recordExpense()">
+        <span>✓</span>
+        <span>確認刷這張，扣除額度並記帳</span>
+      </button>
+    </div>
+  </main>
+
+  <!-- TAB 2: 額度看板 -->
+  <section id="tab-quotas" style="display:none;">
+    <div class="card">
+      <div class="card-title">
+        <span>💳 卡片額度與回饋上限看板</span>
+        <button class="btn-small" onclick="resetAllQuotas()">全部重置 🔄</button>
+      </div>
+
+      <!-- 1. 玉山熊本熊 -->
+      <div class="quota-item">
+        <div class="quota-header">
+          <div class="card-label">
+            <span>🐻 玉山熊本熊 (8.5%)</span>
+            <span class="cycle-tag">看帳單結帳日</span>
+          </div>
+          <button class="btn-small" onclick="resetSingle('kuma')">重置</button>
+        </div>
+        <div class="progress-bar">
+          <div id="p-kuma" class="progress-fill"></div>
+        </div>
+        <div class="reward-cap-line" id="rc-kuma">
+          <span>💰 加碼回饋金剩餘: <b>$500</b> / $500</span>
+          <span style="font-size:0.7rem; color:var(--text-secondary);">加碼 6.0%</span>
+        </div>
+        <div class="quota-numbers">
+          <span class="quota-remaining" id="q-kuma">可刷額度剩餘: $8,333</span>
+          <span class="quota-limit" id="ql-kuma">上限: $8,333 / 估 ¥40,256</span>
+        </div>
+      </div>
+
+      <!-- 2. 富邦 J 卡 -->
+      <div class="quota-item">
+        <div class="quota-header">
+          <div class="card-label">
+            <span>🇯 富邦 J 卡 (6%)</span>
+            <span class="cycle-tag">每季底 12/31</span>
+          </div>
+          <button class="btn-small" onclick="resetSingle('jcard')">重置</button>
+        </div>
+        <div class="progress-bar">
+          <div id="p-jcard" class="progress-fill"></div>
+        </div>
+        <div class="reward-cap-line" id="rc-jcard">
+          <span>💰 加碼回饋金剩餘: <b>$1,000</b> / $1,000</span>
+          <span style="font-size:0.7rem; color:var(--text-secondary);">加碼 3.0%</span>
+        </div>
+        <div class="quota-numbers">
+          <span class="quota-remaining" id="q-jcard">可刷額度剩餘: $33,333</span>
+          <span class="quota-limit" id="ql-jcard">上限: $33,333 / 估 ¥161,028</span>
+        </div>
+      </div>
+
+      <!-- 3. 富邦 Costco -->
+      <div class="quota-item">
+        <div class="quota-header">
+          <div class="card-label">
+            <span>🛒 富邦 Costco (5%)</span>
+            <span class="cycle-tag">每月底結算</span>
+          </div>
+          <button class="btn-small" onclick="resetSingle('costco')">重置</button>
+        </div>
+        <div class="progress-bar">
+          <div id="p-costco" class="progress-fill"></div>
+        </div>
+        <div class="reward-cap-line" id="rc-costco">
+          <span>💰 加碼回饋金剩餘: <b>$600</b> / $600</span>
+          <span style="font-size:0.7rem; color:var(--text-secondary);">加碼 4.0%</span>
+        </div>
+        <div class="quota-numbers">
+          <span class="quota-remaining" id="q-costco">可刷額度剩餘: $15,000</span>
+          <span class="quota-limit" id="ql-costco">上限: $15,000 / 估 ¥72,463</span>
+        </div>
+      </div>
+
+      <!-- 4. PayPay 熊本熊 -->
+      <div class="quota-item">
+        <div class="quota-header">
+          <div class="card-label">
+            <span>📱 PayPay 熊本熊 (3.5%)</span>
+            <span class="cycle-tag">看帳單結帳日</span>
+          </div>
+          <button class="btn-small" onclick="resetSingle('paypay')">重置</button>
+        </div>
+        <div class="progress-bar">
+          <div id="p-paypay" class="progress-fill"></div>
+        </div>
+        <div class="reward-cap-line" id="rc-paypay">
+          <span>💰 加碼回饋金剩餘: <b>$100</b> / $100</span>
+          <span style="font-size:0.7rem; color:var(--text-secondary);">加碼 3.5%</span>
+        </div>
+        <div class="quota-numbers">
+          <span class="quota-remaining" id="q-paypay">可刷額度剩餘: $2,857</span>
+          <span class="quota-limit" id="ql-paypay">上限: $2,857 / 估 ¥13,797</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 自訂額度設定（從回饋上限回推） -->
+    <div class="card">
+      <div class="card-title">
+        <span>⚙️ 活動回饋上限回推設定</span>
+      </div>
+      <div style="background:var(--primary-light); border-left:4px solid var(--primary); padding:10px 12px; border-radius:8px; font-size:0.78rem; line-height:1.5; margin-bottom:12px;">
+        💡 <b>貼心回推公式：</b>銀行公告多為「加碼 X%，每期回饋上限 Y 元」。您只需填寫銀行的<b>回饋金上限</b>與<b>加碼比例</b>，系統將自動秒回推「可刷額度上限」！
+      </div>
+
+      <!-- 熊本熊 -->
+      <div class="config-card-box">
+        <div class="config-header">🐻 玉山熊本熊 (指定特店街邊門市)</div>
+        <div class="config-inputs">
+          <div>
+            <label>回饋金上限 (NT$)</label>
+            <input type="number" id="cap-kuma" value="500" oninput="onCapOrRateChange('kuma')">
+          </div>
+          <div>
+            <label>加碼比例 (%)</label>
+            <input type="number" id="rate-kuma" step="0.5" value="6.0" oninput="onCapOrRateChange('kuma')">
+          </div>
+        </div>
+        <div class="config-result">➔ 回推可刷額度：<b id="calc-kuma">$8,333</b></div>
+      </div>
+
+      <!-- 富邦 J 卡 -->
+      <div class="config-card-box">
+        <div class="config-header">🇯 富邦 J 卡 (日韓實體滿千)</div>
+        <div class="config-inputs">
+          <div>
+            <label>回饋金上限 (點/NT$)</label>
+            <input type="number" id="cap-jcard" value="1000" oninput="onCapOrRateChange('jcard')">
+          </div>
+          <div>
+            <label>加碼比例 (%)</label>
+            <input type="number" id="rate-jcard" step="0.5" value="3.0" oninput="onCapOrRateChange('jcard')">
+          </div>
+        </div>
+        <div class="config-result">➔ 回推可刷額度：<b id="calc-jcard">$33,333</b></div>
+      </div>
+
+      <!-- 富邦 Costco -->
+      <div class="config-card-box">
+        <div class="config-header">🛒 富邦 Costco (海外實體加碼)</div>
+        <div class="config-inputs">
+          <div>
+            <label>回饋金上限 (好多金/NT$)</label>
+            <input type="number" id="cap-costco" value="600" oninput="onCapOrRateChange('costco')">
+          </div>
+          <div>
+            <label>加碼比例 (%)</label>
+            <input type="number" id="rate-costco" step="0.5" value="4.0" oninput="onCapOrRateChange('costco')">
+          </div>
+        </div>
+        <div class="config-result">➔ 回推可刷額度：<b id="calc-costco">$15,000</b></div>
+      </div>
+
+      <!-- PayPay 熊本熊 -->
+      <div class="config-card-box">
+        <div class="config-header">📱 PayPay 熊本熊 (玉山Wallet掃碼)</div>
+        <div class="config-inputs">
+          <div>
+            <label>回饋金上限 (NT$)</label>
+            <input type="number" id="cap-paypay" value="100" oninput="onCapOrRateChange('paypay')">
+          </div>
+          <div>
+            <label>加碼比例 (%)</label>
+            <input type="number" id="rate-paypay" step="0.5" value="3.5" oninput="onCapOrRateChange('paypay')">
+          </div>
+        </div>
+        <div class="config-result">➔ 回推可刷額度：<b id="calc-paypay">$2,857</b></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TAB 3: 記帳明細 -->
+  <section id="tab-ledger" style="display:none;">
+    <div class="card">
+      <div class="card-title">
+        <span>📝 旅日消費明細</span>
+        <button class="btn-small" onclick="exportData()">匯出備份 💾</button>
+      </div>
+
+      <!-- 統計總額 -->
+      <div style="display:flex; justify-content:space-around; background:var(--card-sub-bg); padding:12px; border-radius:var(--radius-md); margin-bottom:12px; text-align:center;">
+        <div>
+          <div style="font-size:0.75rem; color:var(--text-secondary);">累計日幣支出</div>
+          <div style="font-weight:800; font-size:1.05rem;" id="totalJpyDisplay">¥ 0</div>
+        </div>
+        <div style="border-left:1px solid var(--border);"></div>
+        <div>
+          <div style="font-size:0.75rem; color:var(--text-secondary);">折合台幣總額</div>
+          <div style="font-weight:800; font-size:1.05rem;" id="totalTwdDisplay">$ 0</div>
+        </div>
+        <div style="border-left:1px solid var(--border);"></div>
+        <div>
+          <div style="font-size:0.75rem; color:var(--green);">估計省下回饋</div>
+          <div style="font-weight:800; font-size:1.05rem; color:var(--green);" id="totalSavedDisplay">$ 0</div>
+        </div>
+      </div>
+
+      <!-- 明細列表 -->
+      <div id="ledgerEmpty" style="text-align:center; padding:24px; color:var(--text-secondary); font-size:0.85rem;">
+        尚無消費紀錄。在櫃檯速查點擊「確認記帳」後會出現在這裡！
+      </div>
+      <div class="ledger-list" id="ledgerList"></div>
+
+      <button class="btn-secondary" style="margin-top:14px; color:var(--accent);" onclick="clearLedger()">清空所有消費記錄 🗑️</button>
+    </div>
+  </section>
+
+  <!-- TAB 4: 攻略守則 -->
+  <section id="tab-guide" style="display:none;">
+    <div class="card">
+      <div class="card-title">
+        <span>🐻 玉山熊本熊 8.5% 指定特店清單</span>
+      </div>
+      <div style="font-size:0.85rem; line-height:1.6;">
+        <p><b>藥妝/量販：</b>松本清 (Matsumoto Kiyoshi)、Cocokara Fine、唐吉訶德 (Don Don Donki)、大國藥妝</p>
+        <p><b>電器量販：</b>BicCamera、Yodobashi、Edion、K's Denki</p>
+        <p><b>交通必用：</b>Apple Pay 綁熊本熊卡直接加值 <b>Suica / PASMO / ICOCA</b> 享 8.5% 回饋！(建議出國前或在日直接透過 Apple 錢包加值)</p>
+        <p><b>服飾/生活：</b>UNIQLO、GU (注意：必須為街邊獨立門市才算！)</p>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">
+        <span>⚠️ 致命陷阱條款避雷指南</span>
+      </div>
+      <div style="font-size:0.85rem; line-height:1.6; color:var(--text);">
+        <p><b>1. 百貨統收機台陷阱：</b><br>
+        若松本清、UNIQLO、BicCamera 位於大丸、高島屋、Lumine、OIOI 或機場免稅店等百貨商場內，簽單 MCC Code 往往是百貨公司，<b>玉山熊本熊加碼會全部失效</b>！此時應果斷刷 <b>富邦 J 卡 (6%)</b> 或 <b>Costco (5%)</b>。</p>
+        
+        <p><b>2. 富邦 J 卡滿千門檻：</b><br>
+        富邦 J 卡日韓加碼需要「單筆滿新台幣 1,000 元」(約 4,830 日圓)。若單筆未達千元，請改刷 <b>Costco 聯名卡 (無低消限制享 5%)</b>。</p>
+
+        <p><b>3. PayPay 掃碼秘訣：</b><br>
+        很多日本微型店家/居酒屋不收信用卡只收 PayPay。打開玉山 Wallet 掃 PayPay 享有免 1.5% 手續費與回饋；若加碼額度已滿，可切換扣外幣日幣帳戶。</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 匯率彈出設定 Modal -->
+  <div class="modal-backdrop" id="rateModal">
+    <div class="modal-box">
+      <div class="modal-title">💴 設定日幣即時匯率</div>
+      <div class="form-group">
+        <label>日幣換算台幣匯率 (例: 0.2070)</label>
+        <input type="number" id="customRateInput" step="0.0005" placeholder="0.2070">
+      </div>
+      <div style="display:flex; gap:8px; margin-top:14px;">
+        <button class="btn-secondary" style="margin:0;" onclick="closeRateModal()">取消</button>
+        <button class="btn-main" style="margin:0;" onclick="saveCustomRate()">儲存匯率</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 旅程房間碼（雲端多裝置同步）Modal -->
+  <div class="modal-backdrop" id="syncModal">
+    <div class="modal-box" style="max-width: 380px;">
+      <div class="modal-title" style="display:flex; justify-content:space-between; align-items:center;">
+        <span>☁️ 旅程房間碼（多裝置同步）</span>
+        <span style="cursor:pointer; font-size:1.1rem; color:var(--text-secondary);" onclick="closeSyncModal()">✕</span>
+      </div>
+      <p style="font-size:0.8rem; color:var(--text-secondary); margin:0 0 12px; line-height:1.5;">
+        在任何手機/電腦輸入<b>相同的旅程代碼</b>，即可自動雙向同步額度與明細！旅伴也能一起使用。
+      </p>
+
+      <div class="form-group">
+        <label>當前旅程房間代碼 (Room Code)</label>
+        <div style="display:flex; gap:6px;">
+          <input type="text" id="roomCodeInput" placeholder="例如: TOKYO2026" style="text-transform:uppercase; font-weight:700; letter-spacing:1px;">
+          <button type="button" class="btn-small" style="white-space:nowrap; padding:0 10px;" onclick="generateRandomRoom()">隨機 🎲</button>
+        </div>
+      </div>
+
+      <div style="display:flex; gap:8px; margin-top:10px;">
+        <button type="button" class="btn-main" style="margin:0; flex:1;" onclick="joinRoomFromInput()">加入 / 載入房間</button>
+        <button type="button" class="btn-secondary" style="margin:0; flex:1;" onclick="disconnectRoom()">返回單機本地</button>
+      </div>
+
+      <!-- 分享專屬連結區塊 -->
+      <div id="roomShareBox" style="display:none; margin-top:14px; background:var(--card-sub-bg); border:1px solid var(--border); border-radius:var(--radius-md); padding:12px;">
+        <div style="font-size:0.8rem; font-weight:700; margin-bottom:4px; display:flex; justify-content:space-between; align-items:center;">
+          <span>🔗 旅伴專屬同步連結</span>
+          <span style="color:var(--green); font-size:0.75rem; font-weight:bold;">● 雲端連線中</span>
+        </div>
+        <p style="font-size:0.75rem; color:var(--text-secondary); margin:0 0 8px;">
+          把這個網址傳給旅伴或在自己另一台手機開啟，會直接自動載入此房間！
+        </p>
+        <button type="button" class="btn-secondary" style="font-size:0.82rem; padding:8px; width:100%;" onclick="copyShareUrl()">📋 一鍵複製同步連結</button>
+      </div>
+
+      <!-- 雲端設定說明 -->
+      <div style="margin-top:14px; border-top:1px dashed var(--border); padding-top:10px;">
+        <div style="font-size:0.75rem; color:var(--text-secondary); line-height:1.4;">
+          💡 <b>免註冊雲端同步：</b>系統已內建免註冊即時雲端同步機制，完全無需任何設定即可跨手機即時共享！
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div class="toast" id="toast">已更新！</div>
+
+  <script>
+    // 預設卡片回饋金上限與加碼率 (可直接由回饋上限回推刷卡額度)
+    const DEFAULT_CARD_RULES = {
+      kuma: { cap: 500, rate: 6.0 },
+      jcard: { cap: 1000, rate: 3.0 },
+      costco: { cap: 600, rate: 4.0 },
+      paypay: { cap: 100, rate: 3.5 }
+    };
+
+    let cardRules = JSON.parse(localStorage.getItem('japan_card_rules')) || { ...DEFAULT_CARD_RULES };
+
+    function getCardLimit(key) {
+      const rule = cardRules[key] || DEFAULT_CARD_RULES[key];
+      if (!rule || rule.rate <= 0) return 0;
+      return Math.round(rule.cap / (rule.rate / 100));
+    }
+
+    const DEFAULT_LIMITS = {
+      kuma: getCardLimit('kuma'),
+      jcard: getCardLimit('jcard'),
+      costco: getCardLimit('costco'),
+      paypay: getCardLimit('paypay')
+    };
+
+    // 狀態持久化
+    let limits = JSON.parse(localStorage.getItem('japan_card_limits')) || { ...DEFAULT_LIMITS };
+    let quotas = JSON.parse(localStorage.getItem('japan_card_quotas')) || { ...limits };
+    let jpyRate = parseFloat(localStorage.getItem('japan_card_rate')) || 0.2070;
+    let ledger = JSON.parse(localStorage.getItem('japan_card_ledger')) || [];
+    let currentRoom = localStorage.getItem('japan_card_room') || '';
+    let isSyncing = false;
+
+    // 當前試算決策結果快取
+    let currentDecision = {
+      cardKey: '',
+      cardName: '',
+      ratePercent: 0,
+      jpy: 0,
+      twd: 0,
+      rewardTwd: 0
+    };
+
+    // 初始化
+    function init() {
+      // 載入各卡回饋上限與加碼比例到設定欄位
+      for (let key in cardRules) {
+        const capEl = document.getElementById(`cap-${key}`);
+        const rateEl = document.getElementById(`rate-${key}`);
+        const calcEl = document.getElementById(`calc-${key}`);
+        if (capEl && rateEl) {
+          capEl.value = cardRules[key].cap;
+          rateEl.value = cardRules[key].rate;
+          const lim = getCardLimit(key);
+          if (calcEl) calcEl.innerText = `$${lim.toLocaleString()}`;
+        }
+      }
+
+      updateRateDisplay();
+      updateQuotaUI();
+      renderLedger();
+      calculate();
+
+      // 檢查網址參數 ?room=XXXX
+      const urlParams = new URLSearchParams(window.location.search);
+      const roomParam = urlParams.get('room');
+      if (roomParam) {
+        joinRoom(roomParam.trim().toUpperCase(), false);
+      } else if (currentRoom) {
+        joinRoom(currentRoom, true);
+      } else {
+        updateSyncUI();
+      }
+
+      // 當頁面喚醒時自動同步
+      document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible' && currentRoom) {
+          pullFromCloud(true);
+        }
+      });
+
+      // 背景定時同步 (每 15 秒)
+      setInterval(() => {
+        if (currentRoom && document.visibilityState === 'visible') {
+          pullFromCloud(true);
+        }
+      }, 15000);
+    }
+
+    // 雲端與旅程房間同步系統
+    function openSyncModal() {
+      updateSyncUI();
+      document.getElementById('syncModal').style.display = 'flex';
+    }
+
+    function closeSyncModal() {
+      document.getElementById('syncModal').style.display = 'none';
+    }
+
+    function updateSyncUI() {
+      const pill = document.getElementById('syncStatusPill');
+      const label = document.getElementById('syncLabel');
+      const shareBox = document.getElementById('roomShareBox');
+      const input = document.getElementById('roomCodeInput');
+
+      if (currentRoom) {
+        pill.classList.add('online');
+        label.innerText = currentRoom;
+        if (shareBox) shareBox.style.display = 'block';
+        if (input) input.value = currentRoom;
+      } else {
+        pill.classList.remove('online');
+        label.innerText = '本地';
+        if (shareBox) shareBox.style.display = 'none';
+        if (input) input.value = '';
+      }
+    }
+
+    function generateRandomRoom() {
+      const cities = ['TOKYO', 'OSAKA', 'KYOTO', 'FUKUOKA', 'HOKKAIDO', 'JAPAN'];
+      const city = cities[Math.floor(Math.random() * cities.length)];
+      const num = Math.floor(1000 + Math.random() * 9000);
+      document.getElementById('roomCodeInput').value = `${city}-${num}`;
+    }
+
+    function joinRoomFromInput() {
+      const input = document.getElementById('roomCodeInput');
+      const val = (input.value || '').trim().toUpperCase().replace(/[^A-Z0-9_-]/g, '');
+      if (!val) {
+        showToast('⚠️ 請先輸入旅程房間代碼');
+        return;
+      }
+      joinRoom(val, false);
+      closeSyncModal();
+    }
+
+    function joinRoom(roomCode, isSilent = false) {
+      currentRoom = roomCode;
+      localStorage.setItem('japan_card_room', roomCode);
+      try {
+        const newUrl = window.location.pathname + '?room=' + encodeURIComponent(roomCode);
+        window.history.replaceState(null, '', newUrl);
+      } catch(e) {}
+
+      updateSyncUI();
+      pullFromCloud(isSilent);
+      if (!isSilent) {
+        showToast(`☁️ 已連線至旅程房間: ${roomCode}`);
+      }
+    }
+
+    function disconnectRoom() {
+      currentRoom = '';
+      localStorage.removeItem('japan_card_room');
+      try {
+        window.history.replaceState(null, '', window.location.pathname);
+      } catch(e) {}
+
+      updateSyncUI();
+      closeSyncModal();
+      showToast('已切換回單機本地模式');
+    }
+
+    function copyShareUrl() {
+      if (!currentRoom) return;
+      const shareUrl = window.location.origin + window.location.pathname + '?room=' + encodeURIComponent(currentRoom);
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(shareUrl).then(() => {
+          showToast('📋 已複製專屬同步網址！傳給旅伴點開即同步');
+        }).catch(() => {
+          fallbackCopy(shareUrl);
+        });
+      } else {
+        fallbackCopy(shareUrl);
+      }
+    }
+
+    function fallbackCopy(text) {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.select();
+      try {
+        document.execCommand('copy');
+        showToast('📋 已複製專屬同步網址！傳給旅伴點開即同步');
+      } catch(e) {
+        prompt('請長按複製以下網址分享給旅伴：', text);
+      }
+      document.body.removeChild(ta);
+    }
+
+    // 雲端同步核心引擎
+    async function pushToCloud() {
+      if (!currentRoom || isSyncing) return;
+      const payload = {
+        updatedAt: Date.now(),
+        cardRules,
+        limits,
+        quotas,
+        jpyRate,
+        ledger
+      };
+
+      try {
+        await fetch(`https://kvdb.io/japan_cards_sync_2026/${encodeURIComponent(currentRoom)}`, {
+          method: 'POST',
+          body: JSON.stringify(payload)
+        });
+      } catch(e) {
+        console.warn('雲端同步提示: 目前處於離線狀態');
+      }
+    }
+
+    async function pullFromCloud(silent = false) {
+      if (!currentRoom) return;
+      try {
+        const res = await fetch(`https://kvdb.io/japan_cards_sync_2026/${encodeURIComponent(currentRoom)}`);
+        if (res.ok) {
+          const data = await res.json();
+          if (data && data.quotas) {
+            isSyncing = true;
+            if (data.cardRules) {
+              cardRules = data.cardRules;
+              localStorage.setItem('japan_card_rules', JSON.stringify(cardRules));
+              for (let key in cardRules) {
+                const capEl = document.getElementById(`cap-${key}`);
+                const rateEl = document.getElementById(`rate-${key}`);
+                const calcEl = document.getElementById(`calc-${key}`);
+                if (capEl && rateEl) {
+                  capEl.value = cardRules[key].cap;
+                  rateEl.value = cardRules[key].rate;
+                  if (calcEl) calcEl.innerText = `$${getCardLimit(key).toLocaleString()}`;
+                }
+              }
+            }
+            quotas = data.quotas || quotas;
+            limits = data.limits || limits;
+            jpyRate = data.jpyRate || jpyRate;
+            ledger = data.ledger || ledger;
+
+            localStorage.setItem('japan_card_quotas', JSON.stringify(quotas));
+            localStorage.setItem('japan_card_limits', JSON.stringify(limits));
+            localStorage.setItem('japan_card_rate', jpyRate.toString());
+            localStorage.setItem('japan_card_ledger', JSON.stringify(ledger));
+
+            updateRateDisplay();
+            updateQuotaUI();
+            renderLedger();
+            calculate();
+            isSyncing = false;
+
+            if (!silent) {
+              showToast(`☁️ 已同步【${currentRoom}】最新資料`);
+            }
+          }
+        } else if (res.status === 404) {
+          pushToCloud();
+        }
+      } catch(e) {
+        console.warn('雲端載入提示: 離線使用本地快取');
+      }
+    }
+
+    // 匯率顯示更新
+    function updateRateDisplay() {
+      document.getElementById('rateDisplay').innerText = jpyRate.toFixed(4);
+      document.getElementById('rateLabel').innerText = jpyRate.toFixed(4);
+    }
+
+    // Tab 切換
+    function switchTab(tabId) {
+      const tabs = ['decision', 'quotas', 'ledger', 'guide'];
+      tabs.forEach(t => {
+        const el = document.getElementById(`tab-${t}`);
+        if (el) el.style.display = (t === tabId) ? 'block' : 'none';
+      });
+
+      const buttons = document.querySelectorAll('.tab-btn');
+      buttons.forEach((btn, idx) => {
+        if (tabs[idx] === tabId) btn.classList.add('active');
+        else btn.classList.remove('active');
+      });
+
+      if (tabId === 'quotas') updateQuotaUI();
+      if (tabId === 'ledger') renderLedger();
+    }
+
+    // 快速情境標籤一鍵套用
+    function applyPreset(preset, btnElement) {
+      const payType = document.getElementById('payType');
+      const storeType = document.getElementById('storeType');
+      const locationType = document.getElementById('locationType');
+      const memo = document.getElementById('memo');
+
+      // 重置情境標籤選中樣式
+      document.querySelectorAll('.quick-tag').forEach(t => t.classList.remove('active'));
+      if (btnElement) btnElement.classList.add('active');
+
+      if (preset === 'matsukiyo') {
+        payType.value = 'card';
+        storeType.value = 'kuma_shop';
+        locationType.value = 'street';
+        memo.value = '松本清藥妝';
+      } else if (preset === 'bic') {
+        payType.value = 'card';
+        storeType.value = 'kuma_shop';
+        locationType.value = 'street';
+        memo.value = 'BicCamera 電器';
+      } else if (preset === 'donki') {
+        payType.value = 'card';
+        storeType.value = 'kuma_shop';
+        locationType.value = 'street';
+        memo.value = '唐吉訶德';
+      } else if (preset === 'suica') {
+        payType.value = 'card';
+        storeType.value = 'kuma_shop';
+        locationType.value = 'street';
+        memo.value = 'Suica 加值';
+      } else if (preset === 'dept') {
+        payType.value = 'card';
+        storeType.value = 'kuma_shop';
+        locationType.value = 'department';
+        memo.value = '百貨美食街 / 專櫃';
+      } else if (preset === 'dining') {
+        payType.value = 'card';
+        storeType.value = 'normal';
+        locationType.value = 'street';
+        memo.value = '餐廳用餐';
+      } else if (preset === 'paypay') {
+        payType.value = 'paypay';
+        memo.value = 'PayPay 掃碼支付';
+      }
+      calculate();
+    }
+
+    // 金額快捷鍵增減
+    function addAmount(val) {
+      const input = document.getElementById('jpyAmount');
+      const current = parseFloat(input.value) || 0;
+      input.value = current + val;
+      calculate();
+    }
+
+    function clearAmount() {
+      document.getElementById('jpyAmount').value = '';
+      calculate();
+    }
+
+    // 更新額度看板 UI
+    function updateQuotaUI() {
+      for (let key in limits) {
+        const remaining = Math.max(0, quotas[key]);
+        const limit = limits[key] || getCardLimit(key);
+        const percent = Math.min(100, Math.max(0, (remaining / limit) * 100));
+
+        const bar = document.getElementById(`p-${key}`);
+        const text = document.getElementById(`q-${key}`);
+        const limitText = document.getElementById(`ql-${key}`);
+        const rcEl = document.getElementById(`rc-${key}`);
+
+        const rule = cardRules[key] || DEFAULT_CARD_RULES[key];
+        const remainingReward = rule && rule.rate > 0 ? Math.round(remaining * (rule.rate / 100)) : 0;
+
+        if (bar && text) {
+          bar.style.width = `${percent}%`;
+          if (percent > 45) {
+            bar.style.backgroundColor = 'var(--green)';
+          } else if (percent > 15) {
+            bar.style.backgroundColor = 'var(--warning)';
+          } else {
+            bar.style.backgroundColor = 'var(--accent)';
+          }
+          text.innerText = `可刷額度剩餘: $${Math.round(remaining).toLocaleString()}`;
+          const estJpy = Math.round(remaining / jpyRate).toLocaleString();
+          limitText.innerText = `上限: $${limit.toLocaleString()} / 估 ¥${estJpy}`;
+        }
+
+        if (rcEl && rule) {
+          rcEl.innerHTML = `<span>💰 加碼回饋金剩餘: <b>$${remainingReward.toLocaleString()}</b> / $${rule.cap.toLocaleString()}</span><span style="font-size:0.7rem; color:var(--text-secondary);">加碼 ${rule.rate}%</span>`;
+        }
+      }
+    }
+
+    // 當回饋上限或加碼率修改時自動回推刷卡額度
+    function onCapOrRateChange(key) {
+      const capEl = document.getElementById(`cap-${key}`);
+      const rateEl = document.getElementById(`rate-${key}`);
+      const calcEl = document.getElementById(`calc-${key}`);
+
+      const cap = parseFloat(capEl.value) || 0;
+      const rate = parseFloat(rateEl.value) || 0;
+
+      cardRules[key] = { cap, rate };
+      localStorage.setItem('japan_card_rules', JSON.stringify(cardRules));
+
+      const newLimit = (rate > 0) ? Math.round(cap / (rate / 100)) : 0;
+      limits[key] = newLimit;
+      localStorage.setItem('japan_card_limits', JSON.stringify(limits));
+
+      if (calcEl) calcEl.innerText = `$${newLimit.toLocaleString()}`;
+
+      updateQuotaUI();
+      calculate();
+      pushToCloud();
+    }
+
+    function saveQuotas() {
+      localStorage.setItem('japan_card_quotas', JSON.stringify(quotas));
+      updateQuotaUI();
+      pushToCloud();
+    }
+
+    // 決策核心演算法
+    function calculate() {
+      const payType = document.getElementById('payType').value;
+      const storeType = document.getElementById('storeType').value;
+      const locationType = document.getElementById('locationType').value;
+      const jpy = parseFloat(document.getElementById('jpyAmount').value) || 0;
+      const twd = jpy * jpyRate;
+
+      document.getElementById('twdDisplay').innerText = `NT$ ${Math.round(twd).toLocaleString()}`;
+
+      // 欄位聯動控制
+      const isPayPay = (payType === 'paypay');
+      document.getElementById('storeGroup').style.display = isPayPay ? 'none' : 'flex';
+      document.getElementById('locationGroup').style.display = (!isPayPay && storeType === 'kuma_shop') ? 'flex' : 'none';
+
+      const deptAlert = document.getElementById('deptAlert');
+      const jcardAlert = document.getElementById('jcardAlert');
+      deptAlert.style.display = (!isPayPay && storeType === 'kuma_shop' && locationType === 'department') ? 'flex' : 'none';
+
+      let bestCard = "";
+      let bestIcon = "💳";
+      let desc = "";
+      let subAdvice = "";
+      let rateBadge = "";
+      let cardKey = "";
+      let ratePercent = 0;
+      let resultBox = document.getElementById('resultBox');
+
+      // 清除樣式 class
+      resultBox.className = 'result-box';
+
+      if (isPayPay) {
+        // PayPay 邏輯
+        if (quotas.paypay >= twd && twd > 0) {
+          bestCard = "玉山 Wallet 綁熊本熊卡";
+          bestIcon = "🐻";
+          rateBadge = "3.5%";
+          ratePercent = 3.5;
+          desc = "享 3.5% 免海外手續費 1.5%！最適合掃碼店家。";
+          subAdvice = `此筆刷完後，PayPay 額度將剩餘約 NT$${Math.round(quotas.paypay - twd).toLocaleString()}`;
+          cardKey = 'paypay';
+          resultBox.classList.add('paypay');
+        } else {
+          bestCard = "玉山 Wallet 扣外幣日幣帳戶 / 街口 / 全支付";
+          bestIcon = "📱";
+          rateBadge = "免手續費";
+          ratePercent = 0;
+          desc = quotas.paypay < twd && twd > 0 
+            ? "⚠️ PayPay 加碼額度不足，建議直接從外幣日幣帳戶扣款避開匯差！" 
+            : "PayPay 掃碼特約店家專用管道";
+          subAdvice = "若綁定玉山外幣帳戶扣日幣存款，享免 1.5% 手續費。";
+          cardKey = 'backup_paypay';
+          resultBox.classList.add('backup');
+        }
+        jcardAlert.style.display = 'none';
+      } else {
+        // 實體卡片 / Apple Pay 決策階梯
+        const isKumaEligible = (storeType === 'kuma_shop' && locationType === 'street' && quotas.kuma >= twd && twd > 0);
+        const isJcardEligible = (twd >= 1000 && quotas.jcard >= twd && twd > 0);
+        const isCostcoEligible = (quotas.costco >= twd && twd > 0);
+
+        if (isKumaEligible) {
+          bestCard = "玉山熊本熊卡 (實體卡 / Apple Pay)";
+          bestIcon = "🐻";
+          rateBadge = "8.5%";
+          ratePercent = 8.5;
+          desc = "🔥 命中指定特店獨立門市！享 8.5% 最高回饋！";
+          subAdvice = `扣除後熊本熊加碼額度剩餘約 NT$${Math.round(quotas.kuma - twd).toLocaleString()} (上限 $${limits.kuma})`;
+          cardKey = 'kuma';
+          resultBox.classList.add('kuma');
+          jcardAlert.style.display = 'none';
+        } else if (isJcardEligible) {
+          bestCard = "富邦 J 卡 (實體卡 / Apple Pay)";
+          bestIcon = "🇯";
+          rateBadge = "6.0%";
+          ratePercent = 6.0;
+          desc = "✨ 單筆滿千享 6% 加碼回饋！";
+          if (storeType === 'kuma_shop' && locationType === 'department') {
+            desc += " (已自動避開百貨統收陷阱)";
+          }
+          subAdvice = `扣除後 J 卡加碼額度剩餘約 NT$${Math.round(quotas.jcard - twd).toLocaleString()} (每季上限 $${limits.jcard})`;
+          cardKey = 'jcard';
+          resultBox.classList.add('jcard');
+          jcardAlert.style.display = 'none';
+        } else if (isCostcoEligible) {
+          bestCard = "富邦 Costco 聯名卡";
+          bestIcon = "🛒";
+          rateBadge = "5.0%";
+          ratePercent = 5.0;
+          desc = "享 5% 好多金回饋！(無單筆滿千限制)";
+          if (twd > 0 && twd < 1000) {
+            jcardAlert.style.display = 'flex';
+          } else {
+            jcardAlert.style.display = 'none';
+          }
+          subAdvice = `扣除後 Costco 加碼額度剩餘約 NT$${Math.round(quotas.costco - twd).toLocaleString()} (每月上限 $${limits.costco})`;
+          cardKey = 'costco';
+          resultBox.classList.add('costco');
+        } else {
+          // 全部加碼用罄或額度不足
+          bestCard = "國泰 CUBE 卡 (趣旅行 3%) 或 雙幣外幣帳戶";
+          bestIcon = "💳";
+          rateBadge = "3.0% 無上限";
+          ratePercent = 3.0;
+          desc = "⚠️ 前線加碼額度均已用盡或金額過大！";
+          subAdvice = "若手上先前換的平均匯率低於現價，優先刷雙幣卡扣外幣帳戶；否則刷 CUBE 享 3% 無上限小樹點。";
+          cardKey = 'backup_cube';
+          resultBox.classList.add('backup');
+          jcardAlert.style.display = 'none';
+        }
+      }
+
+      // 如果未輸入金額
+      if (jpy <= 0) {
+        bestCard = "請輸入金額試算";
+        bestIcon = "💡";
+        rateBadge = "--";
+        desc = "系統將為您智慧比對 8.5% / 6% / 5% / 3.5% 最優解與額度剩餘情況。";
+        subAdvice = "";
+        resultBox.className = 'result-box';
+      }
+
+      // 試算回饋金
+      const rewardTwd = Math.round(twd * (ratePercent / 100));
+      const rewardDisplay = (jpy > 0 && rewardTwd > 0) 
+        ? `預估現省：NT$ ${rewardTwd.toLocaleString()} (${rateBadge})` 
+        : "";
+
+      document.getElementById('bestCard').innerText = bestCard;
+      document.getElementById('bestCardIcon').innerText = bestIcon;
+      document.getElementById('rateBadge').innerText = rateBadge;
+      document.getElementById('cardDesc').innerText = desc;
+      document.getElementById('subAdvice').innerText = subAdvice;
+      document.getElementById('bestReward').innerText = rewardDisplay;
+
+      currentDecision = {
+        cardKey,
+        cardName: bestCard,
+        ratePercent,
+        jpy,
+        twd: Math.round(twd),
+        rewardTwd
+      };
+    }
+
+    // 記錄消費
+    function recordExpense() {
+      const jpy = parseFloat(document.getElementById('jpyAmount').value) || 0;
+      if (jpy <= 0) {
+        showToast("⚠️ 請先輸入日幣結帳金額！");
+        return;
+      }
+
+      calculate(); // 確保資料為最新
+      const { cardKey, cardName, ratePercent, twd, rewardTwd } = currentDecision;
+      const memo = document.getElementById('memo').value.trim() || getDefaultMemo();
+
+      // 扣除額度
+      if (cardKey === 'kuma') {
+        quotas.kuma = Math.max(0, quotas.kuma - twd);
+      } else if (cardKey === 'jcard') {
+        quotas.jcard = Math.max(0, quotas.jcard - twd);
+      } else if (cardKey === 'costco') {
+        quotas.costco = Math.max(0, quotas.costco - twd);
+      } else if (cardKey === 'paypay') {
+        quotas.paypay = Math.max(0, quotas.paypay - twd);
+      }
+
+      saveQuotas();
+
+      // 新增記帳明細
+      const record = {
+        id: Date.now(),
+        date: new Date().toLocaleString('zh-TW', { month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit' }),
+        memo,
+        cardKey,
+        cardName,
+        ratePercent,
+        jpy,
+        twd,
+        rewardTwd
+      };
+
+      ledger.unshift(record);
+      localStorage.setItem('japan_card_ledger', JSON.stringify(ledger));
+      pushToCloud();
+
+      // 重設輸入框
+      document.getElementById('jpyAmount').value = '';
+      document.getElementById('memo').value = '';
+      calculate();
+      renderLedger();
+
+      showToast(`✅ 已記錄！扣除約 NT$${twd.toLocaleString()} 額度`);
+    }
+
+    function getDefaultMemo() {
+      const storeType = document.getElementById('storeType').value;
+      const payType = document.getElementById('payType').value;
+      if (payType === 'paypay') return 'PayPay 店家消費';
+      if (storeType === 'kuma_shop') return '熊本熊指定店消費';
+      return '一般店家消費';
+    }
+
+    // 渲染記帳歷史清單
+    function renderLedger() {
+      const listEl = document.getElementById('ledgerList');
+      const emptyEl = document.getElementById('ledgerEmpty');
+
+      if (!listEl) return;
+
+      let totalJpy = 0;
+      let totalTwd = 0;
+      let totalSaved = 0;
+
+      listEl.innerHTML = '';
+
+      if (ledger.length === 0) {
+        emptyEl.style.display = 'block';
+      } else {
+        emptyEl.style.display = 'none';
+
+        ledger.forEach(item => {
+          totalJpy += item.jpy;
+          totalTwd += item.twd;
+          totalSaved += (item.rewardTwd || 0);
+
+          const badgeClass = item.cardKey.includes('kuma') ? 'kuma' :
+                             item.cardKey.includes('jcard') ? 'jcard' :
+                             item.cardKey.includes('costco') ? 'costco' :
+                             item.cardKey.includes('paypay') ? 'paypay' : 'backup';
+
+          const cardShortName = item.cardName.split('(')[0].trim();
+
+          const itemEl = document.createElement('div');
+          itemEl.className = 'ledger-item';
+          itemEl.innerHTML = `
+            <div class="ledger-info">
+              <h4>
+                <span>${escapeHtml(item.memo)}</span>
+                <span class="badge-soft ${badgeClass}">${cardShortName}</span>
+              </h4>
+              <span>${item.date} · 預估省下 NT$${(item.rewardTwd || 0).toLocaleString()}</span>
+            </div>
+            <div style="display:flex; align-items:center;">
+              <div class="ledger-amount">
+                <div class="ledger-jpy">¥${item.jpy.toLocaleString()}</div>
+                <div class="ledger-twd">≈ NT$${item.twd.toLocaleString()}</div>
+              </div>
+              <button class="ledger-del" title="刪除並返還額度" onclick="deleteLedgerItem(${item.id})">✕</button>
+            </div>
+          `;
+          listEl.appendChild(itemEl);
+        });
+      }
+
+      document.getElementById('totalJpyDisplay').innerText = `¥ ${Math.round(totalJpy).toLocaleString()}`;
+      document.getElementById('totalTwdDisplay').innerText = `$ ${Math.round(totalTwd).toLocaleString()}`;
+      document.getElementById('totalSavedDisplay').innerText = `$ ${Math.round(totalSaved).toLocaleString()}`;
+    }
+
+    // 刪除消費紀錄 (並返還額度)
+    function deleteLedgerItem(id) {
+      const idx = ledger.findIndex(x => x.id === id);
+      if (idx === -1) return;
+
+      const item = ledger[idx];
+      if (confirm(`確定要刪除「${item.memo}」這筆紀錄嗎？\n原扣除的 NT$${item.twd} 額度將自動歸還至該卡片。`)) {
+        if (item.cardKey && quotas[item.cardKey] !== undefined) {
+          quotas[item.cardKey] = Math.min(limits[item.cardKey], quotas[item.cardKey] + item.twd);
+          saveQuotas();
+        }
+        ledger.splice(idx, 1);
+        localStorage.setItem('japan_card_ledger', JSON.stringify(ledger));
+        renderLedger();
+        calculate();
+        showToast("已刪除並返還額度！");
+      }
+    }
+
+    // 清空記帳歷史
+    function clearLedger() {
+      if (ledger.length === 0) return;
+      if (confirm("確定要清空所有消費記錄嗎？\n注意：此操作不會自動還原已扣除的額度。")) {
+        ledger = [];
+        localStorage.setItem('japan_card_ledger', JSON.stringify(ledger));
+        renderLedger();
+        pushToCloud();
+        showToast("明細已清空");
+      }
+    }
+
+    // 單卡重置
+    function resetSingle(key) {
+      const names = {
+        kuma: '玉山熊本熊卡',
+        jcard: '富邦 J 卡',
+        costco: '富邦 Costco 卡',
+        paypay: 'PayPay 熊本熊'
+      };
+      if (confirm(`要重置【${names[key]}】的加碼額度為上限 $${limits[key].toLocaleString()} 嗎？`)) {
+        quotas[key] = limits[key];
+        saveQuotas();
+        calculate();
+        showToast(`已重置 ${names[key]} 額度`);
+      }
+    }
+
+    // 全部重置
+    function resetAllQuotas() {
+      if (confirm("確定要將所有卡片的加碼剩餘額度全部重置為初始上限嗎？")) {
+        quotas = { ...limits };
+        saveQuotas();
+        calculate();
+        showToast("所有卡片額度已重置完畢！");
+      }
+    }
+
+    // 更新自訂上限設定
+    function updateCustomLimits() {
+      limits.kuma = parseFloat(document.getElementById('limit-kuma').value) || DEFAULT_LIMITS.kuma;
+      limits.jcard = parseFloat(document.getElementById('limit-jcard').value) || DEFAULT_LIMITS.jcard;
+      limits.costco = parseFloat(document.getElementById('limit-costco').value) || DEFAULT_LIMITS.costco;
+      limits.paypay = parseFloat(document.getElementById('limit-paypay').value) || DEFAULT_LIMITS.paypay;
+
+      localStorage.setItem('japan_card_limits', JSON.stringify(limits));
+      updateQuotaUI();
+      calculate();
+      pushToCloud();
+      showToast("已更新卡片自訂上限！");
+    }
+
+    // 匯率 Modal
+    function openRateModal() {
+      document.getElementById('customRateInput').value = jpyRate;
+      document.getElementById('rateModal').style.display = 'flex';
+    }
+
+    function closeRateModal() {
+      document.getElementById('rateModal').style.display = 'none';
+    }
+
+    function saveCustomRate() {
+      const newRate = parseFloat(document.getElementById('customRateInput').value);
+      if (newRate > 0) {
+        jpyRate = newRate;
+        localStorage.setItem('japan_card_rate', jpyRate.toString());
+        updateRateDisplay();
+        updateQuotaUI();
+        calculate();
+        closeRateModal();
+        pushToCloud();
+        showToast(`匯率已更新為 ${jpyRate.toFixed(4)}`);
+      } else {
+        alert("請輸入大於 0 的有效匯率！");
+      }
+    }
+
+    // 匯出備份 JSON
+    function exportData() {
+      const data = {
+        exportTime: new Date().toISOString(),
+        limits,
+        quotas,
+        jpyRate,
+        ledger
+      };
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `japan_cards_backup_${new Date().toISOString().slice(0,10)}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    // Toast 提示
+    let toastTimeout;
+    function showToast(msg) {
+      const toast = document.getElementById('toast');
+      toast.innerText = msg;
+      toast.classList.add('show');
+      clearTimeout(toastTimeout);
+      toastTimeout = setTimeout(() => {
+        toast.classList.remove('show');
+      }, 2400);
+    }
+
+    function escapeHtml(str) {
+      return (str || '').replace(/[&<>'"]/g, 
+        tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag)
+      );
+    }
+
+    window.onload = init;
+  </script>
+</body>
+</html>

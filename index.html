@@ -131,6 +131,8 @@
       background: rgba(52, 199, 89, 0.12);
       color: #248a3d;
     }
+    .sync-pill.sync-error { border-color: var(--accent); color: var(--accent); }
+    .sync-pill.sync-error .sync-dot { background: var(--accent); }
     @media (prefers-color-scheme: dark) {
       .sync-pill.online { color: #34c759; }
     }
@@ -1010,11 +1012,16 @@
         <span>📊 2026 最新精確權益與手續費拆解總表</span>
         <button class="btn-small" id="toggleRuleEdit" type="button" onclick="toggleRuleEdit()">編輯規則</button>
       </div>
+      <p style="font-size:0.76rem; color:var(--text-secondary); margin:0 0 8px; line-height:1.5;">
+        每列代表一條回饋規則。同一張實體卡會在多列重複標示；計算時依消費情境挑選該卡適用的規則，不會把同一張卡當成兩張卡。各列加碼額度分開追蹤。
+      </p>
       <div class="guide-table-wrap">
         <table class="guide-table">
           <thead>
             <tr>
-              <th>支付方式</th>
+              <th>回饋規則（每列一條）</th>
+              <th>實體卡（規則數）</th>
+              <th>額度帳本</th>
               <th>適用情境</th>
               <th>基本回饋</th>
               <th>加碼</th>
@@ -1156,16 +1163,23 @@
         </div>
       </div>
 
+      <div class="form-group">
+        <label>雲端資料庫</label>
+        <div style="font-size:0.84rem; padding:10px; border:1px solid var(--border); border-radius:var(--radius-sm);">Supabase · japan_card_data</div>
+        <small style="color:var(--text-secondary);">所有裝置使用同一個房間代碼即可同步。</small>
+      </div>
+
       <div style="display:flex; gap:8px; margin-top:10px;">
         <button type="button" class="btn-main" style="margin:0; flex:1;" onclick="joinRoomFromInput()">加入 / 載入房間</button>
         <button type="button" class="btn-secondary" style="margin:0; flex:1;" onclick="disconnectRoom()">返回單機本地</button>
       </div>
+      <div id="syncFeedback" role="status" style="display:none; margin-top:8px; color:var(--accent); font-size:0.78rem; line-height:1.45;"></div>
 
       <!-- 分享專屬連結區塊 -->
       <div id="roomShareBox" style="display:none; margin-top:14px; background:var(--card-sub-bg); border:1px solid var(--border); border-radius:var(--radius-md); padding:12px;">
         <div style="font-size:0.8rem; font-weight:700; margin-bottom:4px; display:flex; justify-content:space-between; align-items:center;">
           <span>🔗 旅伴專屬同步連結</span>
-          <span style="color:var(--green); font-size:0.75rem; font-weight:bold;">● 雲端連線中</span>
+          <span id="roomConnectionLabel" style="color:var(--text-secondary); font-size:0.75rem; font-weight:bold;">● 尚未確認</span>
         </div>
         <p style="font-size:0.75rem; color:var(--text-secondary); margin:0 0 8px;">
           把這個網址傳給旅伴或在自己另一台手機開啟，會直接自動載入此房間！
@@ -1176,7 +1190,7 @@
       <!-- 雲端設定說明 -->
       <div style="margin-top:14px; border-top:1px dashed var(--border); padding-top:10px;">
         <div style="font-size:0.75rem; color:var(--text-secondary); line-height:1.4;">
-          💡 <b>免註冊雲端同步：</b>系統已內建免註冊即時雲端同步機制，完全無需任何設定即可跨手機即時共享！
+          💡 同步資料儲存在設定好的 Supabase 專案；分享房間代碼即可讓其他裝置載入同一份資料。
         </div>
       </div>
     </div>
@@ -1275,12 +1289,12 @@
 
     // 預設卡片回饋金上限與加碼率 (2026 最新官方規定與手續費扣除)
     const DEFAULT_CARD_RULES = {
-      jcard_transit: { name: "🚆 富邦 J 卡 (交通卡 AP 儲值)", cap: 200, rate: 7.0, fee: 1.5, base: 3.0, minThreshold: 2000, capBasis: 'bonus', capPeriod: '季', cycleType: 'quarter', cycleLabel: '', scope: 'Suica / PASMO / ICOCA Apple Pay 儲值', contexts: ['transit'] },
-      kuma: { name: "🐻 玉山熊本熊卡 (指定特店 / 交通)", cap: 500, rate: 6.0, fee: 1.5, base: 2.5, minThreshold: 0, capBasis: 'bonus', capPeriod: '帳單週期', cycleType: 'billing', statementDay: null, billingGroup: 'esun', cycleLabel: '', scope: '指定街邊特店與交通卡儲值', contexts: ['transit', 'kuma_shop_street'] },
-      jcard: { name: "🇯 富邦 J 卡 (日韓實體一般消費)", cap: 1000, rate: 3.0, fee: 1.5, base: 3.0, minThreshold: 1000, capBasis: 'bonus', capPeriod: '季', cycleType: 'quarter', cycleLabel: '', scope: '日韓實體一般消費', contexts: ['general', 'transit'] },
-      costco: { name: "🛒 富邦 Costco 聯名卡 (海外實體)", cap: 600, rate: 4.0, fee: 1.5, base: 1.0, minThreshold: 0, capBasis: 'bonus', capPeriod: '月', cycleType: 'month', cycleLabel: '', scope: '海外實體消費', contexts: ['general', 'transit'] },
-      paypay: { name: "📱 玉山 Wallet 綁熊本熊 (PayPay)", cap: 100, rate: 1.5, fee: 0.0, base: 2.0, minThreshold: 0, capBasis: 'net', capPeriod: '帳單週期', cycleType: 'billing', statementDay: null, billingGroup: 'esun', cycleLabel: '', scope: '玉山 Wallet 綁卡掃 PayPay', contexts: ['paypay'] },
-      cube: { name: "🌲 國泰 CUBE 卡 (趣旅行)", cap: 0, rate: 0, fee: 1.5, base: 3.0, minThreshold: 0, capBasis: 'bonus', capPeriod: '無上限', cycleType: 'none', cycleLabel: '終極保底卡；不追蹤額度', scope: '海外一般消費', trackQuota: false, contexts: [] }
+      jcard_transit: { name: "🚆 富邦 J 卡 (交通卡 AP 儲值)", physicalCardId: 'fubon_j', physicalCardName: '富邦 J 卡', quotaPoolId: 'fubon_j_transit', cap: 200, rate: 7.0, fee: 1.5, base: 3.0, minThreshold: 2000, capBasis: 'bonus', capPeriod: '季', cycleType: 'quarter', cycleLabel: '', scope: 'Suica / PASMO / ICOCA Apple Pay 儲值', contexts: ['transit'] },
+      kuma: { name: "🐻 玉山熊本熊卡 (指定特店 / 交通)", physicalCardId: 'esun_kuma', physicalCardName: '玉山熊本熊卡', quotaPoolId: 'esun_kuma_designated', cap: 500, rate: 6.0, fee: 1.5, base: 2.5, minThreshold: 0, capBasis: 'bonus', capPeriod: '帳單週期', cycleType: 'billing', statementDay: null, billingGroup: 'esun', cycleLabel: '', scope: '指定街邊特店與交通卡儲值', contexts: ['transit', 'kuma_shop_street'] },
+      jcard: { name: "🇯 富邦 J 卡 (日韓實體一般消費)", physicalCardId: 'fubon_j', physicalCardName: '富邦 J 卡', quotaPoolId: 'fubon_j_general', cap: 1000, rate: 3.0, fee: 1.5, base: 3.0, minThreshold: 1000, capBasis: 'bonus', capPeriod: '季', cycleType: 'quarter', cycleLabel: '', scope: '日韓實體一般消費', contexts: ['general', 'transit'] },
+      costco: { name: "🛒 富邦 Costco 聯名卡 (海外實體)", physicalCardId: 'fubon_costco', physicalCardName: '富邦 Costco 聯名卡', quotaPoolId: 'fubon_costco_overseas', cap: 600, rate: 4.0, fee: 1.5, base: 1.0, minThreshold: 0, capBasis: 'bonus', capPeriod: '月', cycleType: 'month', cycleLabel: '', scope: '海外實體消費', contexts: ['general', 'transit'] },
+      paypay: { name: "📱 玉山 Wallet 綁熊本熊 (PayPay)", physicalCardId: 'esun_kuma', physicalCardName: '玉山熊本熊卡', quotaPoolId: 'esun_kuma_paypay', cap: 100, rate: 1.5, fee: 0.0, base: 2.0, minThreshold: 0, capBasis: 'net', capPeriod: '帳單週期', cycleType: 'billing', statementDay: null, billingGroup: 'esun', cycleLabel: '', scope: '玉山 Wallet 綁卡掃 PayPay', contexts: ['paypay'] },
+      cube: { name: "🌲 國泰 CUBE 卡 (趣旅行)", physicalCardId: 'cathay_cube', physicalCardName: '國泰 CUBE 卡', quotaPoolId: 'cathay_cube_unlimited', cap: 0, rate: 0, fee: 1.5, base: 3.0, minThreshold: 0, capBasis: 'bonus', capPeriod: '無上限', cycleType: 'none', cycleLabel: '終極保底卡；不追蹤額度', scope: '海外一般消費', trackQuota: false, contexts: [] }
     };
 
     function getCycleLabel(rule) {
@@ -1302,6 +1316,9 @@
       for (const [key, defaults] of Object.entries(DEFAULT_CARD_RULES)) {
         const saved = savedRules[key] || {};
         const rule = { ...defaults, ...saved };
+        rule.physicalCardId = typeof saved.physicalCardId === 'string' && saved.physicalCardId ? saved.physicalCardId : defaults.physicalCardId;
+        rule.physicalCardName = typeof saved.physicalCardName === 'string' && saved.physicalCardName ? saved.physicalCardName : defaults.physicalCardName;
+        rule.quotaPoolId = typeof saved.quotaPoolId === 'string' && saved.quotaPoolId ? saved.quotaPoolId : defaults.quotaPoolId;
         rule.contexts = Array.isArray(saved.contexts) ? saved.contexts.filter(value => typeof value === 'string') : [...defaults.contexts];
         if (key === 'paypay' && !Object.prototype.hasOwnProperty.call(saved, 'capBasis') && Number(saved.rate) === 3.5) {
           rule.rate = 1.5;
@@ -1478,6 +1495,8 @@
     let rateFetchTime = localStorage.getItem(STORAGE_KEY.rateTime) || '';
     let ledger = JSON.parse(localStorage.getItem(STORAGE_KEY.ledger)) || [];
     let currentRoom = localStorage.getItem(STORAGE_KEY.room) || '';
+    const SUPABASE_URL = 'https://bcxjbeiqunohwpvxzyaf.supabase.co';
+    const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_ZY2zF1s--2-anM6HfHhSQw_MSQHajLH';
     let isSyncing = false;
     let quotaRevision = 0;
     let ledgerRevision = 0;
@@ -1579,6 +1598,11 @@
       const contextLabels = { general: '一般消費', transit: '交通儲值', kuma_shop_street: '熊本熊街邊指定店', paypay: 'PayPay' };
       root.innerHTML = '';
       const rules = ruleEditMode ? draftCardRules : cardRules;
+      const physicalRuleCounts = Object.values(rules).reduce((counts, rule) => {
+        const id = rule.physicalCardId || rule.name;
+        counts[id] = (counts[id] || 0) + 1;
+        return counts;
+      }, {});
 
       Object.entries(rules).forEach(([key, rule], index) => {
         const row = document.createElement('tr');
@@ -1620,6 +1644,16 @@
         };
 
         appendCell(rule.name);
+        const physicalCell = document.createElement('td');
+        const physicalName = document.createElement('strong');
+        physicalName.textContent = rule.physicalCardName || rule.physicalCardId || key;
+        const ruleCount = document.createElement('small');
+        const count = physicalRuleCounts[rule.physicalCardId || rule.name] || 1;
+        ruleCount.textContent = count > 1 ? `同卡 ${count} 條規則` : '1 條規則';
+        ruleCount.style.cssText = 'display:block; color:var(--text-secondary); margin-top:2px;';
+        physicalCell.append(physicalName, ruleCount);
+        row.appendChild(physicalCell);
+        appendCell(rule.trackQuota === false ? '不追蹤上限' : `獨立追蹤：${key}`);
         if (ruleEditMode) {
           const contextCell = document.createElement('td');
           const contexts = document.createElement('input');
@@ -1943,14 +1977,9 @@
       const root = document.getElementById('ruleGuideSummary');
       const transit = getRule('jcard_transit');
       const kuma = getRule('kuma');
-      const jcard = getRule('jcard');
-      const costco = getRule('costco');
-      const paypay = getRule('paypay');
       const paragraphs = [
-        `🚆 交通卡儲值：富邦 J 卡淨回饋 ${getNetRate(transit)}%，單筆滿 NT$${Number(transit.minThreshold).toLocaleString()} 才達標；可刷紅線 NT$${limits.jcard_transit.toLocaleString()}。未達門檻或額度用完時，改看熊本熊卡淨 ${getNetRate(kuma)}%，無單筆門檻。`,
-        `📱 PayPay：玉山 Wallet 綁熊本熊淨回饋 ${getNetRate(paypay)}%，上限 NT$${Number(paypay.cap).toLocaleString()}，按${paypay.capBasis === 'net' ? '淨回饋' : '加碼回饋'}計，可刷紅線 NT$${limits.paypay.toLocaleString()}。`,
-        `🛍️ 一般店家：獨立指定店優先看熊本熊卡淨 ${getNetRate(kuma)}%；熊本熊不適用或額度用完時，單筆滿 NT$${Number(jcard.minThreshold).toLocaleString()} 看富邦 J 卡淨 ${getNetRate(jcard)}%，未滿門檻改看 Costco 卡淨 ${getNetRate(costco)}%。百貨/美食街統收不套用熊本熊指定店加碼。`,
-        `🔄 額度週期：${transit.cycleLabel}；${kuma.cycleLabel}；${jcard.cycleLabel}；${costco.cycleLabel}；${paypay.cycleLabel}`
+        '以下計算器直接讀取上方攻略總表中的回饋率、適用情境、單筆門檻與額度。每次消費會在符合情境的規則中比較實際回饋；同一實體卡的多條規則只會選一條，不會重複當成多張卡。',
+        `目前交通儲值規則：${transit.name}，單筆門檻 NT$${Number(transit.minThreshold).toLocaleString()}，淨回饋 ${getNetRate(transit)}%；玉山熊本熊卡目前有 ${Object.values(cardRules).filter(rule => rule.physicalCardId === kuma.physicalCardId).length} 條獨立情境規則。`
       ];
       root.replaceChildren(...paragraphs.map(text => {
         const paragraph = document.createElement('p');
@@ -2052,13 +2081,13 @@
         }
       });
 
-      // 背景定時同步 (每 20 秒)
+      // 背景定時同步；降低大型房間讀取分段時的 API 請求量
       setInterval(() => {
         checkQuotaPeriods();
         if (currentRoom && document.visibilityState === 'visible') {
           pullFromCloud(true);
         }
-      }, 20000);
+      }, 60000);
     }
 
     // 即時匯率連網引擎 (支援多重備援 API，免金鑰、超快速、無 CORS 限制)
@@ -2186,16 +2215,19 @@
       const input = document.getElementById('roomCodeInput');
 
       if (currentRoom) {
-        pill.classList.add('online');
-        label.innerText = currentRoom;
+        pill.classList.toggle('online', cloudSyncState === 'online');
+        pill.classList.toggle('sync-error', cloudSyncState === 'error');
+        label.innerText = cloudSyncState === 'error' ? `${currentRoom} · 失敗` : cloudSyncState === 'syncing' ? `${currentRoom} · 同步中` : currentRoom;
         if (shareBox) shareBox.style.display = 'block';
         if (input) input.value = currentRoom;
       } else {
         pill.classList.remove('online');
+        pill.classList.remove('sync-error');
         label.innerText = '本地';
         if (shareBox) shareBox.style.display = 'none';
         if (input) input.value = '';
       }
+      setCloudSyncState(cloudSyncState, cloudSyncError);
     }
 
     function generateRandomRoom() {
@@ -2218,21 +2250,24 @@
 
     function joinRoom(roomCode, isSilent = false) {
       currentRoom = roomCode;
+      setCloudSyncState('syncing');
       localStorage.setItem(STORAGE_KEY.room, roomCode);
       try {
-        const newUrl = window.location.pathname + '?room=' + encodeURIComponent(roomCode);
+        const params = new URLSearchParams({ room: roomCode });
+        const newUrl = window.location.pathname + '?' + params.toString();
         window.history.replaceState(null, '', newUrl);
       } catch(e) {}
 
       updateSyncUI();
       pullFromCloud(isSilent).finally(maybePromptEsunStatementDay);
       if (!isSilent) {
-        showToast(`☁️ 已連線至旅程房間: ${roomCode}`);
+        showToast(`☁️ 正在連線旅程房間: ${roomCode}`);
       }
     }
 
     function disconnectRoom() {
       currentRoom = '';
+      setCloudSyncState('idle');
       localStorage.removeItem(STORAGE_KEY.room);
       try {
         window.history.replaceState(null, '', window.location.pathname);
@@ -2245,7 +2280,8 @@
 
     function copyShareUrl() {
       if (!currentRoom) return;
-      const shareUrl = window.location.origin + window.location.pathname + '?room=' + encodeURIComponent(currentRoom);
+      const params = new URLSearchParams({ room: currentRoom });
+      const shareUrl = window.location.origin + window.location.pathname + '?' + params.toString();
       if (navigator.clipboard && navigator.clipboard.writeText) {
         navigator.clipboard.writeText(shareUrl).then(() => {
           showToast('📋 已複製專屬同步網址！傳給旅伴點開即同步');
@@ -2273,10 +2309,45 @@
       document.body.removeChild(ta);
     }
 
-    // 雲端同步核心引擎
-    async function pushToCloud() {
-      if (!currentRoom || isSyncing) return;
-      const payload = {
+    let cloudPushInFlight = false;
+    let cloudPushPending = false;
+    let cloudPullInFlight = false;
+    let cloudSyncState = 'idle';
+    let cloudSyncError = '';
+
+    function cloudRoomUrl(room) {
+      const params = new URLSearchParams({ select: 'data', room_id: `eq.${room}` });
+      return `${SUPABASE_URL}/rest/v1/japan_card_data?${params.toString()}`;
+    }
+
+    function setCloudSyncState(state, detail = '') {
+      cloudSyncState = state;
+      cloudSyncError = detail;
+      const pill = document.getElementById('syncStatusPill');
+      const label = document.getElementById('syncLabel');
+      const feedback = document.getElementById('syncFeedback');
+      const connectionLabel = document.getElementById('roomConnectionLabel');
+      if (pill) {
+        pill.classList.toggle('online', state === 'online');
+        pill.classList.toggle('sync-error', state === 'error');
+        pill.title = detail || (state === 'online' ? '雲端已同步' : state === 'syncing' ? '雲端同步中' : '尚未同步');
+      }
+      if (label) {
+        const status = state === 'error' ? ' · 同步失敗' : state === 'syncing' ? ' · 同步中' : '';
+        label.innerText = currentRoom ? `${currentRoom}${status}` : '本地';
+      }
+      if (connectionLabel) {
+        connectionLabel.textContent = state === 'online' ? '● 雲端已同步' : state === 'syncing' ? '● 同步中' : state === 'error' ? '● 同步失敗' : '● 尚未確認';
+        connectionLabel.style.color = state === 'online' ? 'var(--green)' : state === 'error' ? 'var(--accent)' : 'var(--text-secondary)';
+      }
+      if (feedback) {
+        feedback.style.display = detail ? 'block' : 'none';
+        feedback.textContent = detail;
+      }
+    }
+
+    function makeCloudPayload() {
+      return {
         updatedAt: Date.now(),
         rulesUpdatedAt: ruleUpdatedAt,
         cardRules,
@@ -2286,27 +2357,87 @@
         jpyRate,
         ledger
       };
+    }
 
-      try {
-        await fetch(`https://kvdb.io/japan_cards_sync_2026/${encodeURIComponent(currentRoom)}`, {
-          method: 'POST',
-          body: JSON.stringify(payload)
-        });
-      } catch(e) {
-        console.warn('雲端同步提示: 目前處於離線狀態');
+    async function readCloudRoom(room) {
+      const response = await fetch(cloudRoomUrl(room), { headers: supabaseHeaders() });
+      const body = await response.text();
+      if (!response.ok) {
+        let message = body;
+        try { message = JSON.parse(body).message || body; } catch (e) {}
+        throw new Error(`Supabase 讀取失敗（HTTP ${response.status}）：${message}`);
+      }
+      const rows = body ? JSON.parse(body) : [];
+      return { response, value: rows.length ? rows[0].data : null, notFound: rows.length === 0 };
+    }
+
+    async function writeCloudRoom(room, payload) {
+      const response = await fetch(`${SUPABASE_URL}/rest/v1/japan_card_data?on_conflict=room_id`, {
+        method: 'POST',
+        headers: { ...supabaseHeaders(), 'Content-Type': 'application/json', Prefer: 'resolution=merge-duplicates,return=minimal' },
+        body: JSON.stringify({ room_id: room, data: payload, updated_at: new Date(payload.updatedAt).toISOString() })
+      });
+      if (!response.ok) {
+        const message = await response.text();
+        throw new Error(`Supabase 寫入失敗（HTTP ${response.status}）：${message}`);
       }
     }
 
+    function supabaseHeaders() {
+      return { apikey: SUPABASE_PUBLISHABLE_KEY };
+    }
+
+    // 雲端同步核心引擎
+    async function pushToCloud() {
+      if (!currentRoom) return false;
+      if (isSyncing) {
+        cloudPushPending = true;
+        return false;
+      }
+      if (cloudPushInFlight) {
+        cloudPushPending = true;
+        return false;
+      }
+
+      cloudPushInFlight = true;
+      let succeeded = true;
+      try {
+        do {
+          cloudPushPending = false;
+          const room = currentRoom;
+          const payload = makeCloudPayload();
+          setCloudSyncState('syncing');
+          await writeCloudRoom(room, payload);
+          if (room === currentRoom) setCloudSyncState('online');
+        } while (cloudPushPending && currentRoom);
+      } catch (error) {
+        succeeded = false;
+        console.error('雲端同步失敗', error);
+        setCloudSyncState('error', error.message || '雲端寫入失敗，請確認 Supabase 專案與資料表權限。');
+      } finally {
+        cloudPushInFlight = false;
+      }
+      return succeeded;
+    }
+
     async function pullFromCloud(silent = false) {
-      if (!currentRoom) return;
+      if (!currentRoom || cloudPullInFlight) return false;
+      cloudPullInFlight = true;
+      const room = currentRoom;
       const quotaRevisionAtStart = quotaRevision;
       const ledgerRevisionAtStart = ledgerRevision;
       const ruleRevisionAtStart = ruleRevision;
+      let shouldPushLocal = false;
+      let succeeded = false;
       try {
-        const res = await fetch(`https://kvdb.io/japan_cards_sync_2026/${encodeURIComponent(currentRoom)}`);
-        if (res.ok) {
-          const data = await res.json();
-          if (data && data.quotas) {
+        setCloudSyncState('syncing');
+        const { value: data, notFound } = await readCloudRoom(room);
+        if (notFound) {
+          shouldPushLocal = true;
+          succeeded = true;
+        } else if (data && typeof data === 'object') {
+          const hasRemoteState = data.quotas || data.ledger || data.cardRules || data.quotaPeriods;
+          if (hasRemoteState) {
             const hasLocalQuotaChanges = quotaRevision !== quotaRevisionAtStart;
             const hasLocalLedgerChanges = ledgerRevision !== ledgerRevisionAtStart;
             const hasLocalRuleChanges = ruleRevision !== ruleRevisionAtStart;
@@ -2325,43 +2456,54 @@
               .filter(([, rule]) => rule.trackQuota !== false)
               .map(([key]) => [key, getCardLimit(key)]));
             if (canApplyCloudState) {
-              quotas = { ...limits, ...data.quotas };
+              if (data.quotas) quotas = { ...limits, ...data.quotas };
               quotaPeriods = data.quotaPeriods || quotaPeriods;
               quotaResetAt = data.quotaResetAt || quotaResetAt;
+              if (data.jpyRate && !isLiveRate) jpyRate = data.jpyRate;
+              if (Array.isArray(data.ledger)) ledger = data.ledger;
             }
+
             localStorage.setItem(STORAGE_KEY.rulesUpdatedAt, String(ruleUpdatedAt));
             localStorage.setItem(STORAGE_KEY.quotaPeriods, JSON.stringify(quotaPeriods));
             localStorage.setItem(STORAGE_KEY.quotaResetAt, JSON.stringify(quotaResetAt));
-            renderRuleGuideTable();
-            renderRuleGuideSummary();
-            renderQuotaCards();
-            if (canApplyCloudState) {
-              if (data.jpyRate && !isLiveRate) jpyRate = data.jpyRate;
-              ledger = data.ledger || ledger;
-            }
-
             localStorage.setItem(STORAGE_KEY.quotas, JSON.stringify(quotas));
             localStorage.setItem(STORAGE_KEY.limits, JSON.stringify(limits));
             localStorage.setItem(STORAGE_KEY.ledger, JSON.stringify(ledger));
-
+            renderRuleGuideTable();
+            renderRuleGuideSummary();
+            renderQuotaCards();
             updateRateDisplay();
             updateQuotaUI();
             renderLedger();
             calculate();
             const didAutoReset = checkQuotaPeriods();
-            isSyncing = false;
-            if (hasLocalQuotaChanges || hasLocalLedgerChanges || hasLocalRuleChanges || cloudRulesStale || didAutoReset) pushToCloud();
-
-            if (!silent) {
-              showToast(`☁️ 已同步【${currentRoom}】最新資料`);
-            }
+            shouldPushLocal = hasLocalQuotaChanges || hasLocalLedgerChanges || hasLocalRuleChanges || cloudRulesStale || didAutoReset;
+            succeeded = true;
+          } else {
+            shouldPushLocal = true;
+            succeeded = true;
           }
-        } else if (res.status === 404) {
-          pushToCloud();
+        } else {
+          throw new Error('雲端資料格式無法辨識');
         }
-      } catch(e) {
-        console.warn('雲端載入提示: 離線使用本地快取');
+      } catch (error) {
+        console.error('雲端載入失敗', error);
+        setCloudSyncState('error', error.message || '雲端讀取失敗，請確認 Supabase 專案與資料表權限。');
+      } finally {
+        isSyncing = false;
+        cloudPullInFlight = false;
       }
+
+      if (room !== currentRoom) return succeeded;
+      if (succeeded) setCloudSyncState('online');
+      if (shouldPushLocal || cloudPushPending) {
+        cloudPushPending = false;
+        const pushSucceeded = await pushToCloud();
+        if (!pushSucceeded && cloudSyncState === 'error') succeeded = false;
+      }
+      if (succeeded && !silent) showToast(`☁️ 已同步【${room}】最新資料`);
+      else if (!succeeded && !silent) showToast('雲端同步失敗，請查看房間設定中的錯誤訊息');
+      return succeeded;
     }
 
     // Tab 切換
@@ -2557,9 +2699,16 @@
       // 情境適用範圍與回饋數值共用攻略表規則。
       const isKumaShop = storeType === 'kuma_shop' && locationType === 'street';
       const contextKey = isTransit ? 'transit' : isPayPay ? 'paypay' : isKumaShop ? 'kuma_shop_street' : 'general';
-      let pool = Object.entries(cardRules)
-        .filter(([, rule]) => Array.isArray(rule.contexts) && rule.contexts.includes(contextKey))
-        .map(([key]) => key);
+      const eligibleByPhysicalCard = new Map();
+      for (const [key, rule] of Object.entries(cardRules)) {
+        if (!Array.isArray(rule.contexts) || !rule.contexts.includes(contextKey)) continue;
+        const physicalCardId = rule.physicalCardId || key;
+        if (!eligibleByPhysicalCard.has(physicalCardId)) eligibleByPhysicalCard.set(physicalCardId, []);
+        eligibleByPhysicalCard.get(physicalCardId).push(key);
+      }
+      // One physical card can contribute only one applicable earning rule to this transaction.
+      let pool = [...eligibleByPhysicalCard.values()].map(ruleKeys => ruleKeys
+        .sort((a, b) => calculateRewardForAmount(twd, b) - calculateRewardForAmount(twd, a) || getNetRate(getRule(b)) - getNetRate(getRule(a)))[0]);
 
       // 2. 按淨回饋率從高到低排序（考慮門檻：未達門檻時只能拿基本回饋）
       // 先計算每張卡在「達門檻且有額度」時的淨回饋率，作為排序依據
@@ -2989,6 +3138,8 @@
         date: new Date().toLocaleString('zh-TW', { month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit' }),
         memo,
         cardKey,
+        physicalCardId: ruleSnapshot ? ruleSnapshot.physicalCardId : ruleKey,
+        quotaPoolId: ruleSnapshot ? ruleSnapshot.quotaPoolId : ruleKey,
         cardName,
         ratePercent: twd > 0 ? Math.round(actualReward / twd * 10000) / 100 : ratePercent,
         jpy,
@@ -3058,6 +3209,8 @@
           date: date.toLocaleString('zh-TW', { month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit' }),
           memo: `${baseMemo}（拆刷 ${index + 1}/${parts.length}）`,
           cardKey: part.cardKey,
+          physicalCardId: rule ? rule.physicalCardId : ruleKey,
+          quotaPoolId: rule ? rule.quotaPoolId : ruleKey,
           cardName: part.cardName,
           ratePercent: amountTwd > 0 ? Math.round(rewardTwd / amountTwd * 10000) / 100 : 0,
           jpy: amountJpy,

@@ -940,6 +940,13 @@
             <button type="button" class="btn-secondary" style="margin:0; flex:1;" onclick="keepThresholdOpportunity()">維持原金額</button>
           </div>
         </div>
+        <div id="quotaThresholdOpportunity" class="alert-box" style="display:none; flex-direction:column; align-items:stretch; gap:8px; margin-top:10px;">
+          <div id="quotaThresholdOpportunityText"></div>
+          <div style="display:flex; flex-wrap:wrap; gap:8px;">
+            <button type="button" class="btn-main" id="quotaThresholdApply" style="margin:0; flex:1;" onclick="applyQuotaThresholdOpportunity()">加購後重新試算</button>
+            <button type="button" class="btn-secondary" id="quotaThresholdDismiss" style="margin:0; flex:1;" onclick="dismissQuotaThresholdOpportunity()">先不加購</button>
+          </div>
+        </div>
       </div>
 
       <!-- 確認記帳按鈕 -->
@@ -1531,6 +1538,7 @@
       rewardTwd: 0
     };
     let currentThresholdOffer = null;
+    let currentQuotaThresholdOffer = null;
 
     function reconcileLimitsWithRules() {
       for (const [key, rule] of Object.entries(cardRules)) {
@@ -2692,6 +2700,10 @@
       jcardAlert.style.display = 'none';
 
       if (jpy <= 0) {
+        currentThresholdOffer = null;
+        currentQuotaThresholdOffer = null;
+        document.getElementById('thresholdOpportunity').style.display = 'none';
+        document.getElementById('quotaThresholdOpportunity').style.display = 'none';
         document.getElementById('bestCard').innerText = "請輸入金額試算";
         document.getElementById('bestCardIcon').innerText = "💡";
         document.getElementById('rateBadge').innerText = "--";
@@ -2884,6 +2896,7 @@
         quotaStatusBox.style.display = 'none';
       }
       updateThresholdOpportunity(twd, jpy, isTransit, isGeneralCard, pool, rateLabel);
+      updateQuotaThresholdOpportunity(twd, jpy, pool, fbKey, bestPlan, maxReward, splitMode);
     }
 
     function calculateRewardBreakdown(amountTwd, cardKey, remainingQuota = quotas[cardKey] ?? limits[cardKey] ?? 0) {
@@ -2987,6 +3000,105 @@
     function keepThresholdOpportunity() {
       currentThresholdOffer = null;
       document.getElementById('thresholdOpportunity').style.display = 'none';
+    }
+
+    function getPlanReward(plan) {
+      return plan.reduce((sum, part) => sum + calculateRewardForAmount(part.amount, part.key), 0);
+    }
+
+    function planForScenario(totalTwd, pool, fbKey, splitMode) {
+      if (splitMode === 'auto') return calculateBestSplitPlan(totalTwd, pool, fbKey);
+      const candidates = [...pool, fbKey].filter((key, index, all) => key && all.indexOf(key) === index);
+      const bestKey = candidates.sort((a, b) => calculateRewardForAmount(totalTwd, b) - calculateRewardForAmount(totalTwd, a))[0] || fbKey;
+      return [{ key: bestKey, amount: totalTwd }];
+    }
+
+    function updateQuotaThresholdOpportunity(totalTwd, totalJpy, pool, fbKey, currentPlan, currentReward, splitMode) {
+      const box = document.getElementById('quotaThresholdOpportunity');
+      const text = document.getElementById('quotaThresholdOpportunityText');
+      currentQuotaThresholdOffer = null;
+      box.style.display = 'none';
+      if (!(totalTwd > 0) || !(jpyRate > 0)) return;
+
+      let bestOffer = null;
+      for (const key of pool) {
+        const rule = getRule(key);
+        const threshold = Math.ceil(Number(rule && rule.minThreshold) || 0);
+        const quotaBefore = Math.max(0, Number(quotas[key] ?? limits[key]) || 0);
+        const allocated = currentPlan.find(part => part.key === key)?.amount || 0;
+        if (!rule || threshold <= 0 || quotaBefore <= 0) continue;
+
+        // 已達門檻的這筆消費扣額後，若留下低於門檻的額度，提醒另一次合格消費才能用完；不能把兩筆消費合併計門檻。
+        if (allocated >= threshold) {
+          const consumed = Math.min(allocated, quotaBefore);
+          const quotaAfter = Math.max(0, quotaBefore - consumed);
+          if (quotaAfter > 0 && quotaAfter < threshold) {
+            const extraReward = Math.round(quotaAfter * Math.max(0, Number(rule.rate) || 0) / 100);
+            if (extraReward <= 0) continue;
+            const offer = { kind: 'remaining', key, name: rule.name, threshold, remainingQuota: quotaAfter, additionalReward: extraReward };
+            if (!bestOffer || offer.additionalReward > bestOffer.additionalReward) bestOffer = offer;
+          }
+          continue;
+        }
+
+        if (quotaBefore >= threshold) continue;
+
+        const targetTwd = Math.round(totalTwd + threshold - allocated);
+        let targetJpy = Math.ceil(targetTwd / jpyRate);
+        while (Math.round(targetJpy * jpyRate) < targetTwd) targetJpy++;
+        const actualTargetTwd = Math.round(targetJpy * jpyRate);
+        const suggestedPlan = planForScenario(actualTargetTwd, pool, fbKey, splitMode);
+        const suggestedAllocation = suggestedPlan.find(part => part.key === key)?.amount || 0;
+        if (suggestedAllocation < threshold) continue;
+
+        const suggestedReward = getPlanReward(suggestedPlan);
+        const additionalReward = Math.round(suggestedReward - currentReward);
+        if (additionalReward <= 0) continue;
+        const offer = {
+          key,
+          kind: 'topup',
+          name: rule.name,
+          threshold,
+          remainingQuota: quotaBefore,
+          currentAllocation: allocated,
+          suggestedAllocation,
+          targetJpy,
+          additionalJpy: targetJpy - totalJpy,
+          additionalTwd: actualTargetTwd - totalTwd,
+          additionalReward
+        };
+        if (!bestOffer || offer.additionalReward > bestOffer.additionalReward) bestOffer = offer;
+      }
+
+      if (!bestOffer) return;
+      currentQuotaThresholdOffer = bestOffer;
+      const applyButton = document.getElementById('quotaThresholdApply');
+      const dismissButton = document.getElementById('quotaThresholdDismiss');
+      if (bestOffer.kind === 'remaining') {
+        text.textContent = `剩餘加碼額度提醒：這筆已達單筆 NT$${bestOffer.threshold.toLocaleString()} 門檻；扣除後，${bestOffer.name} 約剩 NT$${bestOffer.remainingQuota.toLocaleString()} 加碼額度。因為剩餘額度低於單筆門檻，若沒有再做一筆符合此情境、單筆滿 NT$${bestOffer.threshold.toLocaleString()} 的消費，這 NT$${bestOffer.remainingQuota.toLocaleString()} 額度就無法再用；若本來就要消費，達門檻約可多拿 NT$${bestOffer.additionalReward.toLocaleString()} 加碼回饋。`;
+        applyButton.style.display = 'none';
+        dismissButton.textContent = '知道了';
+        box.style.display = 'flex';
+        return;
+      }
+      applyButton.style.display = '';
+      dismissButton.textContent = '先不加購';
+      const currentState = bestOffer.currentAllocation > 0
+        ? `目前分配 NT$${Math.round(bestOffer.currentAllocation).toLocaleString()}，未達單筆 NT$${bestOffer.threshold.toLocaleString()} 門檻，這段會按基本回饋計。`
+        : `目前方案未分配消費給這條規則，因此剩餘加碼額度尚未使用。`;
+      text.textContent = `加碼門檻與剩餘額度提醒：${bestOffer.name} 尚有約 NT$${bestOffer.remainingQuota.toLocaleString()} 可享加碼；${currentState}若再加購約 NT$${bestOffer.additionalTwd.toLocaleString()}（¥${bestOffer.additionalJpy.toLocaleString()}），重新分配後可達門檻，約 NT$${Math.min(bestOffer.remainingQuota, bestOffer.suggestedAllocation).toLocaleString()} 消費可用加碼；整筆預估回饋約增加 NT$${bestOffer.additionalReward.toLocaleString()}。`;
+      box.style.display = 'flex';
+    }
+
+    function applyQuotaThresholdOpportunity() {
+      if (!currentQuotaThresholdOffer || currentQuotaThresholdOffer.kind !== 'topup') return;
+      document.getElementById('jpyAmount').value = currentQuotaThresholdOffer.targetJpy;
+      calculate();
+    }
+
+    function dismissQuotaThresholdOpportunity() {
+      currentQuotaThresholdOffer = null;
+      document.getElementById('quotaThresholdOpportunity').style.display = 'none';
     }
 
     // 比較完整分配結果，納入各卡門檻、剩餘上限與基本回饋。

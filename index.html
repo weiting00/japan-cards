@@ -74,18 +74,43 @@
       font-size: 0.8rem;
       color: var(--text-secondary);
     }
+    .header-pills {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+    }
     .rate-pill {
       background: var(--card-bg);
       border: 1px solid var(--border);
-      padding: 6px 12px;
+      padding: 6px 10px;
       border-radius: 20px;
       font-size: 0.8rem;
       font-weight: 600;
       display: flex;
       align-items: center;
-      gap: 4px;
+      gap: 5px;
       cursor: pointer;
       box-shadow: 0 2px 6px rgba(0,0,0,0.03);
+      transition: all 0.2s ease;
+    }
+    .rate-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--green);
+      display: inline-block;
+      box-shadow: 0 0 6px rgba(52, 199, 89, 0.6);
+      animation: pulse-dot 2s infinite;
+    }
+    .rate-dot.custom {
+      background: var(--warning);
+      box-shadow: 0 0 6px rgba(255, 149, 0, 0.6);
+      animation: none;
+    }
+    @keyframes pulse-dot {
+      0% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.85); }
+      100% { opacity: 1; transform: scale(1); }
     }
     .sync-pill {
       background: var(--card-bg);
@@ -278,8 +303,9 @@
       font-size: 0.8rem;
       margin-top: 6px;
       display: none;
-      align-items: center;
+      align-items: flex-start;
       gap: 6px;
+      line-height: 1.45;
     }
     @media (prefers-color-scheme: dark) {
       .alert-box { color: #ffab38; }
@@ -295,6 +321,7 @@
       transition: all 0.25s;
     }
     .result-box.kuma { border-color: #ff3b30; background: rgba(255, 59, 48, 0.08); }
+    .result-box.jcard_transit { border-color: #007aff; background: rgba(0, 122, 255, 0.09); }
     .result-box.jcard { border-color: #007aff; background: rgba(0, 122, 255, 0.08); }
     .result-box.costco { border-color: #ff9500; background: rgba(255, 149, 0, 0.08); }
     .result-box.paypay { border-color: #af52de; background: rgba(175, 82, 222, 0.08); }
@@ -304,9 +331,10 @@
       display: flex;
       justify-content: space-between;
       align-items: flex-start;
+      gap: 8px;
     }
     .result-card-name {
-      font-size: 1.2rem;
+      font-size: 1.15rem;
       font-weight: 800;
       color: var(--text);
       display: flex;
@@ -316,21 +344,117 @@
     }
     .rate-badge {
       display: inline-block;
-      padding: 2px 8px;
+      padding: 3px 8px;
       border-radius: 6px;
       font-size: 0.8rem;
       font-weight: 800;
       color: #fff;
       background: var(--primary);
+      white-space: nowrap;
     }
     .result-reward {
-      font-size: 0.85rem;
+      font-size: 0.88rem;
       font-weight: 700;
       color: var(--green);
       margin-top: 4px;
     }
+
+    /* Result Quota Status Box */
+    .quota-status-box {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 10px 12px;
+      margin: 10px 0 6px;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+    }
+    .quota-status-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.82rem;
+    }
+    .quota-badge-avail {
+      color: var(--primary);
+      font-weight: 700;
+    }
+    .quota-badge-after {
+      color: var(--green);
+      font-weight: 700;
+    }
+
+    /* Over-limit Split Plan Box */
+    .split-plan-box {
+      border-radius: var(--radius-md);
+      margin-top: 10px;
+      overflow: hidden;
+      border: 1.5px solid rgba(255, 59, 48, 0.4);
+    }
+    .split-plan-header {
+      background: rgba(255, 59, 48, 0.12);
+      padding: 7px 12px;
+      font-size: 0.8rem;
+      font-weight: 800;
+      color: #d70015;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    @media (prefers-color-scheme: dark) {
+      .split-plan-header { color: #ff453a; }
+      .split-plan-box { border-color: rgba(255, 69, 58, 0.4); }
+    }
+    .split-plan-option {
+      padding: 9px 12px;
+      border-top: 1px dashed var(--border);
+      font-size: 0.8rem;
+      line-height: 1.5;
+    }
+    .split-plan-option:first-of-type { border-top: none; }
+    .split-opt-label {
+      font-weight: 800;
+      font-size: 0.78rem;
+      margin-bottom: 3px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .split-opt-label.best { color: var(--green); }
+    .split-opt-label.lazy { color: var(--warning); }
+    .split-opt-earn {
+      font-size: 0.76rem;
+      font-weight: 700;
+      margin-top: 3px;
+    }
+    .split-opt-earn.best { color: var(--green); }
+    .split-opt-earn.lazy { color: var(--warning); }
+    /* legacy over-limit-alert (still used for simple notices) */
+    .over-limit-alert {
+      background: rgba(255, 59, 48, 0.1);
+      border: 1px solid rgba(255, 59, 48, 0.35);
+      border-radius: var(--radius-md);
+      padding: 10px 12px;
+      margin-top: 8px;
+      color: #d70015;
+      font-size: 0.8rem;
+      line-height: 1.45;
+    }
+    @media (prefers-color-scheme: dark) {
+      .over-limit-alert { color: #ff453a; }
+    }
+    .over-limit-title {
+      font-weight: 800;
+      margin-bottom: 3px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
     .result-desc {
-      font-size: 0.85rem;
+      font-size: 0.84rem;
       margin-top: 6px;
       color: var(--text-secondary);
       line-height: 1.4;
@@ -341,6 +465,7 @@
       border-top: 1px dashed rgba(142, 142, 147, 0.3);
       font-size: 0.78rem;
       color: var(--text-secondary);
+      line-height: 1.45;
     }
 
     /* Buttons */
@@ -390,19 +515,29 @@
     }
     .card-label {
       font-weight: 700;
-      font-size: 0.95rem;
+      font-size: 0.92rem;
       display: flex;
       align-items: center;
       gap: 6px;
+      flex-wrap: wrap;
     }
     .cycle-tag {
-      font-size: 0.7rem;
+      font-size: 0.68rem;
       color: var(--text-secondary);
       background: var(--card-sub-bg);
       border: 1px solid var(--border);
       padding: 2px 6px;
       border-radius: 4px;
       font-weight: normal;
+    }
+    .threshold-tag {
+      font-size: 0.68rem;
+      color: var(--accent);
+      background: rgba(255, 59, 48, 0.08);
+      border: 1px solid rgba(255, 59, 48, 0.2);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-weight: 600;
     }
     .btn-small {
       background: var(--card-sub-bg);
@@ -448,6 +583,7 @@
       justify-content: space-between;
       align-items: center;
     }
+
     .config-card-box {
       background: var(--card-sub-bg);
       border: 1px solid var(--border);
@@ -552,13 +688,16 @@
       border-radius: var(--radius-lg);
       padding: 20px;
       width: 100%;
-      max-width: 360px;
+      max-width: 380px;
       box-shadow: 0 10px 30px rgba(0,0,0,0.2);
     }
     .modal-title {
       margin: 0 0 12px;
       font-size: 1.1rem;
       font-weight: 700;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
     }
 
     /* Toast */
@@ -590,10 +729,31 @@
       font-weight: 600;
     }
     .badge-soft.kuma { background: #ffebeb; color: #d70015; }
+    .badge-soft.jcard_transit { background: #e8f2ff; color: #007aff; }
     .badge-soft.jcard { background: #e8f2ff; color: #007aff; }
     .badge-soft.costco { background: #fff4e5; color: #c97100; }
     .badge-soft.paypay { background: #f5e8ff; color: #8928c2; }
     .badge-soft.backup { background: #e5e5ea; color: #555; }
+
+    /* Guide Tables */
+    .guide-table-wrap {
+      overflow-x: auto;
+      margin: 10px 0;
+    }
+    .guide-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.75rem;
+      text-align: left;
+    }
+    .guide-table th, .guide-table td {
+      border: 1px solid var(--border);
+      padding: 6px 8px;
+    }
+    .guide-table th {
+      background: var(--card-sub-bg);
+      font-weight: 700;
+    }
   </style>
   <!-- Firebase App & Firestore Compat SDK -->
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
@@ -605,17 +765,18 @@
   <header class="app-header">
     <div class="app-title">
       <h1>🇯🇵 雙城刷卡決策</h1>
-      <p>旅日神卡額度監控・陷阱防呆・實時記帳</p>
+      <p>旅日神卡額度監控・手續費扣除・實時記帳</p>
     </div>
-    <div style="display:flex; gap:6px; align-items:center;">
+    <div class="header-pills">
       <div class="sync-pill" id="syncStatusPill" onclick="openSyncModal()" title="點擊設定旅程房間碼與雲端同步">
         <span class="sync-dot" id="syncDot"></span>
         <span id="syncLabel">本地</span>
       </div>
-      <div class="rate-pill" onclick="openRateModal()">
+      <div class="rate-pill" id="ratePill" onclick="openRateModal()" title="點擊檢視/更新即時匯率">
+        <span class="rate-dot" id="rateLiveDot"></span>
         <span>💴</span>
-        <span id="rateDisplay">0.2070</span>
-        <span style="font-size:0.7rem; color:var(--text-secondary);">✎</span>
+        <span id="rateDisplay">0.2051</span>
+        <span id="rateModeBadge" style="font-size:0.68rem; color:var(--green); font-weight:700;">即時</span>
       </div>
     </div>
   </header>
@@ -633,39 +794,40 @@
     <div class="card">
       <div class="card-title">
         <span>⚡ 櫃檯速查 & 決策</span>
-        <span style="font-size:0.75rem; font-weight:normal; color:var(--text-secondary);">即時比對 4 卡回饋</span>
+        <span style="font-size:0.75rem; font-weight:normal; color:var(--text-secondary);">扣手續費後淨回饋比對</span>
       </div>
 
       <!-- Quick Preset Tags -->
       <label>常用情境一鍵套用：</label>
       <div class="quick-tags">
+        <button type="button" class="quick-tag" onclick="applyPreset('transit', this)">🚆 交通卡加值 (Suica/PASMO)</button>
         <button type="button" class="quick-tag" onclick="applyPreset('matsukiyo', this)">💊 松本清 / 藥妝</button>
         <button type="button" class="quick-tag" onclick="applyPreset('bic', this)">🔌 BicCamera / 電器</button>
         <button type="button" class="quick-tag" onclick="applyPreset('donki', this)">🐧 唐吉訶德</button>
-        <button type="button" class="quick-tag" onclick="applyPreset('suica', this)">🐧 Suica / 交通卡</button>
-        <button type="button" class="quick-tag" onclick="applyPreset('dept', this)">🏬 百貨 / 美食街</button>
+        <button type="button" class="quick-tag" onclick="applyPreset('dept', this)">🏬 百貨 / 美食街 (店中店)</button>
         <button type="button" class="quick-tag" onclick="applyPreset('dining', this)">🍣 一般餐廳 / 居酒屋</button>
         <button type="button" class="quick-tag" onclick="applyPreset('paypay', this)">📱 PayPay 掃碼店</button>
       </div>
 
       <!-- 1. 付款管道 -->
       <div class="form-group">
-        <label for="payType">1. 付款管道</label>
+        <label for="payType">1. 付款管道 / 消費型態</label>
         <select id="payType" onchange="calculate()">
-          <option value="card">💳 實體卡片 / Apple Pay 感應</option>
-          <option value="paypay">📱 PayPay 條碼支付 (玉山 Wallet / 街口 / 全支付)</option>
+          <option value="card">💳 實體卡片 / Apple Pay 感應 (店家一般消費)</option>
+          <option value="transit">🚆 日本交通卡儲值 (Apple Pay 儲值 Suica / PASMO / ICOCA)</option>
+          <option value="paypay">📱 PayPay 條碼支付 (玉山 Wallet 掃碼)</option>
         </select>
       </div>
 
       <!-- 2. 店家類別 -->
       <div class="form-group" id="storeGroup">
         <label for="storeType">
-          <span>2. 是否為熊本熊指定加碼店？</span>
-          <span style="font-size:0.72rem; color:var(--primary); cursor:pointer;" onclick="switchTab('guide')">查看完整名單 ℹ️</span>
+          <span>2. 是否為熊本熊指定加碼特店？</span>
+          <span style="font-size:0.72rem; color:var(--primary); cursor:pointer;" onclick="switchTab('guide')">特店名單 ℹ️</span>
         </label>
         <select id="storeType" onchange="calculate()">
           <option value="normal">否 (一般店家 / 餐廳 / 服飾 / 超商)</option>
-          <option value="kuma_shop">🌟 是 (松本清 / 唐吉訶德 / Bic Camera / Suica加值等)</option>
+          <option value="kuma_shop">🌟 是 (松本清 / 唐吉訶德 / Bic Camera / 大國等街邊店)</option>
         </select>
       </div>
 
@@ -675,21 +837,25 @@
           <span>3. 店家位置 (重要陷阱防呆)</span>
         </label>
         <select id="locationType" onchange="calculate()">
-          <option value="street">🏠 獨立路邊門市 (獨立特店 MCC)</option>
-          <option value="department">🏬 百貨公司 / 商場美食街內 (觸發統收陷阱條款)</option>
+          <option value="street">🏠 獨立路邊門市 (具獨立特店 MCC)</option>
+          <option value="department">🏬 百貨公司 / 商場美食街內 (百貨統收陷阱，熊本熊加碼失效)</option>
         </select>
       </div>
 
-      <!-- 百貨陷阱提示 -->
+      <!-- 警示訊息區塊 -->
       <div class="alert-box" id="deptAlert">
         <span>⚠️</span>
-        <span><b>陷阱警示：</b>開在百貨商場內的指定店，結帳機台多為百貨統收，玉山熊本熊將<b>無法判定指定特店</b> (喪失 5% 加碼)，系統已自動幫您改派最優解！</span>
+        <span id="deptAlertText"></span>
       </div>
 
-      <!-- 滿千門檻提示 -->
+      <div class="alert-box" id="transitAlert">
+        <span>💡</span>
+        <span id="transitAlertText"><b>交通卡門檻提醒：</b>富邦 J 卡儲值交通卡必須<b>單筆滿 NT$2,000</b>（約 9,700 日圓）方享淨 8.5% 加碼！</span>
+      </div>
+
       <div class="alert-box" id="jcardAlert">
         <span>💡</span>
-        <span><b>未滿千提示：</b>金額未達 NT$1,000，不符合富邦 J 卡加碼門檻，已自動轉派富邦 Costco (5%) 或其他備援卡！</span>
+        <span id="jcardAlertText"></span>
       </div>
 
       <!-- 4. 結帳金額 -->
@@ -710,14 +876,26 @@
         </div>
         <div class="twd-estimate">
           <span>折合約：<b id="twdDisplay" style="color:var(--text); font-size:0.95rem;">NT$ 0</b></span>
-          <span style="font-size:0.75rem; color:var(--text-secondary);">匯率: <span id="rateLabel">0.2070</span></span>
+          <span style="font-size:0.75rem; color:var(--text-secondary);">匯率: <span id="rateLabel">0.2051</span></span>
         </div>
       </div>
 
       <!-- 備註 (選填) -->
       <div class="form-group">
         <label for="memo">消費項目 / 店名 (記帳備註，選填)</label>
-        <input type="text" id="memo" placeholder="例如：松本清合利他命、敘敘苑燒肉">
+        <input type="text" id="memo" placeholder="例如：Suica 儲值、松本清合利他命、敘敘苑燒肉">
+      </div>
+
+      <!-- 拆刷模式選擇 -->
+      <div class="form-group">
+        <label for="splitMode">
+          <span>拆刷模式</span>
+          <span style="font-size:0.72rem; color:var(--text-secondary);">優先最高回饋率卡片</span>
+        </label>
+        <select id="splitMode" onchange="calculate()">
+          <option value="auto">🤖 自動最佳化（允許拆刷以最大化回饋）</option>
+          <option value="single">📦 強制整筆刷單張卡（不拆分）</option>
+        </select>
       </div>
 
       <!-- 決策建議框 -->
@@ -730,17 +908,49 @@
             </div>
             <div class="result-reward" id="bestReward"></div>
           </div>
-          <span class="rate-badge" id="rateBadge">8.5%</span>
+          <span class="rate-badge" id="rateBadge">--</span>
         </div>
+
+        <!-- 即時額度餘額監控條 -->
+        <div class="quota-status-box" id="resultQuotaBox" style="display:none;">
+          <div class="quota-status-row">
+            <span>🎯 <b id="resultCurrentQuotaLabel">當前卡片剩餘加碼額度：</b></span>
+            <b id="resultCurrentQuota" class="quota-badge-avail">NT$ 0</b>
+          </div>
+          <div class="quota-status-row">
+            <span>📉 <b id="resultAfterQuotaLabel">此筆刷後剩餘可刷額度：</b></span>
+            <b id="resultAfterQuota" class="quota-badge-after">NT$ 0</b>
+          </div>
+        </div>
+
+        <!-- 超額警示區塊 -->
+        <div class="over-limit-alert" id="overLimitAlert" style="display:none;">
+          <div class="over-limit-title" id="overLimitTitle">⚠️ 超出本卡加碼額度警示！</div>
+          <div id="overLimitMsg"></div>
+        </div>
+
         <div class="result-desc" id="cardDesc">輸入日幣金額後，立即計算最佳刷卡組合</div>
         <div class="result-sub-advice" id="subAdvice"></div>
+        <div id="thresholdOpportunity" class="alert-box" style="display:none; flex-direction:column; align-items:stretch; gap:8px; margin-top:10px;">
+          <div id="thresholdOpportunityText"></div>
+          <div style="display:flex; flex-wrap:wrap; gap:8px;">
+            <button type="button" class="btn-main" id="thresholdOfferApply" style="margin:0; flex:1;" onclick="applyThresholdOpportunity()">試算補足門檻</button>
+            <button type="button" class="btn-secondary" style="margin:0; flex:1;" onclick="keepThresholdOpportunity()">維持原金額</button>
+          </div>
+        </div>
       </div>
 
       <!-- 確認記帳按鈕 -->
-      <button class="btn-main" onclick="recordExpense()">
-        <span>✓</span>
-        <span>確認刷這張，扣除額度並記帳</span>
-      </button>
+      <div id="singleRecordAction">
+        <button class="btn-main" onclick="recordExpense()">
+          <span>✓</span>
+          <span>確認已刷，扣除額度並記帳</span>
+        </button>
+      </div>
+      <div id="splitRecordActions" style="display:none; flex-direction:column; gap:8px;">
+        <button class="btn-main" type="button" style="margin:0;" onclick="recordSplitPlan('best')">我已按最省方案拆刷，分筆記帳</button>
+        <button class="btn-secondary" type="button" style="margin:0;" onclick="recordSplitPlan('lazy')">我已按整筆方案刷，記一筆</button>
+      </div>
     </div>
   </main>
 
@@ -752,168 +962,9 @@
         <button class="btn-small" onclick="resetAllQuotas()">全部重置 🔄</button>
       </div>
 
-      <!-- 1. 玉山熊本熊 -->
-      <div class="quota-item">
-        <div class="quota-header">
-          <div class="card-label">
-            <span>🐻 玉山熊本熊 (8.5%)</span>
-            <span class="cycle-tag">看帳單結帳日</span>
-          </div>
-          <button class="btn-small" onclick="resetSingle('kuma')">重置</button>
-        </div>
-        <div class="progress-bar">
-          <div id="p-kuma" class="progress-fill"></div>
-        </div>
-        <div class="reward-cap-line" id="rc-kuma">
-          <span>💰 加碼回饋金剩餘: <b>$500</b> / $500</span>
-          <span style="font-size:0.7rem; color:var(--text-secondary);">加碼 6.0%</span>
-        </div>
-        <div class="quota-numbers">
-          <span class="quota-remaining" id="q-kuma">可刷額度剩餘: $8,333</span>
-          <span class="quota-limit" id="ql-kuma">上限: $8,333 / 估 ¥40,256</span>
-        </div>
-      </div>
-
-      <!-- 2. 富邦 J 卡 -->
-      <div class="quota-item">
-        <div class="quota-header">
-          <div class="card-label">
-            <span>🇯 富邦 J 卡 (6%)</span>
-            <span class="cycle-tag">每季底 12/31</span>
-          </div>
-          <button class="btn-small" onclick="resetSingle('jcard')">重置</button>
-        </div>
-        <div class="progress-bar">
-          <div id="p-jcard" class="progress-fill"></div>
-        </div>
-        <div class="reward-cap-line" id="rc-jcard">
-          <span>💰 加碼回饋金剩餘: <b>$1,000</b> / $1,000</span>
-          <span style="font-size:0.7rem; color:var(--text-secondary);">加碼 3.0%</span>
-        </div>
-        <div class="quota-numbers">
-          <span class="quota-remaining" id="q-jcard">可刷額度剩餘: $33,333</span>
-          <span class="quota-limit" id="ql-jcard">上限: $33,333 / 估 ¥161,028</span>
-        </div>
-      </div>
-
-      <!-- 3. 富邦 Costco -->
-      <div class="quota-item">
-        <div class="quota-header">
-          <div class="card-label">
-            <span>🛒 富邦 Costco (5%)</span>
-            <span class="cycle-tag">每月底結算</span>
-          </div>
-          <button class="btn-small" onclick="resetSingle('costco')">重置</button>
-        </div>
-        <div class="progress-bar">
-          <div id="p-costco" class="progress-fill"></div>
-        </div>
-        <div class="reward-cap-line" id="rc-costco">
-          <span>💰 加碼回饋金剩餘: <b>$600</b> / $600</span>
-          <span style="font-size:0.7rem; color:var(--text-secondary);">加碼 4.0%</span>
-        </div>
-        <div class="quota-numbers">
-          <span class="quota-remaining" id="q-costco">可刷額度剩餘: $15,000</span>
-          <span class="quota-limit" id="ql-costco">上限: $15,000 / 估 ¥72,463</span>
-        </div>
-      </div>
-
-      <!-- 4. PayPay 熊本熊 -->
-      <div class="quota-item">
-        <div class="quota-header">
-          <div class="card-label">
-            <span>📱 PayPay 熊本熊 (3.5%)</span>
-            <span class="cycle-tag">看帳單結帳日</span>
-          </div>
-          <button class="btn-small" onclick="resetSingle('paypay')">重置</button>
-        </div>
-        <div class="progress-bar">
-          <div id="p-paypay" class="progress-fill"></div>
-        </div>
-        <div class="reward-cap-line" id="rc-paypay">
-          <span>💰 加碼回饋金剩餘: <b>$100</b> / $100</span>
-          <span style="font-size:0.7rem; color:var(--text-secondary);">加碼 3.5%</span>
-        </div>
-        <div class="quota-numbers">
-          <span class="quota-remaining" id="q-paypay">可刷額度剩餘: $2,857</span>
-          <span class="quota-limit" id="ql-paypay">上限: $2,857 / 估 ¥13,797</span>
-        </div>
-      </div>
+      <div id="quotaCards"></div>
     </div>
 
-    <!-- 自訂額度設定（從回饋上限回推） -->
-    <div class="card">
-      <div class="card-title">
-        <span>⚙️ 活動回饋上限回推設定</span>
-      </div>
-      <div style="background:var(--primary-light); border-left:4px solid var(--primary); padding:10px 12px; border-radius:8px; font-size:0.78rem; line-height:1.5; margin-bottom:12px;">
-        💡 <b>貼心回推公式：</b>銀行公告多為「加碼 X%，每期回饋上限 Y 元」。您只需填寫銀行的<b>回饋金上限</b>與<b>加碼比例</b>，系統將自動秒回推「可刷額度上限」！
-      </div>
-
-      <!-- 熊本熊 -->
-      <div class="config-card-box">
-        <div class="config-header">🐻 玉山熊本熊 (指定特店街邊門市)</div>
-        <div class="config-inputs">
-          <div>
-            <label>回饋金上限 (NT$)</label>
-            <input type="number" id="cap-kuma" value="500" oninput="onCapOrRateChange('kuma')">
-          </div>
-          <div>
-            <label>加碼比例 (%)</label>
-            <input type="number" id="rate-kuma" step="0.5" value="6.0" oninput="onCapOrRateChange('kuma')">
-          </div>
-        </div>
-        <div class="config-result">➔ 回推可刷額度：<b id="calc-kuma">$8,333</b></div>
-      </div>
-
-      <!-- 富邦 J 卡 -->
-      <div class="config-card-box">
-        <div class="config-header">🇯 富邦 J 卡 (日韓實體滿千)</div>
-        <div class="config-inputs">
-          <div>
-            <label>回饋金上限 (點/NT$)</label>
-            <input type="number" id="cap-jcard" value="1000" oninput="onCapOrRateChange('jcard')">
-          </div>
-          <div>
-            <label>加碼比例 (%)</label>
-            <input type="number" id="rate-jcard" step="0.5" value="3.0" oninput="onCapOrRateChange('jcard')">
-          </div>
-        </div>
-        <div class="config-result">➔ 回推可刷額度：<b id="calc-jcard">$33,333</b></div>
-      </div>
-
-      <!-- 富邦 Costco -->
-      <div class="config-card-box">
-        <div class="config-header">🛒 富邦 Costco (海外實體加碼)</div>
-        <div class="config-inputs">
-          <div>
-            <label>回饋金上限 (好多金/NT$)</label>
-            <input type="number" id="cap-costco" value="600" oninput="onCapOrRateChange('costco')">
-          </div>
-          <div>
-            <label>加碼比例 (%)</label>
-            <input type="number" id="rate-costco" step="0.5" value="4.0" oninput="onCapOrRateChange('costco')">
-          </div>
-        </div>
-        <div class="config-result">➔ 回推可刷額度：<b id="calc-costco">$15,000</b></div>
-      </div>
-
-      <!-- PayPay 熊本熊 -->
-      <div class="config-card-box">
-        <div class="config-header">📱 PayPay 熊本熊 (玉山Wallet掃碼)</div>
-        <div class="config-inputs">
-          <div>
-            <label>回饋金上限 (NT$)</label>
-            <input type="number" id="cap-paypay" value="100" oninput="onCapOrRateChange('paypay')">
-          </div>
-          <div>
-            <label>加碼比例 (%)</label>
-            <input type="number" id="rate-paypay" step="0.5" value="3.5" oninput="onCapOrRateChange('paypay')">
-          </div>
-        </div>
-        <div class="config-result">➔ 回推可刷額度：<b id="calc-paypay">$2,857</b></div>
-      </div>
-    </div>
   </section>
 
   <!-- TAB 3: 記帳明細 -->
@@ -937,7 +988,7 @@
         </div>
         <div style="border-left:1px solid var(--border);"></div>
         <div>
-          <div style="font-size:0.75rem; color:var(--green);">估計省下回饋</div>
+          <div style="font-size:0.75rem; color:var(--green);">估計省下淨回饋</div>
           <div style="font-weight:800; font-size:1.05rem; color:var(--green);" id="totalSavedDisplay">$ 0</div>
         </div>
       </div>
@@ -956,44 +1007,132 @@
   <section id="tab-guide" style="display:none;">
     <div class="card">
       <div class="card-title">
-        <span>🐻 玉山熊本熊 8.5% 指定特店清單</span>
+        <span>📊 2026 最新精確權益與手續費拆解總表</span>
+        <button class="btn-small" id="toggleRuleEdit" type="button" onclick="toggleRuleEdit()">編輯規則</button>
       </div>
-      <div style="font-size:0.85rem; line-height:1.6;">
-        <p><b>藥妝/量販：</b>松本清 (Matsumoto Kiyoshi)、Cocokara Fine、唐吉訶德 (Don Don Donki)、大國藥妝</p>
-        <p><b>電器量販：</b>BicCamera、Yodobashi、Edion、K's Denki</p>
-        <p><b>交通必用：</b>Apple Pay 綁熊本熊卡直接加值 <b>Suica / PASMO / ICOCA</b> 享 8.5% 回饋！(建議出國前或在日直接透過 Apple 錢包加值)</p>
-        <p><b>服飾/生活：</b>UNIQLO、GU (注意：必須為街邊獨立門市才算！)</p>
+      <div class="guide-table-wrap">
+        <table class="guide-table">
+          <thead>
+            <tr>
+              <th>支付方式</th>
+              <th>適用情境</th>
+              <th>基本回饋</th>
+              <th>加碼</th>
+              <th>手續費</th>
+              <th>淨回饋</th>
+              <th>單筆門檻</th>
+              <th>上限紅線</th>
+              <th>週期</th>
+            </tr>
+          </thead>
+          <tbody id="ruleGuideRows"></tbody>
+        </table>
+      </div>
+      <div id="ruleEditActions" style="display:none; justify-content:flex-end; gap:8px; margin-top:12px;">
+        <button class="btn-secondary" type="button" onclick="cancelRuleEdit()">取消</button>
+        <button class="btn-main" type="button" style="margin:0;" onclick="openRuleChangeModal()">儲存規則</button>
       </div>
     </div>
 
     <div class="card">
       <div class="card-title">
-        <span>⚠️ 致命陷阱條款避雷指南</span>
+        <span>🛒 嚴謹收銀台與四大場景決策守則</span>
       </div>
-      <div style="font-size:0.85rem; line-height:1.6; color:var(--text);">
-        <p><b>1. 百貨統收機台陷阱：</b><br>
-        若松本清、UNIQLO、BicCamera 位於大丸、高島屋、Lumine、OIOI 或機場免稅店等百貨商場內，簽單 MCC Code 往往是百貨公司，<b>玉山熊本熊加碼會全部失效</b>！此時應果斷刷 <b>富邦 J 卡 (6%)</b> 或 <b>Costco (5%)</b>。</p>
-        
-        <p><b>2. 富邦 J 卡滿千門檻：</b><br>
-        富邦 J 卡日韓加碼需要「單筆滿新台幣 1,000 元」(約 4,830 日圓)。若單筆未達千元，請改刷 <b>Costco 聯名卡 (無低消限制享 5%)</b>。</p>
-
-        <p><b>3. PayPay 掃碼秘訣：</b><br>
-        很多日本微型店家/居酒屋不收信用卡只收 PayPay。打開玉山 Wallet 掃 PayPay 享有免 1.5% 手續費與回饋；若加碼額度已滿，可切換扣外幣日幣帳戶。</p>
+      <div id="ruleGuideSummary" style="font-size:0.83rem; line-height:1.65; color:var(--text);"></div>
+      <div style="font-size:0.83rem; line-height:1.65; color:var(--text);">
+        <p><b>🔄 【場景四：第二趟北海道額度沒重置 / 加碼全爆掉】</b><br>
+        • <b>即時匯率 > 0.202</b> ➡ 掏出 <b>雙幣外幣帳戶</b> 直接扣換好的 <b>$0.199 便宜日幣</b>（免 1.5% 手續費）。<br>
+        • <b>即時匯率 < 0.202</b> ➡ 刷 <b>國泰 CUBE 卡（趣旅行 3% - 1.5% = 淨 1.5%）</b> 保底。</p>
       </div>
     </div>
+
+    <div class="card">
+      <div class="card-title">
+        <span id="kumaGuideTitle">🐻 玉山熊本熊指定特店完整清單</span>
+      </div>
+      <div style="font-size:0.83rem; line-height:1.6;">
+        <p><b>藥妝/量販：</b>松本清 (Matsumoto Kiyoshi)、Cocokara Fine、唐吉訶德 (Don Don Donki)、大國藥妝</p>
+        <p><b>電器量販：</b>BicCamera、Yodobashi、Edion、K's Denki</p>
+        <p><b>交通必用：</b>Apple Pay 綁熊本熊卡直接加值 <b>Suica / PASMO / ICOCA</b> 享 <b id="kumaTransitNet"></b> 回饋！(無最低儲值金額限制)</p>
+        <p><b>服飾/生活：</b>UNIQLO、GU (注意：必須為街邊獨立門市才算！)</p>
+      </div>
+    </div>
+
   </section>
+
+  <div class="modal-backdrop" id="ruleChangeModal" role="dialog" aria-modal="true" aria-labelledby="ruleChangeTitle">
+    <div class="modal-box" style="max-width:460px; max-height:85vh; overflow:auto;">
+      <div class="modal-title" id="ruleChangeTitle">套用規則變更</div>
+      <p id="ruleChangeSummary" style="font-size:0.82rem; line-height:1.5;"></p>
+      <div id="ruleRecalcStartDates"></div>
+      <p style="font-size:0.76rem; color:var(--text-secondary); line-height:1.5;">「重算本期」會依新規則重新分配本期加碼上限，超出上限的部分按基本回饋扣手續費計算；「只套用之後」會保留所有舊明細數字。</p>
+      <div style="display:flex; flex-direction:column; gap:8px;">
+        <button type="button" class="btn-main" style="margin:0;" onclick="commitRuleChanges('recalculate')">重算本期既有消費</button>
+        <button type="button" class="btn-secondary" style="margin:0;" onclick="commitRuleChanges('future')">只套用之後的消費</button>
+        <button type="button" class="btn-secondary" style="margin:0;" onclick="closeRuleChangeModal()">返回編輯</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-backdrop" id="billingSetupModal" role="dialog" aria-modal="true" aria-labelledby="billingSetupTitle">
+    <div class="modal-box" style="max-width:420px;">
+      <div class="modal-title" id="billingSetupTitle">設定玉山信用卡帳單結帳日</div>
+      <p style="font-size:0.82rem; line-height:1.5;">熊本熊卡和 PayPay 綁定同一張玉山卡，共用一個帳單結帳日。請照銀行帳單輸入每月結帳日。</p>
+      <div class="form-group">
+        <label for="esunStatementDay">每月結帳日（1–31 日）</label>
+        <input type="number" id="esunStatementDay" min="1" max="31" step="1" placeholder="未知請留白">
+      </div>
+      <p style="font-size:0.76rem; color:var(--text-secondary); line-height:1.5;">例如輸入 30，代表每月 30 日結帳，不是 30 期。留白時不會猜日期，兩張卡維持手動重置。</p>
+      <div style="display:flex; flex-direction:column; gap:8px;">
+        <button type="button" class="btn-main" style="margin:0;" onclick="saveEsunStatementDay()">儲存結帳日</button>
+        <button type="button" class="btn-secondary" style="margin:0;" onclick="deferEsunStatementDay()">目前不知道，先手動重置</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-backdrop" id="clearLedgerModal" role="dialog" aria-modal="true" aria-labelledby="clearLedgerTitle">
+    <div class="modal-box" style="max-width:440px;">
+      <div class="modal-title" id="clearLedgerTitle">清空消費明細</div>
+      <p id="clearLedgerSummary" style="font-size:0.84rem; line-height:1.5;"></p>
+      <p style="font-size:0.76rem; color:var(--text-secondary); line-height:1.5;">只清除明細會保留目前剩餘額度；若要重新開始一趟旅程，可同時把所有有上限卡片重置到上限。</p>
+      <div style="display:flex; flex-direction:column; gap:8px;">
+        <button type="button" class="btn-main" style="margin:0;" onclick="confirmClearLedger('keep')">只清除明細，保留目前額度</button>
+        <button type="button" class="btn-secondary" style="margin:0;" onclick="confirmClearLedger('reset')">清除明細並重置全部額度</button>
+        <button type="button" class="btn-secondary" style="margin:0;" onclick="closeClearLedgerModal()">取消</button>
+      </div>
+    </div>
+  </div>
 
   <!-- 匯率彈出設定 Modal -->
   <div class="modal-backdrop" id="rateModal">
     <div class="modal-box">
-      <div class="modal-title">💴 設定日幣即時匯率</div>
-      <div class="form-group">
-        <label>日幣換算台幣匯率 (例: 0.2070)</label>
-        <input type="number" id="customRateInput" step="0.0005" placeholder="0.2070">
+      <div class="modal-title">
+        <span>💴 日幣匯率即時連線與自訂</span>
+        <span style="cursor:pointer; font-size:1.1rem; color:var(--text-secondary);" onclick="closeRateModal()">✕</span>
       </div>
-      <div style="display:flex; gap:8px; margin-top:14px;">
-        <button class="btn-secondary" style="margin:0;" onclick="closeRateModal()">取消</button>
-        <button class="btn-main" style="margin:0;" onclick="saveCustomRate()">儲存匯率</button>
+      
+      <div style="background:var(--card-sub-bg); border:1px solid var(--border); border-radius:var(--radius-md); padding:10px 12px; margin-bottom:12px;">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <span style="font-size:0.82rem; font-weight:700;">即時市場牌告 (國際外匯):</span>
+          <span class="rate-badge" id="modalLiveRate">0.2051</span>
+        </div>
+        <div style="font-size:0.72rem; color:var(--text-secondary); margin-top:4px;" id="rateFetchTime">更新時間：載入中...</div>
+      </div>
+
+      <div class="form-group">
+        <label>當前應用換算匯率 (1 JPY = ? TWD)</label>
+        <input type="number" id="customRateInput" step="0.0001" placeholder="0.2051">
+      </div>
+
+      <div style="background:var(--primary-light); border-left:3px solid var(--primary); padding:8px 10px; border-radius:6px; font-size:0.74rem; line-height:1.45; margin-bottom:12px;">
+        💡 <b>0.2020 決策基準線：</b><br>
+        即時匯率 <b>> 0.202</b> 建議直接刷外幣帳戶扣 $0.199 便宜日幣 (免 1.5% 手續費)；<br>
+        即時匯率 <b>&le; 0.202</b> 刷國泰 CUBE 卡 (淨賺 1.5%) 更划算。
+      </div>
+
+      <div style="display:flex; gap:8px;">
+        <button type="button" class="btn-secondary" style="margin:0; flex:1;" onclick="fetchLiveRate(true)">🔄 重新連網更新</button>
+        <button type="button" class="btn-main" style="margin:0; flex:1;" onclick="saveCustomRate()">儲存自訂</button>
       </div>
     </div>
   </div>
@@ -1001,7 +1140,7 @@
   <!-- 旅程房間碼（雲端多裝置同步）Modal -->
   <div class="modal-backdrop" id="syncModal">
     <div class="modal-box" style="max-width: 380px;">
-      <div class="modal-title" style="display:flex; justify-content:space-between; align-items:center;">
+      <div class="modal-title">
         <span>☁️ 旅程房間碼（多裝置同步）</span>
         <span style="cursor:pointer; font-size:1.1rem; color:var(--text-secondary);" onclick="closeSyncModal()">✕</span>
       </div>
@@ -1043,27 +1182,285 @@
     </div>
   </div>
 
+  <div class="modal-backdrop" id="quotaResetModal" role="dialog" aria-modal="true" aria-labelledby="quotaResetTitle">
+    <div class="modal-box">
+      <div class="modal-title" id="quotaResetTitle">確認重置額度</div>
+      <p id="quotaResetMessage" style="font-size:0.9rem; line-height:1.5; margin:0 0 16px;"></p>
+      <div style="display:flex; gap:8px;">
+        <button type="button" class="btn-secondary" style="margin:0; flex:1;" onclick="closeQuotaResetModal()">取消</button>
+        <button type="button" class="btn-main" style="margin:0; flex:1;" onclick="confirmQuotaReset()">確定重置</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Toast Notification -->
   <div class="toast" id="toast">已更新！</div>
 
   <script>
-    // 預設卡片回饋金上限與加碼率 (可直接由回饋上限回推刷卡額度)
-    const DEFAULT_CARD_RULES = {
-      kuma: { cap: 500, rate: 6.0 },
-      jcard: { cap: 1000, rate: 3.0 },
-      costco: { cap: 600, rate: 4.0 },
-      paypay: { cap: 100, rate: 3.5 }
+    // ============================================================
+    // 版本策略：統一使用下方 STORAGE_KEY 物件管理 localStorage key
+    // 未來改版若需要 schema 升級，只需在 migrateLocalData() 中加入
+    // 搬移邏輯，永遠不需要更改 STORAGE_KEY 的 key 名稱。
+    // 雲端資料 (kvdb.io) 與 HTML 程式碼完全無關，改版不影響房間資料。
+    // ============================================================
+    const STORAGE_KEY = {
+      rules:   'japan_card_rules_v2',
+      limits:  'japan_card_limits_v2',
+      quotas:  'japan_card_quotas_v2',
+      quotaPeriods: 'japan_card_quota_periods_v1',
+      quotaResetAt: 'japan_card_quota_reset_at_v1',
+      rulesUpdatedAt: 'japan_card_rules_updated_at_v1',
+      billingPromptDismissed: 'japan_card_billing_prompt_dismissed_v1',
+      ledger:  'japan_card_ledger_v2',
+      rate:    'japan_card_rate',
+      rateLive:'japan_card_rate_is_live',
+      rateTime:'japan_card_rate_time',
+      room:    'japan_card_room',
+      migrated:'japan_card_migrated_v2'  // 旗標，確保只搬一次
     };
 
-    let cardRules = JSON.parse(localStorage.getItem('japan_card_rules')) || { ...DEFAULT_CARD_RULES };
+    // ---- 舊版本資料自動搬移（v1 → v2）----------------------------
+    // 這個函數讓「純本地模式」的使用者更新程式碼後不會失去資料。
+    // 房間用戶不受影響（雲端一拉就回來了）。
+    function migrateLocalData() {
+      if (localStorage.getItem(STORAGE_KEY.migrated)) return; // 已搬過，略過
+
+      const oldQuotas  = localStorage.getItem('japan_card_quotas');
+      const oldLimits  = localStorage.getItem('japan_card_limits');
+      const oldLedger  = localStorage.getItem('japan_card_ledger');
+      const oldRules   = localStorage.getItem('japan_card_rules');
+
+      let migrated = false;
+
+      // 搬移舊版限額
+      if (oldLimits && !localStorage.getItem(STORAGE_KEY.limits)) {
+        const v1Limits = JSON.parse(oldLimits);
+        // v1 格式: { kuma, jcard, costco, paypay }，將 jcard_transit 補預設
+        const merged = { jcard_transit: Math.round(200 / 0.07), ...v1Limits };
+        localStorage.setItem(STORAGE_KEY.limits, JSON.stringify(merged));
+        migrated = true;
+      }
+
+      // 搬移舊版剩餘額度
+      if (oldQuotas && !localStorage.getItem(STORAGE_KEY.quotas)) {
+        const v1Quotas = JSON.parse(oldQuotas);
+        const v1Limits = JSON.parse(oldLimits || '{}');
+        const merged = { jcard_transit: Math.round(200 / 0.07), ...v1Quotas };
+        localStorage.setItem(STORAGE_KEY.quotas, JSON.stringify(merged));
+        migrated = true;
+      }
+
+      // 搬移舊版記帳明細
+      if (oldLedger && !localStorage.getItem(STORAGE_KEY.ledger)) {
+        localStorage.setItem(STORAGE_KEY.ledger, oldLedger);
+        migrated = true;
+      }
+
+      // 搬移舊版卡片設定
+      if (oldRules && !localStorage.getItem(STORAGE_KEY.rules)) {
+        const v1Rules = JSON.parse(oldRules);
+        // 補上 jcard_transit 的預設規則
+        v1Rules.jcard_transit = { cap: 200, rate: 7.0, fee: 1.5, base: 3.0, net: 8.5, minThreshold: 2000 };
+        localStorage.setItem(STORAGE_KEY.rules, JSON.stringify(v1Rules));
+        migrated = true;
+      }
+
+      // 標記已搬移完成
+      localStorage.setItem(STORAGE_KEY.migrated, '1');
+      if (migrated) console.log('[Japan Cards] 舊版本資料已自動搬移至 v2 格式 ✅');
+    }
+
+    // ---- 執行搬移（在讀取任何資料之前）---
+    migrateLocalData();
+
+    // 預設卡片回饋金上限與加碼率 (2026 最新官方規定與手續費扣除)
+    const DEFAULT_CARD_RULES = {
+      jcard_transit: { name: "🚆 富邦 J 卡 (交通卡 AP 儲值)", cap: 200, rate: 7.0, fee: 1.5, base: 3.0, minThreshold: 2000, capBasis: 'bonus', capPeriod: '季', cycleType: 'quarter', cycleLabel: '', scope: 'Suica / PASMO / ICOCA Apple Pay 儲值', contexts: ['transit'] },
+      kuma: { name: "🐻 玉山熊本熊卡 (指定特店 / 交通)", cap: 500, rate: 6.0, fee: 1.5, base: 2.5, minThreshold: 0, capBasis: 'bonus', capPeriod: '帳單週期', cycleType: 'billing', statementDay: null, billingGroup: 'esun', cycleLabel: '', scope: '指定街邊特店與交通卡儲值', contexts: ['transit', 'kuma_shop_street'] },
+      jcard: { name: "🇯 富邦 J 卡 (日韓實體一般消費)", cap: 1000, rate: 3.0, fee: 1.5, base: 3.0, minThreshold: 1000, capBasis: 'bonus', capPeriod: '季', cycleType: 'quarter', cycleLabel: '', scope: '日韓實體一般消費', contexts: ['general', 'transit'] },
+      costco: { name: "🛒 富邦 Costco 聯名卡 (海外實體)", cap: 600, rate: 4.0, fee: 1.5, base: 1.0, minThreshold: 0, capBasis: 'bonus', capPeriod: '月', cycleType: 'month', cycleLabel: '', scope: '海外實體消費', contexts: ['general', 'transit'] },
+      paypay: { name: "📱 玉山 Wallet 綁熊本熊 (PayPay)", cap: 100, rate: 1.5, fee: 0.0, base: 2.0, minThreshold: 0, capBasis: 'net', capPeriod: '帳單週期', cycleType: 'billing', statementDay: null, billingGroup: 'esun', cycleLabel: '', scope: '玉山 Wallet 綁卡掃 PayPay', contexts: ['paypay'] },
+      cube: { name: "🌲 國泰 CUBE 卡 (趣旅行)", cap: 0, rate: 0, fee: 1.5, base: 3.0, minThreshold: 0, capBasis: 'bonus', capPeriod: '無上限', cycleType: 'none', cycleLabel: '終極保底卡；不追蹤額度', scope: '海外一般消費', trackQuota: false, contexts: [] }
+    };
+
+    function getCycleLabel(rule) {
+      if (rule.cycleType === 'quarter') return '每季日曆季；自動重置';
+      if (rule.cycleType === 'month') return '每月；自動重置';
+      if (rule.cycleType === 'billing') {
+        return rule.statementDay ? `帳單週期；每月 ${rule.statementDay} 日結帳，次日自動重置` : '帳單週期；結帳日待確認，手動重置';
+      }
+      if (rule.cycleType === 'none' && rule.trackQuota !== false) return '無自動週期；手動重置';
+      return rule.cycleLabel || '不追蹤週期';
+    }
+
+    function getNetRate(rule) {
+      return Math.round((Number(rule.base || 0) + Number(rule.rate || 0) - Number(rule.fee || 0)) * 100) / 100;
+    }
+
+    function normalizeCardRules(savedRules = {}) {
+      const normalized = {};
+      for (const [key, defaults] of Object.entries(DEFAULT_CARD_RULES)) {
+        const saved = savedRules[key] || {};
+        const rule = { ...defaults, ...saved };
+        rule.contexts = Array.isArray(saved.contexts) ? saved.contexts.filter(value => typeof value === 'string') : [...defaults.contexts];
+        if (key === 'paypay' && !Object.prototype.hasOwnProperty.call(saved, 'capBasis') && Number(saved.rate) === 3.5) {
+          rule.rate = 1.5;
+          rule.capBasis = 'net';
+        }
+        rule.capBasis = rule.capBasis === 'net' ? 'net' : 'bonus';
+        rule.cycleType = ['quarter', 'month', 'billing', 'none'].includes(rule.cycleType) ? rule.cycleType : defaults.cycleType;
+        rule.statementDay = Number.isInteger(Number(rule.statementDay)) && Number(rule.statementDay) >= 1 && Number(rule.statementDay) <= 31 ? Number(rule.statementDay) : null;
+        rule.capPeriod = { quarter: '季', month: '月', billing: '帳單週期', none: defaults.trackQuota === false ? '無上限' : defaults.capPeriod }[rule.cycleType];
+        rule.cycleLabel = getCycleLabel(rule);
+        rule.net = getNetRate(rule);
+        normalized[key] = rule;
+      }
+      const kumaDay = normalized.kuma.statementDay;
+      const paypayDay = normalized.paypay.statementDay;
+      const sharedEsunDay = kumaDay !== null && paypayDay !== null && kumaDay !== paypayDay
+        ? null
+        : kumaDay || paypayDay || null;
+      normalized.kuma.statementDay = sharedEsunDay;
+      normalized.paypay.statementDay = sharedEsunDay;
+      normalized.kuma.billingGroup = 'esun';
+      normalized.paypay.billingGroup = 'esun';
+      normalized.kuma.cycleLabel = getCycleLabel(normalized.kuma);
+      normalized.paypay.cycleLabel = getCycleLabel(normalized.paypay);
+      return normalized;
+    }
+
+    let cardRules = normalizeCardRules(JSON.parse(localStorage.getItem(STORAGE_KEY.rules)) || {});
+
+    function getRule(key) {
+      return cardRules[key] || DEFAULT_CARD_RULES[key];
+    }
+
+    // 取得卡片顯示名稱（包含虛擬備用鍵）
+    function getCardDisplayName(key) {
+      if (key === 'backup_fx') return '玉山雙幣卡扣外幣帳戶 (便宜日幣)';
+      if (key === 'backup_cube') return '國泰 CUBE 卡 (趣旅行 3%)';
+      const rule = getRule(key);
+      return rule ? rule.name : key;
+    }
+
+    function getCapRate(rule) {
+      return rule.capBasis === 'net' ? Math.max(0, getNetRate(rule)) : Math.max(0, Number(rule.rate) || 0);
+    }
+
+    function getCardLimitForRule(rule) {
+      const capRate = getCapRate(rule);
+      if (!rule || capRate <= 0) return 0;
+      return Math.round(rule.cap / (capRate / 100));
+    }
 
     function getCardLimit(key) {
-      const rule = cardRules[key] || DEFAULT_CARD_RULES[key];
-      if (!rule || rule.rate <= 0) return 0;
-      return Math.round(rule.cap / (rule.rate / 100));
+      return getCardLimitForRule(getRule(key));
+    }
+
+    function getTaipeiDateParts(date = new Date()) {
+      const parts = new Intl.DateTimeFormat('en-CA', {
+        timeZone: 'Asia/Taipei', year: 'numeric', month: '2-digit', day: '2-digit'
+      }).formatToParts(date);
+      return Object.fromEntries(parts.filter(part => part.type !== 'literal').map(part => [part.type, Number(part.value)]));
+    }
+
+    function formatTaipeiDate(date) {
+      const parts = getTaipeiDateParts(date);
+      return `${parts.year}-${String(parts.month).padStart(2, '0')}-${String(parts.day).padStart(2, '0')}`;
+    }
+
+    function getCurrentPeriodKey(key, date = new Date()) {
+      const rule = getRule(key);
+      const { year, month, day } = getTaipeiDateParts(date);
+      if (rule.cycleType === 'quarter') return `${year}-Q${Math.floor((month - 1) / 3) + 1}`;
+      if (rule.cycleType === 'month') return `${year}-${String(month).padStart(2, '0')}`;
+      if (rule.cycleType !== 'billing' || !rule.statementDay) return null;
+
+      const daysThisMonth = new Date(Date.UTC(year, month, 0)).getUTCDate();
+      const closingDayThisMonth = Math.min(rule.statementDay, daysThisMonth);
+      let closingYear = year;
+      let closingMonth = month;
+      if (day > closingDayThisMonth) {
+        closingMonth++;
+        if (closingMonth > 12) {
+          closingMonth = 1;
+          closingYear++;
+        }
+      }
+      const daysClosingMonth = new Date(Date.UTC(closingYear, closingMonth, 0)).getUTCDate();
+      const closingDay = Math.min(rule.statementDay, daysClosingMonth);
+      return `billing:${closingYear}-${String(closingMonth).padStart(2, '0')}-${String(closingDay).padStart(2, '0')}`;
+    }
+
+    function getPeriodStartTimestamp(key, date = new Date()) {
+      const rule = getRule(key);
+      const { year, month } = getTaipeiDateParts(date);
+      let startDate;
+      if (rule.cycleType === 'quarter') {
+        const startMonth = Math.floor((month - 1) / 3) * 3;
+        startDate = new Date(Date.UTC(year, startMonth, 1));
+      } else if (rule.cycleType === 'month') {
+        startDate = new Date(Date.UTC(year, month - 1, 1));
+      } else if (rule.cycleType === 'billing') {
+        const periodKey = getCurrentPeriodKey(key, date);
+        if (!periodKey) return null;
+        const [, closingDate] = periodKey.split(':');
+        const [closingYear, closingMonth] = closingDate.split('-').map(Number);
+        const previousMonth = new Date(Date.UTC(closingYear, closingMonth - 2, 1));
+        const previousMonthDays = new Date(Date.UTC(previousMonth.getUTCFullYear(), previousMonth.getUTCMonth() + 1, 0)).getUTCDate();
+        const previousClosingDay = Math.min(rule.statementDay, previousMonthDays);
+        startDate = new Date(Date.UTC(previousMonth.getUTCFullYear(), previousMonth.getUTCMonth(), previousClosingDay + 1));
+      } else {
+        return null;
+      }
+      return startDate.getTime() - 8 * 60 * 60 * 1000;
+    }
+
+    function getNextResetLabel(key, date = new Date()) {
+      const rule = getRule(key);
+      const { year, month } = getTaipeiDateParts(date);
+      if (rule.cycleType === 'none') return rule.trackQuota === false ? '無上限' : '手動重置';
+      if (rule.cycleType === 'billing' && !rule.statementDay) return '待確認';
+
+      let nextReset;
+      if (rule.cycleType === 'quarter') {
+        const nextQuarterMonth = Math.floor((month - 1) / 3) * 3 + 4;
+        nextReset = new Date(Date.UTC(year, nextQuarterMonth - 1, 1));
+      } else if (rule.cycleType === 'month') {
+        nextReset = new Date(Date.UTC(year, month, 1));
+      } else {
+        const [, closingDate] = getCurrentPeriodKey(key, date).split(':');
+        const [closingYear, closingMonth, closingDay] = closingDate.split('-').map(Number);
+        nextReset = new Date(Date.UTC(closingYear, closingMonth - 1, closingDay + 1));
+      }
+      return formatTaipeiDate(nextReset);
+    }
+
+    function checkQuotaPeriods(date = new Date()) {
+      let didReset = false;
+      for (const [key, rule] of Object.entries(cardRules)) {
+        if (rule.trackQuota === false) continue;
+        const periodKey = getCurrentPeriodKey(key, date);
+        if (!periodKey) continue;
+        if (!quotaPeriods[key]) {
+          quotaPeriods[key] = periodKey;
+          continue;
+        }
+        if (quotaPeriods[key] !== periodKey) {
+          quotas[key] = getCardLimit(key);
+          quotaPeriods[key] = periodKey;
+          quotaResetAt[key] = getPeriodStartTimestamp(key, date) || date.getTime();
+          didReset = true;
+        }
+      }
+      localStorage.setItem(STORAGE_KEY.quotaPeriods, JSON.stringify(quotaPeriods));
+      localStorage.setItem(STORAGE_KEY.quotaResetAt, JSON.stringify(quotaResetAt));
+      if (didReset) saveQuotas();
+      return didReset;
     }
 
     const DEFAULT_LIMITS = {
+      jcard_transit: getCardLimit('jcard_transit'),
       kuma: getCardLimit('kuma'),
       jcard: getCardLimit('jcard'),
       costco: getCardLimit('costco'),
@@ -1071,12 +1468,25 @@
     };
 
     // 狀態持久化
-    let limits = JSON.parse(localStorage.getItem('japan_card_limits')) || { ...DEFAULT_LIMITS };
-    let quotas = JSON.parse(localStorage.getItem('japan_card_quotas')) || { ...limits };
-    let jpyRate = parseFloat(localStorage.getItem('japan_card_rate')) || 0.2070;
-    let ledger = JSON.parse(localStorage.getItem('japan_card_ledger')) || [];
-    let currentRoom = localStorage.getItem('japan_card_room') || '';
+    let limits = JSON.parse(localStorage.getItem(STORAGE_KEY.limits)) || { ...DEFAULT_LIMITS };
+    let quotas = JSON.parse(localStorage.getItem(STORAGE_KEY.quotas)) || { ...limits };
+    let quotaPeriods = JSON.parse(localStorage.getItem(STORAGE_KEY.quotaPeriods)) || {};
+    let quotaResetAt = JSON.parse(localStorage.getItem(STORAGE_KEY.quotaResetAt)) || {};
+    let ruleUpdatedAt = Number(localStorage.getItem(STORAGE_KEY.rulesUpdatedAt)) || 0;
+    let jpyRate = parseFloat(localStorage.getItem(STORAGE_KEY.rate)) || 0.2051;
+    let isLiveRate = (localStorage.getItem(STORAGE_KEY.rateLive) !== 'false');
+    let rateFetchTime = localStorage.getItem(STORAGE_KEY.rateTime) || '';
+    let ledger = JSON.parse(localStorage.getItem(STORAGE_KEY.ledger)) || [];
+    let currentRoom = localStorage.getItem(STORAGE_KEY.room) || '';
     let isSyncing = false;
+    let quotaRevision = 0;
+    let ledgerRevision = 0;
+    let pendingQuotaReset = null;
+    let ruleEditMode = false;
+    let draftCardRules = null;
+    let pendingRuleDraft = null;
+    let pendingRuleChanges = [];
+    let ruleRevision = 0;
 
     // 當前試算決策結果快取
     let currentDecision = {
@@ -1087,26 +1497,539 @@
       twd: 0,
       rewardTwd: 0
     };
+    let currentThresholdOffer = null;
+
+    function reconcileLimitsWithRules() {
+      for (const [key, rule] of Object.entries(cardRules)) {
+        if (rule.trackQuota === false) continue;
+        const oldLimit = Number(limits[key]) || getCardLimit(key);
+        const oldRemaining = quotas[key] !== undefined ? Number(quotas[key]) : oldLimit;
+        const newLimit = getCardLimit(key);
+        if (oldLimit !== newLimit) {
+          const used = Math.max(0, oldLimit - oldRemaining);
+          quotas[key] = Math.max(0, newLimit - used);
+        }
+        limits[key] = newLimit;
+      }
+      localStorage.setItem(STORAGE_KEY.limits, JSON.stringify(limits));
+      localStorage.setItem(STORAGE_KEY.quotas, JSON.stringify(quotas));
+    }
+
+    function renderQuotaCards() {
+      const root = document.getElementById('quotaCards');
+      root.innerHTML = '';
+
+      for (const [key, rule] of Object.entries(cardRules)) {
+        if (rule.trackQuota === false) continue;
+        const item = document.createElement('div');
+        item.className = 'quota-item';
+
+        const header = document.createElement('div');
+        header.className = 'quota-header';
+        const label = document.createElement('div');
+        label.className = 'card-label';
+        const name = document.createElement('span');
+        name.textContent = rule.name;
+        label.appendChild(name);
+        if (rule.minThreshold > 0) {
+          const threshold = document.createElement('span');
+          threshold.className = 'threshold-tag';
+          threshold.id = `threshold-${key}`;
+          threshold.textContent = `單筆滿 NT$${Number(rule.minThreshold).toLocaleString()}`;
+          label.appendChild(threshold);
+        }
+        const cycle = document.createElement('span');
+        cycle.className = 'cycle-tag';
+        cycle.textContent = `${rule.cycleLabel}；下次 ${getNextResetLabel(key)}`;
+        label.appendChild(cycle);
+        const reset = document.createElement('button');
+        reset.type = 'button';
+        reset.className = 'btn-small';
+        reset.textContent = '重置';
+        reset.addEventListener('click', () => resetSingle(key));
+        header.append(label, reset);
+
+        const progress = document.createElement('div');
+        progress.className = 'progress-bar';
+        const bar = document.createElement('div');
+        bar.id = `p-${key}`;
+        bar.className = 'progress-fill';
+        progress.appendChild(bar);
+
+        const capLine = document.createElement('div');
+        capLine.id = `rc-${key}`;
+        capLine.className = 'reward-cap-line';
+        const numbers = document.createElement('div');
+        numbers.className = 'quota-numbers';
+        const remaining = document.createElement('span');
+        remaining.id = `q-${key}`;
+        remaining.className = 'quota-remaining';
+        const limit = document.createElement('span');
+        limit.id = `ql-${key}`;
+        limit.className = 'quota-limit';
+        numbers.append(remaining, limit);
+        item.append(header, progress, capLine, numbers);
+        root.appendChild(item);
+      }
+    }
+
+    function renderRuleGuideTable() {
+      const root = document.getElementById('ruleGuideRows');
+      const colors = ['#007aff', '#ff3b30', '#007aff', '#ff9500', '#af52de', '#5856d6'];
+      const contextLabels = { general: '一般消費', transit: '交通儲值', kuma_shop_street: '熊本熊街邊指定店', paypay: 'PayPay' };
+      root.innerHTML = '';
+      const rules = ruleEditMode ? draftCardRules : cardRules;
+
+      Object.entries(rules).forEach(([key, rule], index) => {
+        const row = document.createElement('tr');
+        const appendCell = content => {
+          const cell = document.createElement('td');
+          if (content instanceof Node) cell.appendChild(content);
+          else cell.textContent = content;
+          row.appendChild(cell);
+          return cell;
+        };
+        const makeInput = (field, value, step = '0.1', placeholder = '') => {
+          const input = document.createElement('input');
+          input.type = 'number';
+          input.min = '0';
+          input.step = step;
+          input.id = `draft-${field}-${key}`;
+          input.value = value === null || value === undefined ? '' : value;
+          input.placeholder = placeholder;
+          input.setAttribute('aria-label', `${rule.name} ${field}`);
+          input.style.cssText = 'width:100%; min-width:64px; padding:6px; font-size:0.78rem;';
+          input.addEventListener('input', () => {
+            const parsed = input.value === '' ? null : Number(input.value);
+            rule[field] = parsed;
+            if (field === 'statementDay') {
+              rule.statementDay = parsed && parsed >= 1 && parsed <= 31 ? Math.floor(parsed) : null;
+              if (rule.billingGroup) {
+                for (const [peerKey, peerRule] of Object.entries(draftCardRules)) {
+                  if (peerKey === key || peerRule.billingGroup !== rule.billingGroup || peerRule.cycleType !== 'billing') continue;
+                  peerRule.statementDay = rule.statementDay;
+                  const peerInput = document.getElementById(`draft-statementDay-${peerKey}`);
+                  if (peerInput) peerInput.value = rule.statementDay || '';
+                  updateDraftRulePreview(peerKey);
+                }
+              }
+            }
+            updateDraftRulePreview(key);
+          });
+          return input;
+        };
+
+        appendCell(rule.name);
+        if (ruleEditMode) {
+          const contextCell = document.createElement('td');
+          const contexts = document.createElement('input');
+          contexts.type = 'text';
+          contexts.value = (rule.contexts || []).join(', ');
+          contexts.setAttribute('aria-label', `${rule.name} 適用情境`);
+          contexts.placeholder = 'general, transit';
+          contexts.style.cssText = 'width:100%; min-width:130px; padding:6px; font-size:0.75rem;';
+          contexts.addEventListener('input', () => {
+            rule.contexts = contexts.value.split(',').map(value => value.trim()).filter(Boolean);
+          });
+          contextCell.append(contexts);
+          const contextHint = document.createElement('small');
+          contextHint.textContent = 'general / transit / kuma_shop_street / paypay';
+          contextCell.appendChild(contextHint);
+          root.appendChild(contextCell);
+          appendCell(makeInput('base', rule.base));
+          appendCell(makeInput('rate', rule.rate));
+          appendCell(makeInput('fee', rule.fee));
+          const net = appendCell(`${getNetRate(rule)}%`);
+          net.id = `draft-net-${key}`;
+          net.style.color = colors[index] || 'var(--text)';
+
+          const thresholdCell = appendCell(makeInput('minThreshold', rule.minThreshold, '1', '0 = 無'));
+          thresholdCell.style.minWidth = '100px';
+
+          const capCell = document.createElement('td');
+          if (rule.trackQuota === false) {
+            capCell.textContent = '無上限';
+          } else {
+            capCell.appendChild(makeInput('cap', rule.cap, '1'));
+            const basis = document.createElement('select');
+            basis.id = `draft-capBasis-${key}`;
+            basis.setAttribute('aria-label', `${rule.name} 上限計算基準`);
+            basis.style.cssText = 'width:100%; margin-top:4px; padding:5px; font-size:0.72rem;';
+            basis.innerHTML = '<option value="bonus">依加碼回饋</option><option value="net">依淨回饋</option>';
+            basis.value = rule.capBasis;
+            basis.addEventListener('change', () => {
+              rule.capBasis = basis.value;
+              updateDraftRulePreview(key);
+            });
+            capCell.appendChild(basis);
+            const basisNote = document.createElement('small');
+            basisNote.id = `draft-capBasis-note-${key}`;
+            basisNote.style.display = 'block';
+            basisNote.textContent = rule.capBasis === 'net' ? '固定按淨回饋計' : '固定按加碼回饋計';
+            capCell.appendChild(basisNote);
+            const preview = document.createElement('small');
+            preview.id = `draft-limit-${key}`;
+            preview.style.display = 'block';
+            preview.textContent = `可刷 $${getCardLimitForRule(rule).toLocaleString()}`;
+            capCell.appendChild(preview);
+          }
+          row.appendChild(capCell);
+
+          const cycleCell = document.createElement('td');
+          const cycle = document.createElement('select');
+          cycle.style.cssText = 'width:100%; min-width:120px; padding:5px; font-size:0.75rem;';
+          cycle.innerHTML = '<option value="quarter">每季</option><option value="month">每月</option><option value="billing">帳單週期</option><option value="none">無上限週期</option>';
+          cycle.value = rule.cycleType;
+          cycle.disabled = rule.trackQuota === false;
+          cycle.addEventListener('change', () => {
+            rule.cycleType = cycle.value;
+            if (rule.cycleType !== 'none') rule.capPeriod = { quarter: '季', month: '月', billing: '帳單週期' }[rule.cycleType];
+            if (rule.cycleType !== 'billing') rule.statementDay = null;
+            renderRuleGuideTable();
+          });
+          cycleCell.appendChild(cycle);
+          if (rule.cycleType === 'billing') {
+            const statementDay = makeInput('statementDay', rule.statementDay, '1', '帳單日待確認');
+            statementDay.min = '1';
+            statementDay.max = '31';
+            statementDay.placeholder = '結帳日待確認';
+            statementDay.title = '請以銀行帳單上的實際結帳日為準；未知請留白';
+            statementDay.style.marginTop = '4px';
+            cycleCell.appendChild(statementDay);
+          }
+          const cycleInfo = document.createElement('small');
+          cycleInfo.id = `draft-cycle-${key}`;
+          cycleInfo.style.display = 'block';
+          cycleInfo.textContent = getCycleLabel(rule);
+          cycleCell.appendChild(cycleInfo);
+          row.appendChild(cycleCell);
+        } else {
+          appendCell((rule.contexts || []).map(value => contextLabels[value] || value).join('、') || '僅作保底');
+          appendCell(`${rule.base}%`);
+          appendCell(`+${rule.rate}%`);
+          appendCell(rule.fee > 0 ? `-${rule.fee}%` : '0% (免收)');
+          const net = appendCell(`${getNetRate(rule)}%`);
+          net.style.color = colors[index] || 'var(--text)';
+          if (rule.minThreshold > 0) appendCell(`單筆滿 $${Number(rule.minThreshold).toLocaleString()}`);
+          else appendCell('無門檻');
+          if (rule.trackQuota === false) appendCell('無上限');
+          else appendCell(`$${getCardLimit(key).toLocaleString()}（${rule.capBasis === 'net' ? '淨回饋' : '加碼'}上限 $${Number(rule.cap).toLocaleString()}／${rule.capPeriod}）`);
+          appendCell(`${rule.cycleLabel}；下次 ${getNextResetLabel(key)}`);
+        }
+
+        row.style.background = `${colors[index] || '#8e8e93'}0f`;
+        root.appendChild(row);
+      });
+
+      document.getElementById('toggleRuleEdit').textContent = ruleEditMode ? '取消編輯' : '編輯規則';
+      document.getElementById('ruleEditActions').style.display = ruleEditMode ? 'flex' : 'none';
+    }
+
+    function updateDraftRulePreview(key) {
+      const rule = draftCardRules[key];
+      rule.cycleLabel = getCycleLabel(rule);
+      const net = document.getElementById(`draft-net-${key}`);
+      if (net) net.textContent = `${getNetRate(rule)}%`;
+      const limit = document.getElementById(`draft-limit-${key}`);
+      if (limit) limit.textContent = `可刷 $${getCardLimitForRule(rule).toLocaleString()}`;
+      const basisNote = document.getElementById(`draft-capBasis-note-${key}`);
+      if (basisNote) basisNote.textContent = rule.capBasis === 'net' ? '固定按淨回饋計' : '固定按加碼回饋計';
+      const cycle = document.getElementById(`draft-cycle-${key}`);
+      if (cycle) cycle.textContent = rule.cycleLabel;
+    }
+
+    function toggleRuleEdit() {
+      if (ruleEditMode) {
+        cancelRuleEdit();
+        return;
+      }
+      draftCardRules = JSON.parse(JSON.stringify(cardRules));
+      ruleEditMode = true;
+      renderRuleGuideTable();
+    }
+
+    function cancelRuleEdit() {
+      ruleEditMode = false;
+      draftCardRules = null;
+      renderRuleGuideTable();
+    }
+
+    function openRuleChangeModal() {
+      const invalidInput = [...document.querySelectorAll('#ruleGuideRows input')].find(input => !input.checkValidity());
+      if (invalidInput) {
+        invalidInput.reportValidity();
+        return;
+      }
+      const fields = ['base', 'rate', 'fee', 'minThreshold', 'cap', 'capBasis', 'cycleType', 'statementDay'];
+      const normalized = normalizeCardRules(draftCardRules || {});
+      const changedKeys = Object.keys(cardRules).filter(key =>
+        fields.some(field => cardRules[key][field] !== normalized[key][field]) ||
+        JSON.stringify(cardRules[key].contexts || []) !== JSON.stringify(normalized[key].contexts || [])
+      );
+      if (changedKeys.length === 0) {
+        cancelRuleEdit();
+        showToast('規則沒有變更');
+        return;
+      }
+
+      const invalidRule = changedKeys.find(key => {
+        const rule = normalized[key];
+        return ['base', 'rate', 'fee', 'minThreshold', 'cap'].some(field => !Number.isFinite(Number(rule[field])) || Number(rule[field]) < 0) || (rule.trackQuota !== false && Number(rule.cap) <= 0);
+      });
+      if (invalidRule) {
+        showToast(`請檢查【${normalized[invalidRule].name}】的數值；上限需大於 0`);
+        return;
+      }
+      const allowedContexts = new Set(['general', 'transit', 'kuma_shop_street', 'paypay']);
+      const invalidContextRule = changedKeys.find(key => normalized[key].contexts.some(context => !allowedContexts.has(context)));
+      if (invalidContextRule) {
+        showToast(`請檢查【${normalized[invalidContextRule].name}】的適用情境代碼`);
+        return;
+      }
+
+      pendingRuleDraft = normalized;
+      pendingRuleChanges = changedKeys;
+      const summary = changedKeys.map(key => {
+        const rule = normalized[key];
+        const limitText = rule.trackQuota === false
+          ? '無上限'
+          : `新紅線 $${getCardLimitForRule(rule).toLocaleString()}（固定按${rule.capBasis === 'net' ? '淨回饋' : '加碼回饋'}上限計）`;
+        const historyText = rule.trackQuota === false ? '無週期；重算模式會套用全部明細' : getCycleLabel(rule);
+        const contextText = (rule.contexts || []).join(', ') || '僅作保底';
+        return `${rule.name}：適用 ${contextText}；淨回饋 ${getNetRate(rule)}%，${limitText}，${historyText}`;
+      });
+      document.getElementById('ruleChangeSummary').innerText = summary.join('\n');
+
+      const dateRoot = document.getElementById('ruleRecalcStartDates');
+      dateRoot.replaceChildren();
+      for (const key of changedKeys) {
+        const hasHistory = ledger.some(item => item.cardKey === key || (key === 'cube' && item.cardKey === 'backup_cube'));
+        if (pendingRuleDraft[key].trackQuota === false || !hasHistory || Number(quotaResetAt[key]) > 0) continue;
+
+        const group = document.createElement('div');
+        group.className = 'form-group';
+        const label = document.createElement('label');
+        const input = document.createElement('input');
+        input.type = 'date';
+        input.id = `ruleStartDate-${key}`;
+        input.max = formatTaipeiDate(new Date());
+        label.htmlFor = input.id;
+        label.textContent = `${pendingRuleDraft[key].name}：若選重算，請確認本期起算日`;
+        group.append(label, input);
+        dateRoot.appendChild(group);
+      }
+
+      document.getElementById('ruleChangeModal').style.display = 'flex';
+    }
+
+    function closeRuleChangeModal() {
+      document.getElementById('ruleChangeModal').style.display = 'none';
+      pendingRuleDraft = null;
+      pendingRuleChanges = [];
+    }
+
+    function getRuleRecalculationStart(key) {
+      if (Number(quotaResetAt[key]) > 0) return Number(quotaResetAt[key]);
+      const input = document.getElementById(`ruleStartDate-${key}`);
+      if (!input || !input.value) return null;
+      const [year, month, day] = input.value.split('-').map(Number);
+      return Date.UTC(year, month - 1, day) - 8 * 60 * 60 * 1000;
+    }
+
+    function recalculateRuleHistory(key, rule, startAt, ruleVersion) {
+      const unlimited = rule.trackQuota === false;
+      const startingLimit = unlimited ? Number.POSITIVE_INFINITY : getCardLimitForRule(rule);
+      let remainingEligibleSpend = startingLimit;
+      const expenses = ledger
+        .filter(item => (item.cardKey === key || (key === 'cube' && item.cardKey === 'backup_cube')) && Number(item.id) >= startAt)
+        .sort((first, second) => Number(first.id) - Number(second.id));
+
+      for (const item of expenses) {
+        const amount = Math.max(0, Number(item.twd) || 0);
+        const meetsThreshold = !rule.minThreshold || amount >= Number(rule.minThreshold);
+        const eligibleSpend = unlimited ? amount : (meetsThreshold ? Math.min(amount, remainingEligibleSpend) : 0);
+        const baseOnlySpend = amount - eligibleSpend;
+        const baseNet = Number(rule.base) - Number(rule.fee);
+        const rewardTwd = Math.round(eligibleSpend * (getNetRate(rule) / 100) + baseOnlySpend * (baseNet / 100));
+        remainingEligibleSpend = Math.max(0, remainingEligibleSpend - eligibleSpend);
+        item.rewardTwd = rewardTwd;
+        item.ratePercent = amount > 0 ? Math.round((rewardTwd / amount) * 10000) / 100 : 0;
+        item.rewardBreakdown = {
+          eligibleSpend,
+          baseOnlySpend,
+          rate: getNetRate(rule),
+          baseRate: baseNet
+        };
+        item.ruleSnapshot = { ...rule };
+        item.ruleVersion = ruleVersion;
+      }
+
+      return remainingEligibleSpend;
+    }
+
+    function commitRuleChanges(mode) {
+      if (!pendingRuleDraft || pendingRuleChanges.length === 0) return;
+      const newLimits = Object.fromEntries(Object.keys(pendingRuleDraft).map(key => [key, getCardLimitForRule(pendingRuleDraft[key])]));
+      const startDates = {};
+
+      if (mode === 'recalculate') {
+        for (const key of pendingRuleChanges) {
+          if (pendingRuleDraft[key].trackQuota === false) {
+            startDates[key] = 0;
+            continue;
+          }
+          const hasHistory = ledger.some(item => item.cardKey === key);
+          const startAt = getRuleRecalculationStart(key);
+          if (hasHistory && !startAt) {
+            showToast(`請先確認【${pendingRuleDraft[key].name}】的本期起算日`);
+            return;
+          }
+          startDates[key] = startAt || Date.now();
+        }
+      }
+
+      const oldLimits = { ...limits };
+      const oldQuotas = { ...quotas };
+      const savedAt = Date.now();
+      cardRules = pendingRuleDraft;
+      limits = newLimits;
+
+      for (const key of pendingRuleChanges) {
+        const rule = cardRules[key];
+        if (rule.trackQuota === false) {
+          if (mode === 'recalculate') recalculateRuleHistory(key, rule, startDates[key], savedAt);
+          continue;
+        }
+        if (mode === 'recalculate') {
+          const startAt = startDates[key];
+          quotas[key] = recalculateRuleHistory(key, rule, startAt, savedAt);
+          quotaResetAt[key] = startAt;
+        } else {
+          const used = Math.max(0, (oldLimits[key] || 0) - (oldQuotas[key] ?? oldLimits[key] ?? 0));
+          quotas[key] = Math.max(0, limits[key] - used);
+        }
+
+        const periodKey = getCurrentPeriodKey(key);
+        if (periodKey) quotaPeriods[key] = periodKey;
+        else delete quotaPeriods[key];
+      }
+
+      ruleRevision++;
+      quotaRevision++;
+      ruleUpdatedAt = savedAt;
+      for (const key of pendingRuleChanges) cardRules[key].updatedAt = savedAt;
+      localStorage.setItem(STORAGE_KEY.rules, JSON.stringify(cardRules));
+      localStorage.setItem(STORAGE_KEY.rulesUpdatedAt, String(ruleUpdatedAt));
+      localStorage.setItem(STORAGE_KEY.limits, JSON.stringify(limits));
+      localStorage.setItem(STORAGE_KEY.quotas, JSON.stringify(quotas));
+      localStorage.setItem(STORAGE_KEY.quotaPeriods, JSON.stringify(quotaPeriods));
+      localStorage.setItem(STORAGE_KEY.quotaResetAt, JSON.stringify(quotaResetAt));
+      localStorage.setItem(STORAGE_KEY.ledger, JSON.stringify(ledger));
+
+      closeRuleChangeModal();
+      ruleEditMode = false;
+      draftCardRules = null;
+      renderRuleGuideTable();
+      renderRuleGuideSummary();
+      renderQuotaCards();
+      updateQuotaUI();
+      renderLedger();
+      calculate();
+      pushToCloud();
+      showToast(mode === 'recalculate' ? '規則已儲存，本期消費已重新計算' : '規則已儲存，僅套用於之後的消費');
+    }
+
+    function renderRuleGuideSummary() {
+      const root = document.getElementById('ruleGuideSummary');
+      const transit = getRule('jcard_transit');
+      const kuma = getRule('kuma');
+      const jcard = getRule('jcard');
+      const costco = getRule('costco');
+      const paypay = getRule('paypay');
+      const paragraphs = [
+        `🚆 交通卡儲值：富邦 J 卡淨回饋 ${getNetRate(transit)}%，單筆滿 NT$${Number(transit.minThreshold).toLocaleString()} 才達標；可刷紅線 NT$${limits.jcard_transit.toLocaleString()}。未達門檻或額度用完時，改看熊本熊卡淨 ${getNetRate(kuma)}%，無單筆門檻。`,
+        `📱 PayPay：玉山 Wallet 綁熊本熊淨回饋 ${getNetRate(paypay)}%，上限 NT$${Number(paypay.cap).toLocaleString()}，按${paypay.capBasis === 'net' ? '淨回饋' : '加碼回饋'}計，可刷紅線 NT$${limits.paypay.toLocaleString()}。`,
+        `🛍️ 一般店家：獨立指定店優先看熊本熊卡淨 ${getNetRate(kuma)}%；熊本熊不適用或額度用完時，單筆滿 NT$${Number(jcard.minThreshold).toLocaleString()} 看富邦 J 卡淨 ${getNetRate(jcard)}%，未滿門檻改看 Costco 卡淨 ${getNetRate(costco)}%。百貨/美食街統收不套用熊本熊指定店加碼。`,
+        `🔄 額度週期：${transit.cycleLabel}；${kuma.cycleLabel}；${jcard.cycleLabel}；${costco.cycleLabel}；${paypay.cycleLabel}`
+      ];
+      root.replaceChildren(...paragraphs.map(text => {
+        const paragraph = document.createElement('p');
+        paragraph.textContent = text;
+        return paragraph;
+      }));
+      document.getElementById('kumaGuideTitle').textContent = `🐻 玉山熊本熊 ${getNetRate(kuma).toFixed(1)}% 指定特店完整清單`;
+      document.getElementById('kumaTransitNet').textContent = `${getNetRate(kuma).toFixed(1)}%`;
+    }
+
+    function maybePromptEsunStatementDay() {
+      const day = getRule('kuma').statementDay;
+      if (day || localStorage.getItem(STORAGE_KEY.billingPromptDismissed)) return;
+      document.getElementById('esunStatementDay').value = '';
+      document.getElementById('billingSetupModal').style.display = 'flex';
+    }
+
+    function saveEsunStatementDay() {
+      const input = document.getElementById('esunStatementDay');
+      const day = Number(input.value);
+      if (!Number.isInteger(day) || day < 1 || day > 31) {
+        input.reportValidity();
+        if (!input.value) showToast('請輸入銀行帳單上的每月結帳日；未知可先選手動重置');
+        return;
+      }
+
+      const savedAt = Date.now();
+      for (const key of ['kuma', 'paypay']) {
+        cardRules[key].statementDay = day;
+        cardRules[key].cycleLabel = getCycleLabel(cardRules[key]);
+        cardRules[key].updatedAt = savedAt;
+        const periodKey = getCurrentPeriodKey(key);
+        if (periodKey) quotaPeriods[key] = periodKey;
+      }
+      ruleUpdatedAt = savedAt;
+      ruleRevision++;
+      localStorage.setItem(STORAGE_KEY.rules, JSON.stringify(cardRules));
+      localStorage.setItem(STORAGE_KEY.rulesUpdatedAt, String(ruleUpdatedAt));
+      localStorage.setItem(STORAGE_KEY.quotaPeriods, JSON.stringify(quotaPeriods));
+      localStorage.setItem(STORAGE_KEY.billingPromptDismissed, '1');
+      document.getElementById('billingSetupModal').style.display = 'none';
+      renderQuotaCards();
+      renderRuleGuideTable();
+      renderRuleGuideSummary();
+      updateQuotaUI();
+      calculate();
+      pushToCloud();
+      showToast(`已設定玉山卡每月 ${day} 日結帳，共用於熊本熊卡與 PayPay`);
+    }
+
+    function deferEsunStatementDay() {
+      localStorage.setItem(STORAGE_KEY.billingPromptDismissed, '1');
+      document.getElementById('billingSetupModal').style.display = 'none';
+      showToast('帳單日尚未確認；玉山兩項額度維持手動重置');
+    }
 
     // 初始化
     function init() {
-      // 載入各卡回饋上限與加碼比例到設定欄位
-      for (let key in cardRules) {
-        const capEl = document.getElementById(`cap-${key}`);
-        const rateEl = document.getElementById(`rate-${key}`);
-        const calcEl = document.getElementById(`calc-${key}`);
-        if (capEl && rateEl) {
-          capEl.value = cardRules[key].cap;
-          rateEl.value = cardRules[key].rate;
-          const lim = getCardLimit(key);
-          if (calcEl) calcEl.innerText = `$${lim.toLocaleString()}`;
-        }
+      // 確保新 key jcard_transit 存在（針對雲端載入後 schema 補齊）
+      for (let k in DEFAULT_CARD_RULES) {
+        if (DEFAULT_CARD_RULES[k].trackQuota === false) continue;
+        if (limits[k] === undefined) limits[k] = getCardLimit(k);
+        if (quotas[k] === undefined) quotas[k] = limits[k];
       }
+
+      reconcileLimitsWithRules();
+      checkQuotaPeriods();
+      localStorage.setItem(STORAGE_KEY.rules, JSON.stringify(cardRules));
+      renderQuotaCards();
+      renderRuleGuideTable();
+      renderRuleGuideSummary();
 
       updateRateDisplay();
       updateQuotaUI();
       renderLedger();
       calculate();
+
+      // 自動連網抓取最新即時匯率
+      fetchLiveRate(false);
 
       // 檢查網址參數 ?room=XXXX
       const urlParams = new URLSearchParams(window.location.search);
@@ -1117,21 +2040,133 @@
         joinRoom(currentRoom, true);
       } else {
         updateSyncUI();
+        maybePromptEsunStatementDay();
       }
 
       // 當頁面喚醒時自動同步
       document.addEventListener('visibilitychange', () => {
-        if (document.visibilityState === 'visible' && currentRoom) {
-          pullFromCloud(true);
+        if (document.visibilityState === 'visible') {
+          checkQuotaPeriods();
+          fetchLiveRate(false);
+          if (currentRoom) pullFromCloud(true);
         }
       });
 
-      // 背景定時同步 (每 15 秒)
+      // 背景定時同步 (每 20 秒)
       setInterval(() => {
+        checkQuotaPeriods();
         if (currentRoom && document.visibilityState === 'visible') {
           pullFromCloud(true);
         }
-      }, 15000);
+      }, 20000);
+    }
+
+    // 即時匯率連網引擎 (支援多重備援 API，免金鑰、超快速、無 CORS 限制)
+    async function fetchLiveRate(forceAlert = false) {
+      const dot = document.getElementById('rateLiveDot');
+      const badge = document.getElementById('rateModeBadge');
+
+      try {
+        const res = await fetch('https://open.er-api.com/v6/latest/JPY');
+        if (res.ok) {
+          const data = await res.json();
+          if (data && data.rates && data.rates.TWD) {
+            applyFetchedRate(data.rates.TWD, forceAlert);
+            return;
+          }
+        }
+        throw new Error('Fallback needed');
+      } catch (err) {
+        try {
+          const res2 = await fetch('https://api.exchangerate-api.com/v4/latest/JPY');
+          if (res2.ok) {
+            const data2 = await res2.json();
+            if (data2 && data2.rates && data2.rates.TWD) {
+              applyFetchedRate(data2.rates.TWD, forceAlert);
+              return;
+            }
+          }
+        } catch (err2) {
+          console.warn('即時匯率網路連線異常，使用快取匯率', err2);
+          if (forceAlert) showToast('⚠️ 網路連線逾時，維持當前匯率');
+        }
+      }
+    }
+
+    function applyFetchedRate(rateVal, showNotification = false) {
+      jpyRate = parseFloat(parseFloat(rateVal).toFixed(4));
+      isLiveRate = true;
+      rateFetchTime = new Date().toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+
+      localStorage.setItem(STORAGE_KEY.rate, jpyRate.toString());
+      localStorage.setItem(STORAGE_KEY.rateLive, 'true');
+      localStorage.setItem(STORAGE_KEY.rateTime, rateFetchTime);
+
+      updateRateDisplay();
+      updateQuotaUI();
+      calculate();
+      pushToCloud();
+
+      if (showNotification) {
+        showToast(`🟢 即時匯率已更新為 ${jpyRate.toFixed(4)}`);
+      }
+    }
+
+    // 匯率顯示更新
+    function updateRateDisplay() {
+      const displayEl = document.getElementById('rateDisplay');
+      const labelEl = document.getElementById('rateLabel');
+      const dot = document.getElementById('rateLiveDot');
+      const badge = document.getElementById('rateModeBadge');
+      const modalLive = document.getElementById('modalLiveRate');
+      const timeEl = document.getElementById('rateFetchTime');
+      const customInput = document.getElementById('customRateInput');
+
+      if (displayEl) displayEl.innerText = jpyRate.toFixed(4);
+      if (labelEl) labelEl.innerText = jpyRate.toFixed(4);
+      if (modalLive) modalLive.innerText = jpyRate.toFixed(4);
+      if (customInput) customInput.value = jpyRate.toFixed(4);
+
+      if (isLiveRate) {
+        dot.className = 'rate-dot';
+        badge.innerText = '即時';
+        badge.style.color = 'var(--green)';
+        if (timeEl) timeEl.innerText = `更新時間：今天 ${rateFetchTime || '最新即時'}`;
+      } else {
+        dot.className = 'rate-dot custom';
+        badge.innerText = '自訂';
+        badge.style.color = 'var(--warning)';
+        if (timeEl) timeEl.innerText = `自訂匯率模式`;
+      }
+    }
+
+    // 匯率 Modal 開關
+    function openRateModal() {
+      updateRateDisplay();
+      document.getElementById('rateModal').style.display = 'flex';
+    }
+
+    function closeRateModal() {
+      document.getElementById('rateModal').style.display = 'none';
+    }
+
+    function saveCustomRate() {
+      const newRate = parseFloat(document.getElementById('customRateInput').value);
+      if (newRate > 0) {
+        jpyRate = parseFloat(newRate.toFixed(4));
+        isLiveRate = false;
+        localStorage.setItem(STORAGE_KEY.rate, jpyRate.toString());
+        localStorage.setItem(STORAGE_KEY.rateLive, 'false');
+
+        updateRateDisplay();
+        updateQuotaUI();
+        calculate();
+        closeRateModal();
+        pushToCloud();
+        showToast(`✏️ 已套用自訂匯率 ${jpyRate.toFixed(4)}`);
+      } else {
+        alert("請輸入大於 0 的有效匯率！");
+      }
     }
 
     // 雲端與旅程房間同步系統
@@ -1183,14 +2218,14 @@
 
     function joinRoom(roomCode, isSilent = false) {
       currentRoom = roomCode;
-      localStorage.setItem('japan_card_room', roomCode);
+      localStorage.setItem(STORAGE_KEY.room, roomCode);
       try {
         const newUrl = window.location.pathname + '?room=' + encodeURIComponent(roomCode);
         window.history.replaceState(null, '', newUrl);
       } catch(e) {}
 
       updateSyncUI();
-      pullFromCloud(isSilent);
+      pullFromCloud(isSilent).finally(maybePromptEsunStatementDay);
       if (!isSilent) {
         showToast(`☁️ 已連線至旅程房間: ${roomCode}`);
       }
@@ -1198,7 +2233,7 @@
 
     function disconnectRoom() {
       currentRoom = '';
-      localStorage.removeItem('japan_card_room');
+      localStorage.removeItem(STORAGE_KEY.room);
       try {
         window.history.replaceState(null, '', window.location.pathname);
       } catch(e) {}
@@ -1243,9 +2278,11 @@
       if (!currentRoom || isSyncing) return;
       const payload = {
         updatedAt: Date.now(),
+        rulesUpdatedAt: ruleUpdatedAt,
         cardRules,
-        limits,
         quotas,
+        quotaPeriods,
+        quotaResetAt,
         jpyRate,
         ledger
       };
@@ -1262,41 +2299,58 @@
 
     async function pullFromCloud(silent = false) {
       if (!currentRoom) return;
+      const quotaRevisionAtStart = quotaRevision;
+      const ledgerRevisionAtStart = ledgerRevision;
+      const ruleRevisionAtStart = ruleRevision;
       try {
         const res = await fetch(`https://kvdb.io/japan_cards_sync_2026/${encodeURIComponent(currentRoom)}`);
         if (res.ok) {
           const data = await res.json();
           if (data && data.quotas) {
+            const hasLocalQuotaChanges = quotaRevision !== quotaRevisionAtStart;
+            const hasLocalLedgerChanges = ledgerRevision !== ledgerRevisionAtStart;
+            const hasLocalRuleChanges = ruleRevision !== ruleRevisionAtStart;
             isSyncing = true;
-            if (data.cardRules) {
-              cardRules = data.cardRules;
-              localStorage.setItem('japan_card_rules', JSON.stringify(cardRules));
-              for (let key in cardRules) {
-                const capEl = document.getElementById(`cap-${key}`);
-                const rateEl = document.getElementById(`rate-${key}`);
-                const calcEl = document.getElementById(`calc-${key}`);
-                if (capEl && rateEl) {
-                  capEl.value = cardRules[key].cap;
-                  rateEl.value = cardRules[key].rate;
-                  if (calcEl) calcEl.innerText = `$${getCardLimit(key).toLocaleString()}`;
-                }
-              }
+            const hasRemoteRuleVersion = Number.isFinite(Number(data.rulesUpdatedAt));
+            const remoteRulesUpdatedAt = hasRemoteRuleVersion ? Number(data.rulesUpdatedAt) : 0;
+            const canApplyRemoteRules = hasRemoteRuleVersion ? remoteRulesUpdatedAt >= ruleUpdatedAt : ruleUpdatedAt === 0;
+            const cloudRulesStale = Boolean(data.cardRules) && !canApplyRemoteRules;
+            const canApplyCloudState = !hasLocalQuotaChanges && !hasLocalLedgerChanges && !hasLocalRuleChanges && !cloudRulesStale;
+            if (data.cardRules && !hasLocalRuleChanges && canApplyRemoteRules) {
+              cardRules = normalizeCardRules(data.cardRules);
+              ruleUpdatedAt = remoteRulesUpdatedAt;
+              localStorage.setItem(STORAGE_KEY.rules, JSON.stringify(cardRules));
             }
-            quotas = data.quotas || quotas;
-            limits = data.limits || limits;
-            jpyRate = data.jpyRate || jpyRate;
-            ledger = data.ledger || ledger;
+            limits = Object.fromEntries(Object.entries(cardRules)
+              .filter(([, rule]) => rule.trackQuota !== false)
+              .map(([key]) => [key, getCardLimit(key)]));
+            if (canApplyCloudState) {
+              quotas = { ...limits, ...data.quotas };
+              quotaPeriods = data.quotaPeriods || quotaPeriods;
+              quotaResetAt = data.quotaResetAt || quotaResetAt;
+            }
+            localStorage.setItem(STORAGE_KEY.rulesUpdatedAt, String(ruleUpdatedAt));
+            localStorage.setItem(STORAGE_KEY.quotaPeriods, JSON.stringify(quotaPeriods));
+            localStorage.setItem(STORAGE_KEY.quotaResetAt, JSON.stringify(quotaResetAt));
+            renderRuleGuideTable();
+            renderRuleGuideSummary();
+            renderQuotaCards();
+            if (canApplyCloudState) {
+              if (data.jpyRate && !isLiveRate) jpyRate = data.jpyRate;
+              ledger = data.ledger || ledger;
+            }
 
-            localStorage.setItem('japan_card_quotas', JSON.stringify(quotas));
-            localStorage.setItem('japan_card_limits', JSON.stringify(limits));
-            localStorage.setItem('japan_card_rate', jpyRate.toString());
-            localStorage.setItem('japan_card_ledger', JSON.stringify(ledger));
+            localStorage.setItem(STORAGE_KEY.quotas, JSON.stringify(quotas));
+            localStorage.setItem(STORAGE_KEY.limits, JSON.stringify(limits));
+            localStorage.setItem(STORAGE_KEY.ledger, JSON.stringify(ledger));
 
             updateRateDisplay();
             updateQuotaUI();
             renderLedger();
             calculate();
+            const didAutoReset = checkQuotaPeriods();
             isSyncing = false;
+            if (hasLocalQuotaChanges || hasLocalLedgerChanges || hasLocalRuleChanges || cloudRulesStale || didAutoReset) pushToCloud();
 
             if (!silent) {
               showToast(`☁️ 已同步【${currentRoom}】最新資料`);
@@ -1308,12 +2362,6 @@
       } catch(e) {
         console.warn('雲端載入提示: 離線使用本地快取');
       }
-    }
-
-    // 匯率顯示更新
-    function updateRateDisplay() {
-      document.getElementById('rateDisplay').innerText = jpyRate.toFixed(4);
-      document.getElementById('rateLabel').innerText = jpyRate.toFixed(4);
     }
 
     // Tab 切換
@@ -1341,11 +2389,13 @@
       const locationType = document.getElementById('locationType');
       const memo = document.getElementById('memo');
 
-      // 重置情境標籤選中樣式
       document.querySelectorAll('.quick-tag').forEach(t => t.classList.remove('active'));
       if (btnElement) btnElement.classList.add('active');
 
-      if (preset === 'matsukiyo') {
+      if (preset === 'transit') {
+        payType.value = 'transit';
+        memo.value = 'Suica / 交通卡儲值';
+      } else if (preset === 'matsukiyo') {
         payType.value = 'card';
         storeType.value = 'kuma_shop';
         locationType.value = 'street';
@@ -1360,11 +2410,6 @@
         storeType.value = 'kuma_shop';
         locationType.value = 'street';
         memo.value = '唐吉訶德';
-      } else if (preset === 'suica') {
-        payType.value = 'card';
-        storeType.value = 'kuma_shop';
-        locationType.value = 'street';
-        memo.value = 'Suica 加值';
       } else if (preset === 'dept') {
         payType.value = 'card';
         storeType.value = 'kuma_shop';
@@ -1398,19 +2443,19 @@
     // 更新額度看板 UI
     function updateQuotaUI() {
       for (let key in limits) {
-        const remaining = Math.max(0, quotas[key]);
-        const limit = limits[key] || getCardLimit(key);
-        const percent = Math.min(100, Math.max(0, (remaining / limit) * 100));
+        const limit = getCardLimit(key);  // 永遠用規則計算的正確上限
+        const remaining = Math.max(0, quotas[key] !== undefined ? quotas[key] : limit);
+        const percent = limit > 0 ? Math.min(100, Math.max(0, (remaining / limit) * 100)) : 0;
 
         const bar = document.getElementById(`p-${key}`);
         const text = document.getElementById(`q-${key}`);
         const limitText = document.getElementById(`ql-${key}`);
         const rcEl = document.getElementById(`rc-${key}`);
 
-        const rule = cardRules[key] || DEFAULT_CARD_RULES[key];
-        const remainingReward = rule && rule.rate > 0 ? Math.round(remaining * (rule.rate / 100)) : 0;
+        const rule = getRule(key);
+        const remainingReward = rule ? Math.round(remaining * (getCapRate(rule) / 100)) : 0;
 
-        if (bar && text) {
+        if (bar && text && limitText) {
           bar.style.width = `${percent}%`;
           if (percent > 45) {
             bar.style.backgroundColor = 'var(--green)';
@@ -1425,209 +2470,518 @@
         }
 
         if (rcEl && rule) {
-          rcEl.innerHTML = `<span>💰 加碼回饋金剩餘: <b>$${remainingReward.toLocaleString()}</b> / $${rule.cap.toLocaleString()}</span><span style="font-size:0.7rem; color:var(--text-secondary);">加碼 ${rule.rate}%</span>`;
+          const capText = document.createElement('span');
+          capText.textContent = `💰 ${rule.capPeriod}${rule.capBasis === 'net' ? '回饋' : '加碼金'}剩餘: $${remainingReward.toLocaleString()} / $${Number(rule.cap).toLocaleString()}`;
+          const rateText = document.createElement('span');
+          rateText.style.cssText = 'font-size:0.7rem; color:var(--text-secondary);';
+          rateText.textContent = `基本 ${rule.base}% + 加碼 ${rule.rate}% - 手續費 ${rule.fee}% = 淨 ${getNetRate(rule)}%`;
+          rcEl.replaceChildren(capText, rateText);
         }
       }
     }
 
-    // 當回饋上限或加碼率修改時自動回推刷卡額度
-    function onCapOrRateChange(key) {
-      const capEl = document.getElementById(`cap-${key}`);
-      const rateEl = document.getElementById(`rate-${key}`);
-      const calcEl = document.getElementById(`calc-${key}`);
-
-      const cap = parseFloat(capEl.value) || 0;
-      const rate = parseFloat(rateEl.value) || 0;
-
-      cardRules[key] = { cap, rate };
-      localStorage.setItem('japan_card_rules', JSON.stringify(cardRules));
-
-      const newLimit = (rate > 0) ? Math.round(cap / (rate / 100)) : 0;
-      limits[key] = newLimit;
-      localStorage.setItem('japan_card_limits', JSON.stringify(limits));
-
-      if (calcEl) calcEl.innerText = `$${newLimit.toLocaleString()}`;
-
-      updateQuotaUI();
-      calculate();
-      pushToCloud();
-    }
-
     function saveQuotas() {
-      localStorage.setItem('japan_card_quotas', JSON.stringify(quotas));
+      quotaRevision++;
+      localStorage.setItem(STORAGE_KEY.quotas, JSON.stringify(quotas));
+      localStorage.setItem(STORAGE_KEY.quotaPeriods, JSON.stringify(quotaPeriods));
+      localStorage.setItem(STORAGE_KEY.quotaResetAt, JSON.stringify(quotaResetAt));
       updateQuotaUI();
       pushToCloud();
     }
 
-    // 決策核心演算法
+    // 決策核心演算法 (依據 2026 最新官方規定與扣除 1.5% 手續費後淨回饋)
     function calculate() {
       const payType = document.getElementById('payType').value;
       const storeType = document.getElementById('storeType').value;
       const locationType = document.getElementById('locationType').value;
       const jpy = parseFloat(document.getElementById('jpyAmount').value) || 0;
-      const twd = jpy * jpyRate;
+      const twd = Math.round(jpy * jpyRate);
+      
+      const jTransitRule = getRule('jcard_transit');
+      const kumaRule = getRule('kuma');
+      const jcardRule = getRule('jcard');
+      const costcoRule = getRule('costco');
+      const paypayRule = getRule('paypay');
+      const cubeRule = getRule('cube');
+      
+      const jTransitThreshold = Number(jTransitRule.minThreshold) || 0;
+      const jcardThreshold = Number(jcardRule.minThreshold) || 0;
+      const rateLabel = rate => `${Number(rate).toFixed(1)}%`;
 
-      document.getElementById('twdDisplay').innerText = `NT$ ${Math.round(twd).toLocaleString()}`;
+      document.getElementById('twdDisplay').innerText = `NT$ ${twd.toLocaleString()}`;
 
       // 欄位聯動控制
+      const isTransit = (payType === 'transit');
       const isPayPay = (payType === 'paypay');
-      document.getElementById('storeGroup').style.display = isPayPay ? 'none' : 'flex';
-      document.getElementById('locationGroup').style.display = (!isPayPay && storeType === 'kuma_shop') ? 'flex' : 'none';
+      const isGeneralCard = (payType === 'card');
+
+      document.getElementById('storeGroup').style.display = isGeneralCard ? 'flex' : 'none';
+      document.getElementById('locationGroup').style.display = (isGeneralCard && storeType === 'kuma_shop') ? 'flex' : 'none';
 
       const deptAlert = document.getElementById('deptAlert');
+      const transitAlert = document.getElementById('transitAlert');
+      const transitAlertText = document.getElementById('transitAlertText');
       const jcardAlert = document.getElementById('jcardAlert');
-      deptAlert.style.display = (!isPayPay && storeType === 'kuma_shop' && locationType === 'department') ? 'flex' : 'none';
 
-      let bestCard = "";
-      let bestIcon = "💳";
-      let desc = "";
-      let subAdvice = "";
-      let rateBadge = "";
-      let cardKey = "";
-      let ratePercent = 0;
+      document.getElementById('deptAlertText').innerHTML = `<b>百貨統收陷阱：</b>此店位於百貨商場內，熊本熊卡無法判定指定特店 (喪失 ${rateLabel(kumaRule.rate)} 加碼)，系統已自動避開並改派最優解！`;
+      document.getElementById('jcardAlertText').innerHTML = `<b>未達門檻提醒：</b>金額未達 NT$${jcardThreshold.toLocaleString()}，不符合富邦 J 卡加碼門檻（未達時淨回饋 ${rateLabel(jcardRule.base - jcardRule.fee)}），已自動改派無單筆門檻的 Costco 卡 (淨 ${rateLabel(getNetRate(costcoRule))})！`;
+      deptAlert.style.display = (isGeneralCard && storeType === 'kuma_shop' && locationType === 'department') ? 'flex' : 'none';
+
+      // 初始清除 UI 狀態
       let resultBox = document.getElementById('resultBox');
-
-      // 清除樣式 class
       resultBox.className = 'result-box';
+      const overLimitAlert = document.getElementById('overLimitAlert');
+      const quotaStatusBox = document.getElementById('resultQuotaBox');
+      overLimitAlert.style.display = 'none';
+      transitAlert.style.display = 'none';
+      jcardAlert.style.display = 'none';
 
-      if (isPayPay) {
-        // PayPay 邏輯
-        if (quotas.paypay >= twd && twd > 0) {
-          bestCard = "玉山 Wallet 綁熊本熊卡";
-          bestIcon = "🐻";
-          rateBadge = "3.5%";
-          ratePercent = 3.5;
-          desc = "享 3.5% 免海外手續費 1.5%！最適合掃碼店家。";
-          subAdvice = `此筆刷完後，PayPay 額度將剩餘約 NT$${Math.round(quotas.paypay - twd).toLocaleString()}`;
-          cardKey = 'paypay';
-          resultBox.classList.add('paypay');
-        } else {
-          bestCard = "玉山 Wallet 扣外幣日幣帳戶 / 街口 / 全支付";
-          bestIcon = "📱";
-          rateBadge = "免手續費";
-          ratePercent = 0;
-          desc = quotas.paypay < twd && twd > 0 
-            ? "⚠️ PayPay 加碼額度不足，建議直接從外幣日幣帳戶扣款避開匯差！" 
-            : "PayPay 掃碼特約店家專用管道";
-          subAdvice = "若綁定玉山外幣帳戶扣日幣存款，享免 1.5% 手續費。";
-          cardKey = 'backup_paypay';
-          resultBox.classList.add('backup');
-        }
-        jcardAlert.style.display = 'none';
-      } else {
-        // 實體卡片 / Apple Pay 決策階梯
-        const isKumaEligible = (storeType === 'kuma_shop' && locationType === 'street' && quotas.kuma >= twd && twd > 0);
-        const isJcardEligible = (twd >= 1000 && quotas.jcard >= twd && twd > 0);
-        const isCostcoEligible = (quotas.costco >= twd && twd > 0);
-
-        if (isKumaEligible) {
-          bestCard = "玉山熊本熊卡 (實體卡 / Apple Pay)";
-          bestIcon = "🐻";
-          rateBadge = "8.5%";
-          ratePercent = 8.5;
-          desc = "🔥 命中指定特店獨立門市！享 8.5% 最高回饋！";
-          subAdvice = `扣除後熊本熊加碼額度剩餘約 NT$${Math.round(quotas.kuma - twd).toLocaleString()} (上限 $${limits.kuma})`;
-          cardKey = 'kuma';
-          resultBox.classList.add('kuma');
-          jcardAlert.style.display = 'none';
-        } else if (isJcardEligible) {
-          bestCard = "富邦 J 卡 (實體卡 / Apple Pay)";
-          bestIcon = "🇯";
-          rateBadge = "6.0%";
-          ratePercent = 6.0;
-          desc = "✨ 單筆滿千享 6% 加碼回饋！";
-          if (storeType === 'kuma_shop' && locationType === 'department') {
-            desc += " (已自動避開百貨統收陷阱)";
-          }
-          subAdvice = `扣除後 J 卡加碼額度剩餘約 NT$${Math.round(quotas.jcard - twd).toLocaleString()} (每季上限 $${limits.jcard})`;
-          cardKey = 'jcard';
-          resultBox.classList.add('jcard');
-          jcardAlert.style.display = 'none';
-        } else if (isCostcoEligible) {
-          bestCard = "富邦 Costco 聯名卡";
-          bestIcon = "🛒";
-          rateBadge = "5.0%";
-          ratePercent = 5.0;
-          desc = "享 5% 好多金回饋！(無單筆滿千限制)";
-          if (twd > 0 && twd < 1000) {
-            jcardAlert.style.display = 'flex';
-          } else {
-            jcardAlert.style.display = 'none';
-          }
-          subAdvice = `扣除後 Costco 加碼額度剩餘約 NT$${Math.round(quotas.costco - twd).toLocaleString()} (每月上限 $${limits.costco})`;
-          cardKey = 'costco';
-          resultBox.classList.add('costco');
-        } else {
-          // 全部加碼用罄或額度不足
-          bestCard = "國泰 CUBE 卡 (趣旅行 3%) 或 雙幣外幣帳戶";
-          bestIcon = "💳";
-          rateBadge = "3.0% 無上限";
-          ratePercent = 3.0;
-          desc = "⚠️ 前線加碼額度均已用盡或金額過大！";
-          subAdvice = "若手上先前換的平均匯率低於現價，優先刷雙幣卡扣外幣帳戶；否則刷 CUBE 享 3% 無上限小樹點。";
-          cardKey = 'backup_cube';
-          resultBox.classList.add('backup');
-          jcardAlert.style.display = 'none';
-        }
-      }
-
-      // 如果未輸入金額
       if (jpy <= 0) {
-        bestCard = "請輸入金額試算";
-        bestIcon = "💡";
-        rateBadge = "--";
-        desc = "系統將為您智慧比對 8.5% / 6% / 5% / 3.5% 最優解與額度剩餘情況。";
-        subAdvice = "";
-        resultBox.className = 'result-box';
+        document.getElementById('bestCard').innerText = "請輸入金額試算";
+        document.getElementById('bestCardIcon').innerText = "💡";
+        document.getElementById('rateBadge').innerText = "--";
+        document.getElementById('cardDesc').innerText = "系統依據交通卡、指定店、一般店與單筆門檻，為您智慧派卡並最大化回饋。";
+        document.getElementById('subAdvice').innerText = "";
+        document.getElementById('bestReward').innerText = "";
+        document.getElementById('singleRecordAction').style.display = 'block';
+        document.getElementById('splitRecordActions').style.display = 'none';
+        quotaStatusBox.style.display = 'none';
+        return;
       }
 
-      // 試算回饋金
-      const rewardTwd = Math.round(twd * (ratePercent / 100));
-      const rewardDisplay = (jpy > 0 && rewardTwd > 0) 
-        ? `預估現省：NT$ ${rewardTwd.toLocaleString()} (${rateBadge})` 
-        : "";
+      // --- 決策邏輯開始 ---
 
-      document.getElementById('bestCard').innerText = bestCard;
-      document.getElementById('bestCardIcon').innerText = bestIcon;
-      document.getElementById('rateBadge').innerText = rateBadge;
-      document.getElementById('cardDesc').innerText = desc;
-      document.getElementById('subAdvice').innerText = subAdvice;
-      document.getElementById('bestReward').innerText = rewardDisplay;
+      const fbKey = jpyRate > 0.2020 ? 'backup_fx' : 'backup_cube';
+      const splitMode = document.getElementById('splitMode').value; // 'auto' 或 'single'
 
-      currentDecision = {
-        cardKey,
-        cardName: bestCard,
-        ratePercent,
-        jpy,
-        twd: Math.round(twd),
-        rewardTwd
+      // 情境適用範圍與回饋數值共用攻略表規則。
+      const isKumaShop = storeType === 'kuma_shop' && locationType === 'street';
+      const contextKey = isTransit ? 'transit' : isPayPay ? 'paypay' : isKumaShop ? 'kuma_shop_street' : 'general';
+      let pool = Object.entries(cardRules)
+        .filter(([, rule]) => Array.isArray(rule.contexts) && rule.contexts.includes(contextKey))
+        .map(([key]) => key);
+
+      // 2. 按淨回饋率從高到低排序（考慮門檻：未達門檻時只能拿基本回饋）
+      // 先計算每張卡在「達門檻且有額度」時的淨回饋率，作為排序依據
+      const getCardNetRate = (cardKey) => {
+        const rule = getRule(cardKey);
+        if (!rule) return -1;
+        // 回傳加碼達標時的淨回饋率（basic + bonus - fee）
+        return getNetRate(rule);
       };
+
+      pool.sort((a, b) => getCardNetRate(b) - getCardNetRate(a));
+
+      // 3. 計算單卡最佳方案（懶人方案：整筆刷單張卡）
+      let bestSingle = null;
+      let bestSingleReward = -1;
+      for (let k of pool) {
+        let r = calculateRewardForAmount(twd, k);
+        console.log('[DEBUG] bestSingle check:', k, 'reward:', r);
+        if (r > bestSingleReward) {
+          bestSingleReward = r;
+          bestSingle = k;
+        }
+      }
+      // 備用卡也要考慮
+      const fbReward = calculateRewardForAmount(twd, fbKey);
+      console.log('[DEBUG] bestSingle check:', fbKey, 'reward:', fbReward);
+      if (fbReward > bestSingleReward) {
+        bestSingleReward = fbReward;
+        bestSingle = fbKey;
+      }
+
+      // 4. 計算拆刷最佳方案（優先最高回饋率卡片，按順序填滿額度）
+      let bestPlan = null;
+      let maxReward = -1;
+
+      if (splitMode === 'auto') {
+        // 自動模式：貪婪演算法 - 依回饋率排序，優先填滿最高回饋率卡片
+        bestPlan = calculateBestSplitPlan(twd, pool, fbKey);
+        maxReward = bestPlan.reduce((sum, p) => sum + calculateRewardForAmount(p.amount, p.key), 0);
+      } else {
+        // 單卡模式：直接用最佳單卡
+        bestPlan = [{ key: bestSingle, amount: twd }];
+        maxReward = bestSingleReward;
+      }
+
+      // 🔍 除錯日誌
+      console.log('[DEBUG] splitMode:', splitMode);
+      console.log('[DEBUG] pool:', pool);
+      console.log('[DEBUG] quotas:', JSON.stringify(quotas));
+      console.log('[DEBUG] limits:', JSON.stringify(limits));
+      console.log('[DEBUG] bestPlan:', bestPlan);
+      console.log('[DEBUG] bestSingle:', bestSingle, 'bestSingleReward:', bestSingleReward);
+      console.log('[DEBUG] maxReward:', maxReward);
+      console.log('[DEBUG] isSplitRecommended:', bestPlan.length > 1 && (maxReward > bestSingleReward + 1));
+
+      const isSplitRecommended = bestPlan.length > 1 && (maxReward > bestSingleReward + 1);
+      
+      const mainCardKey = bestPlan[0].key;
+      const mainRule = getRule(mainCardKey === 'backup_cube' ? 'cube' : mainCardKey);
+      const mainCardName = mainRule ? mainRule.name : getCardDisplayName(mainCardKey);
+      
+      currentDecision = {
+        cardKey: mainCardKey,
+        cardName: mainCardName,
+        ratePercent: getActualRateForPart(bestPlan[0]),
+        jpy,
+        twd,
+        rewardTwd: Math.round(maxReward),
+        splitPlan: isSplitRecommended ? {
+          best: bestPlan.map(p => ({
+            cardKey: p.key,
+            cardName: getCardDisplayName(p.key),
+            amountTwd: p.amount,
+            ratePercent: getActualRateForPart(p),
+            thresholdNote: (() => {
+              const rule = getRule(p.key === 'backup_cube' ? 'cube' : p.key);
+              return rule && Number(rule.minThreshold) > p.amount
+                ? `未達單筆門檻 NT$${Number(rule.minThreshold).toLocaleString()}，本段按基本回饋計`
+                : '';
+            })()
+          })),
+          lazy: [{
+            cardKey: bestSingle,
+            cardName: getCardDisplayName(bestSingle),
+            amountTwd: twd,
+            ratePercent: getActualRateForPart({ key: bestSingle, amount: twd })
+          }]
+        } : null
+      };
+
+      const bestCardName = isSplitRecommended ? "⭐ 最佳拆刷方案" : currentDecision.cardName;
+      const bestIcon = isSplitRecommended ? (isTransit ? "🚆" : "💳") : getCardIcon(mainCardKey);
+      
+      document.getElementById('bestCard').innerText = bestCardName;
+      document.getElementById('bestCardIcon').innerText = bestIcon;
+      document.getElementById('rateBadge').innerText = isSplitRecommended ? "最大化回饋" : `淨賺 ${rateLabel(currentDecision.ratePercent)}`;
+      
+      if (isSplitRecommended) {
+        document.getElementById('cardDesc').innerText = "偵測到額度不足或門檻限制，建議拆刷以獲得最高回饋！";
+        document.getElementById('subAdvice').innerText = "請查看下方的拆刷建議說明。";
+        
+        const splitParts = currentDecision.splitPlan.best;
+        const lazyPart = currentDecision.splitPlan.lazy[0];
+        const buildLines = (parts) => parts.map(p => {
+          const rule = getRule(p.cardKey === 'backup_cube' ? 'cube' : p.cardKey);
+          const thresholdNote = p.thresholdNote ? `；${p.thresholdNote}` : '';
+          return `${rule ? rule.name : getCardDisplayName(p.cardKey)} (約 NT$${p.amountTwd.toLocaleString()}, 淨 ${rateLabel(p.ratePercent)}${thresholdNote})`;
+        });
+
+        document.getElementById('overLimitAlert').style.display = 'block';
+        document.getElementById('overLimitMsg').innerHTML = buildSplitPlanHTML({
+          header: "💡 發現更優的回饋組合！",
+          best: {
+            label: "最省錢方案（拆刷）",
+            lines: buildLines(splitParts),
+            earn: `合計省下約 NT$ ${Math.round(maxReward).toLocaleString()}`
+          },
+          lazy: {
+            label: `懶人方案（整筆刷 ${lazyPart.cardName}）`,
+            lines: [`整筆 NT$${twd.toLocaleString()}`],
+            earn: `省下約 NT$ ${Math.round(bestSingleReward).toLocaleString()}`
+          }
+        });
+        resultBox.className = 'result-box';
+      } else {
+        if (mainCardKey === 'jcard_transit') {
+          resultBox.classList.add('jcard_transit');
+          document.getElementById('cardDesc').innerText = `🔥 滿額達標！單筆滿 NT$${jTransitThreshold.toLocaleString()} 享加碼，淨賺 ${rateLabel(currentDecision.ratePercent)}！`;
+        } else if (mainCardKey === 'kuma') {
+          resultBox.classList.add('kuma');
+          document.getElementById('cardDesc').innerText = `✨ 指定特店/交通優惠！實拿 ${rateLabel(currentDecision.ratePercent)} 淨回饋！`;
+        } else if (mainCardKey === 'jcard') {
+          resultBox.classList.add('jcard');
+          document.getElementById('cardDesc').innerText = `✨ 實體滿額達標！淨賺 ${rateLabel(currentDecision.ratePercent)}！`;
+        } else if (mainCardKey === 'paypay') {
+          resultBox.classList.add('paypay');
+          document.getElementById('cardDesc').innerText = `📱 免 1.5% 手續費！實拿 ${rateLabel(currentDecision.ratePercent)} 淨回饋！`;
+        } else if (mainCardKey === 'costco') {
+          resultBox.classList.add('costco');
+          document.getElementById('cardDesc').innerText = `🛒 海外實體穩拿 ${rateLabel(currentDecision.ratePercent)} 回饋！`;
+        } else {
+          resultBox.classList.add('backup');
+          document.getElementById('cardDesc').innerText = currentDecision.cardName.includes('外幣') 
+            ? "⚠️ 加碼已滿！建議直接扣日幣外幣帳戶 (免 1.5% 手續費)。" 
+            : `🔥 加碼已滿！改用 ${currentDecision.cardName} 保底淨賺 ${rateLabel(currentDecision.ratePercent)}。`;
+        }
+        const mainLimit = getCardLimit(mainCardKey);
+        document.getElementById('subAdvice').innerText = !mainRule || mainRule.trackQuota === false ? "此方案使用無上限保底。" : `剩餘額度約 NT$${Math.round(quotas[mainCardKey] ?? mainLimit).toLocaleString()}。`;
+      }
+
+      if (isTransit && twd < jTransitThreshold) transitAlert.style.display = 'flex';
+      if (isGeneralCard && twd > 0 && twd < jcardThreshold && mainCardKey !== 'kuma') jcardAlert.style.display = 'flex';
+
+      document.getElementById('bestReward').innerText = `預估現賺淨回饋：NT$ ${Math.round(maxReward).toLocaleString()}`;
+      document.getElementById('singleRecordAction').style.display = isSplitRecommended ? 'none' : 'block';
+      document.getElementById('splitRecordActions').style.display = isSplitRecommended ? 'flex' : 'none';
+
+      if (mainCardKey && (quotas[mainCardKey] !== undefined || mainLimit !== undefined)) {
+        quotaStatusBox.style.display = 'flex';
+        const curQ = quotas[mainCardKey] ?? mainLimit;
+        const firstCharge = bestPlan[0].amount;
+        const aftQ = Math.max(0, curQ - firstCharge);
+        document.getElementById('resultCurrentQuota').innerText = `NT$ ${Math.round(curQ).toLocaleString()} (約 ¥${Math.round(curQ / jpyRate).toLocaleString()})`;
+        document.getElementById('resultAfterQuota').innerText = `NT$ ${Math.round(aftQ).toLocaleString()}`;
+      } else {
+        quotaStatusBox.style.display = 'none';
+      }
+      updateThresholdOpportunity(twd, jpy, isTransit, isGeneralCard, pool, rateLabel);
+    }
+
+    function calculateRewardBreakdown(amountTwd, cardKey, remainingQuota = quotas[cardKey] ?? limits[cardKey] ?? 0) {
+      const amount = Math.max(0, Number(amountTwd) || 0);
+      if (cardKey === 'backup_fx' || cardKey === 'backup_paypay') {
+        return { reward: 0, eligibleSpend: 0, baseOnlySpend: amount };
+      }
+      const rule = getRule(cardKey === 'backup_cube' ? 'cube' : cardKey);
+      if (!rule) return { reward: 0, eligibleSpend: 0, baseOnlySpend: amount };
+      const basicNet = Number(rule.base) - Number(rule.fee);
+      const bonusNet = getNetRate(rule);
+      if (rule.trackQuota === false) {
+        return { reward: amount * bonusNet / 100, eligibleSpend: amount, baseOnlySpend: 0 };
+      }
+      const meetsThreshold = !rule.minThreshold || amount >= Number(rule.minThreshold);
+      const eligibleSpend = meetsThreshold ? Math.min(amount, Math.max(0, Number(remainingQuota) || 0)) : 0;
+      const baseOnlySpend = amount - eligibleSpend;
+      return {
+        reward: eligibleSpend * bonusNet / 100 + baseOnlySpend * basicNet / 100,
+        eligibleSpend,
+        baseOnlySpend
+      };
+    }
+
+    function calculateRewardForAmount(amountTwd, cardKey) {
+      return calculateRewardBreakdown(amountTwd, cardKey).reward;
+    }
+
+    function getActualRateForPart(part) {
+      const reward = calculateRewardForAmount(part.amount, part.key);
+      return part.amount > 0 ? (reward / part.amount) * 100 : 0;
+    }
+
+    function getCardIcon(key) {
+      if (key === 'jcard_transit') return "🚆";
+      if (key === 'kuma') return "🐻";
+      if (key === 'jcard') return "🇯";
+      if (key === 'costco') return "🛒";
+      if (key === 'paypay') return "📱";
+      if (key === 'backup_fx') return "💴";
+      if (key === 'backup_cube') return "🌲";
+      return "💳";
+    }
+
+    function updateThresholdOpportunity(twd, jpy, isTransit, isGeneralCard, pool, rateLabel) {
+      let thresholdOffer = null;
+      let jTransitRule = getRule('jcard_transit');
+      let jcardRule = getRule('jcard');
+      let jTransitThreshold = Number(jTransitRule.minThreshold) || 0;
+      let jcardThreshold = Number(jcardRule.minThreshold) || 0;
+      if (jpy > 0) {
+        let thresholdRule = null;
+        let thresholdCardKey = '';
+        let threshold = 0;
+        let available = 0;
+        if (isTransit) {
+          thresholdRule = jTransitRule;
+          thresholdCardKey = 'jcard_transit';
+          threshold = jTransitThreshold;
+          available = quotas.jcard_transit ?? limits.jcard_transit;
+        } else if (isGeneralCard) {
+          thresholdRule = jcardRule;
+          thresholdCardKey = 'jcard';
+          threshold = jcardThreshold;
+          available = quotas.jcard ?? limits.jcard;
+        }
+        if (thresholdRule && threshold > twd && available >= threshold) {
+          let targetJpy = Math.ceil(threshold / jpyRate);
+          while (Math.round(targetJpy * jpyRate) < threshold) targetJpy++;
+          const roundedTargetTwd = Math.round(targetJpy * jpyRate);
+          thresholdOffer = {
+            cardName: thresholdRule.name,
+            threshold,
+            targetJpy,
+            targetTwd: roundedTargetTwd,
+            additionalJpy: targetJpy - jpy,
+            additionalTwd: roundedTargetTwd - twd,
+            netRate: getNetRate(thresholdRule)
+          };
+        }
+      }
+      const thresholdBox = document.getElementById('thresholdOpportunity');
+      thresholdBox.style.display = thresholdOffer ? 'flex' : 'none';
+      if (thresholdOffer) {
+        document.getElementById('thresholdOpportunityText').innerHTML = `<b>門檻補足機會：</b>再加 ¥${thresholdOffer.additionalJpy.toLocaleString()} (約 NT$${thresholdOffer.additionalTwd.toLocaleString()})，總額達 NT$${thresholdOffer.threshold.toLocaleString()} 即可觸發 ${thresholdOffer.cardName} 的 ${rateLabel(thresholdOffer.netRate)} 加碼回饋！`;
+        document.getElementById('thresholdOfferApply').onclick = () => {
+          document.getElementById('jpyAmount').value = thresholdOffer.targetJpy;
+          calculate();
+        };
+        currentDecision.thresholdOffer = thresholdOffer;
+      }
+    }
+
+
+    function applyThresholdOpportunity() {
+      if (!currentThresholdOffer) return;
+      document.getElementById('jpyAmount').value = currentThresholdOffer.targetJpy;
+      calculate();
+    }
+
+    function keepThresholdOpportunity() {
+      currentThresholdOffer = null;
+      document.getElementById('thresholdOpportunity').style.display = 'none';
+    }
+
+    // 比較完整分配結果，納入各卡門檻、剩餘上限與基本回饋。
+    function calculateBestSplitPlan(totalTwd, pool, fbKey) {
+      const total = Math.max(0, Math.round(Number(totalTwd) || 0));
+      const candidates = [...pool, fbKey].filter((key, index, all) => key && all.indexOf(key) === index);
+      const thresholdCards = candidates.filter(key => {
+        const rule = getRule(key === 'backup_cube' ? 'cube' : key);
+        return rule && rule.trackQuota !== false && Number(rule.minThreshold) > 0;
+      });
+      if (thresholdCards.length > 12) return [{ key: fbKey, amount: total }];
+
+      let bestPlan = null;
+      let bestReward = -Infinity;
+      for (let mask = 0; mask < (1 << thresholdCards.length); mask++) {
+        const amounts = new Map();
+        const segments = [];
+        let remaining = total;
+        let reward = 0;
+        let invalid = false;
+
+        for (const key of thresholdCards) {
+          const rule = getRule(key === 'backup_cube' ? 'cube' : key);
+          const active = (mask & (1 << thresholdCards.indexOf(key))) !== 0;
+          if (active) {
+            const minimum = Math.ceil(Number(rule.minThreshold));
+            if (minimum > remaining) { invalid = true; break; }
+            remaining -= minimum;
+            amounts.set(key, minimum);
+            const initial = calculateRewardBreakdown(minimum, key);
+            reward += initial.reward;
+            const quota = Math.max(0, Number(quotas[key] ?? limits[key]) || 0);
+            if (rule.trackQuota === false) {
+              segments.push({ key, capacity: Infinity, rate: getNetRate(rule) });
+            } else {
+              const bonusCapacity = Math.max(0, quota - initial.eligibleSpend);
+              if (bonusCapacity > 0) segments.push({ key, capacity: bonusCapacity, rate: Number(rule.rate) || 0 });
+              segments.push({ key, capacity: Infinity, rate: Number(rule.base) - Number(rule.fee) });
+            }
+          } else {
+            const capacity = Math.max(0, Math.ceil(Number(rule.minThreshold)) - 1);
+            if (capacity > 0) segments.push({ key, capacity, rate: Number(rule.base) - Number(rule.fee) });
+          }
+        }
+        if (invalid) continue;
+
+        for (const key of candidates) {
+          const rule = getRule(key === 'backup_cube' ? 'cube' : key);
+          if (!rule || Number(rule.minThreshold) > 0) continue;
+          const quota = Math.max(0, Number(quotas[key] ?? limits[key]) || 0);
+          if (rule.trackQuota === false) {
+            segments.push({ key, capacity: Infinity, rate: getNetRate(rule) });
+          } else {
+            if (quota > 0) segments.push({ key, capacity: quota, rate: Number(rule.rate) || 0 });
+            segments.push({ key, capacity: Infinity, rate: Number(rule.base) - Number(rule.fee) });
+          }
+        }
+        if (fbKey === 'backup_fx') segments.push({ key: fbKey, capacity: Infinity, rate: 0 });
+
+        segments.sort((a, b) => b.rate - a.rate);
+        for (const segment of segments) {
+          if (remaining <= 0) break;
+          const use = Math.min(remaining, segment.capacity);
+          if (!(use > 0)) continue;
+          amounts.set(segment.key, (amounts.get(segment.key) || 0) + use);
+          reward += use * segment.rate / 100;
+          remaining -= use;
+        }
+        if (remaining > 0) continue;
+        if (reward > bestReward) {
+          bestReward = reward;
+          bestPlan = [...amounts.entries()]
+            .filter(([, amount]) => amount > 0)
+            .map(([key, amount]) => ({ key, amount }))
+            .sort((a, b) => candidates.indexOf(a.key) - candidates.indexOf(b.key));
+        }
+      }
+      return bestPlan || [{ key: fbKey, amount: total }];
+    }
+
+    // 渲染超額方案比對框 HTML（方案一 vs 方案二）
+    // options: { header, best: { label, lines[], earn }, lazy: { label, lines[], earn } }
+    function buildSplitPlanHTML(opts) {
+      const bestLines = (opts.best.lines || []).map(l => `<div style="color:var(--text); padding-left:8px;">・${l}</div>`).join('');
+      const lazyLines = (opts.lazy.lines || []).map(l => `<div style="color:var(--text-secondary); padding-left:8px;">・${l}</div>`).join('');
+      return `
+        <div class="split-plan-box">
+          <div class="split-plan-header">${opts.header}</div>
+          <div class="split-plan-option">
+            <div class="split-opt-label best">⭐ ${opts.best.label}</div>
+            ${bestLines}
+            <div class="split-opt-earn best">💰 ${opts.best.earn}</div>
+          </div>
+          <div class="split-plan-option">
+            <div class="split-opt-label lazy">📦 ${opts.lazy.label}</div>
+            ${lazyLines}
+            <div class="split-opt-earn lazy">💰 ${opts.lazy.earn}</div>
+          </div>
+        </div>
+      `;
+    }
+
+    // 場景四：保底與 0.202 匯率分水嶺比對
+    function evaluateFallback(rate, twd, boxEl, cubeRule) {
+      boxEl.classList.add('backup');
+      const cubeNet = getNetRate(cubeRule);
+      if (rate > 0.2020) {
+        currentDecision.cardName = "玉山雙幣卡扣外幣帳戶 (便宜日幣)";
+        currentDecision.icon = "💴";
+        currentDecision.rateBadge = "免手續費 (勝出)";
+        currentDecision.ratePercent = Number(cubeRule.fee) || 0;
+        currentDecision.desc = `🔥 前線加碼已滿！即時匯率 (${rate.toFixed(4)}) > 0.2020 偏高，推薦掏出外幣帳戶直接扣當初換好的 $0.199 便宜日幣（免收 1.5% 海外手續費最省）！`;
+        currentDecision.subAdvice = "避開當前較貴的新台幣現貨匯率與 1.5% 刷卡手續費。";
+        return 'backup_fx';
+      } else {
+        currentDecision.cardName = "國泰 CUBE 卡 (趣旅行 3%)";
+        currentDecision.icon = "🌲";
+        currentDecision.rateBadge = `淨賺 ${cubeNet.toFixed(1)}% (無上限)`;
+        currentDecision.ratePercent = cubeNet;
+        currentDecision.desc = `🔥 前線加碼已滿！即時匯率 (${rate.toFixed(4)}) &le; 0.2020 划算，刷國泰 CUBE 卡享 ${cubeRule.base}% - ${cubeRule.fee}% 手續費 = 淨賺 ${cubeNet.toFixed(1)}% 無上限小樹點！`;
+        currentDecision.subAdvice = "海外實體消費切換至『趣旅行』權益，無回饋上限。";
+        return 'backup_cube';
+      }
     }
 
     // 記錄消費
     function recordExpense() {
+      if (currentDecision.splitPlan) {
+        showToast('這筆建議拆刷，請選擇你實際完成的方案再記帳');
+        return;
+      }
       const jpy = parseFloat(document.getElementById('jpyAmount').value) || 0;
       if (jpy <= 0) {
         showToast("⚠️ 請先輸入日幣結帳金額！");
         return;
       }
 
-      calculate(); // 確保資料為最新
+      calculate();
       const { cardKey, cardName, ratePercent, twd, rewardTwd } = currentDecision;
       const memo = document.getElementById('memo').value.trim() || getDefaultMemo();
+      const ruleKey = cardKey === 'backup_cube' ? 'cube' : cardKey;
+      const ruleSnapshot = cardRules[ruleKey] ? { ...cardRules[ruleKey] } : null;
+      const periodKey = cardRules[ruleKey] ? getCurrentPeriodKey(ruleKey) : null;
+      const rewardBreakdown = calculateRewardBreakdown(twd, cardKey);
+      const actualReward = Math.round(rewardBreakdown.reward);
 
       // 扣除額度
-      if (cardKey === 'kuma') {
-        quotas.kuma = Math.max(0, quotas.kuma - twd);
-      } else if (cardKey === 'jcard') {
-        quotas.jcard = Math.max(0, quotas.jcard - twd);
-      } else if (cardKey === 'costco') {
-        quotas.costco = Math.max(0, quotas.costco - twd);
-      } else if (cardKey === 'paypay') {
-        quotas.paypay = Math.max(0, quotas.paypay - twd);
+      if (cardKey && quotas[cardKey] !== undefined) {
+        quotas[cardKey] = Math.max(0, quotas[cardKey] - rewardBreakdown.eligibleSpend);
+        saveQuotas();
       }
-
-      saveQuotas();
 
       // 新增記帳明細
       const record = {
@@ -1636,14 +2990,24 @@
         memo,
         cardKey,
         cardName,
-        ratePercent,
+        ratePercent: twd > 0 ? Math.round(actualReward / twd * 10000) / 100 : ratePercent,
         jpy,
         twd,
-        rewardTwd
+        rewardTwd: actualReward,
+        ruleSnapshot,
+        ruleVersion: ruleUpdatedAt,
+        periodKey,
+        rewardBreakdown: ruleSnapshot ? {
+          eligibleSpend: rewardBreakdown.eligibleSpend,
+          baseOnlySpend: rewardBreakdown.baseOnlySpend,
+          rate: getNetRate(ruleSnapshot),
+          baseRate: Number(ruleSnapshot.base) - Number(ruleSnapshot.fee)
+        } : undefined
       };
 
       ledger.unshift(record);
-      localStorage.setItem('japan_card_ledger', JSON.stringify(ledger));
+      ledgerRevision++;
+      localStorage.setItem(STORAGE_KEY.ledger, JSON.stringify(ledger));
       pushToCloud();
 
       // 重設輸入框
@@ -1655,9 +3019,74 @@
       showToast(`✅ 已記錄！扣除約 NT$${twd.toLocaleString()} 額度`);
     }
 
+    function recordSplitPlan(planKey) {
+      const decision = currentDecision;
+      const parts = decision.splitPlan && decision.splitPlan[planKey];
+      if (!parts || parts.length === 0) return;
+
+      const totalPartTwd = parts.reduce((sum, part) => sum + Math.round(Number(part.amountTwd) || 0), 0);
+      if (totalPartTwd !== Math.round(decision.twd)) {
+        showToast('拆刷金額與本筆總額不一致，尚未記帳');
+        return;
+      }
+
+      const totalJpy = parseFloat(document.getElementById('jpyAmount').value) || 0;
+      const baseMemo = document.getElementById('memo').value.trim() || getDefaultMemo();
+      let allocatedJpy = 0;
+      let changedQuota = false;
+      const records = parts.map((part, index) => {
+        const amountTwd = Math.round(Number(part.amountTwd) || 0);
+        const isLast = index === parts.length - 1;
+        const amountJpy = isLast ? totalJpy - allocatedJpy : Math.round(totalJpy * amountTwd / totalPartTwd);
+        allocatedJpy += amountJpy;
+        const ruleKey = part.cardKey === 'backup_cube' ? 'cube' : part.cardKey;
+        const rule = cardRules[ruleKey] || null;
+        const remainingQuota = Math.max(0, Number(quotas[part.cardKey] ?? limits[part.cardKey]) || 0);
+        const breakdown = calculateRewardBreakdown(amountTwd, part.cardKey, remainingQuota);
+        const eligibleSpend = breakdown.eligibleSpend;
+        const baseOnlySpend = breakdown.baseOnlySpend;
+        const rewardTwd = Math.round(breakdown.reward);
+
+        if (rule && rule.trackQuota !== false) {
+          quotas[part.cardKey] = Math.max(0, remainingQuota - eligibleSpend);
+          changedQuota = changedQuota || eligibleSpend > 0;
+        }
+
+        const date = new Date();
+        return {
+          id: Date.now() + index,
+          date: date.toLocaleString('zh-TW', { month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit' }),
+          memo: `${baseMemo}（拆刷 ${index + 1}/${parts.length}）`,
+          cardKey: part.cardKey,
+          cardName: part.cardName,
+          ratePercent: amountTwd > 0 ? Math.round(rewardTwd / amountTwd * 10000) / 100 : 0,
+          jpy: amountJpy,
+          twd: amountTwd,
+          rewardTwd,
+          ruleSnapshot: rule ? { ...rule } : null,
+          ruleVersion: ruleUpdatedAt,
+          periodKey: rule ? getCurrentPeriodKey(part.cardKey) : null,
+          rewardBreakdown: rule ? { eligibleSpend, baseOnlySpend, rate: getNetRate(rule), baseRate: Number(rule.base) - Number(rule.fee) } : undefined
+        };
+      });
+
+      ledger.unshift(...records);
+      ledgerRevision++;
+      localStorage.setItem(STORAGE_KEY.ledger, JSON.stringify(ledger));
+      if (changedQuota) saveQuotas();
+      pushToCloud();
+
+      document.getElementById('jpyAmount').value = '';
+      document.getElementById('memo').value = '';
+      calculate();
+      renderLedger();
+      showToast(`已拆成 ${records.length} 筆記帳，合計 NT$${totalPartTwd.toLocaleString()}`);
+    }
+
     function getDefaultMemo() {
-      const storeType = document.getElementById('storeType').value;
       const payType = document.getElementById('payType').value;
+      const storeType = document.getElementById('storeType').value;
+      if (payType === 'transit') return 'Suica / 交通卡儲值';
       if (payType === 'paypay') return 'PayPay 店家消費';
       if (storeType === 'kuma_shop') return '熊本熊指定店消費';
       return '一般店家消費';
@@ -1686,22 +3115,29 @@
           totalTwd += item.twd;
           totalSaved += (item.rewardTwd || 0);
 
-          const badgeClass = item.cardKey.includes('kuma') ? 'kuma' :
-                             item.cardKey.includes('jcard') ? 'jcard' :
-                             item.cardKey.includes('costco') ? 'costco' :
-                             item.cardKey.includes('paypay') ? 'paypay' : 'backup';
+          const badgeClass = item.cardKey === 'kuma' ? 'kuma' :
+                             item.cardKey === 'jcard_transit' ? 'jcard_transit' :
+                             item.cardKey === 'jcard' ? 'jcard' :
+                             item.cardKey === 'costco' ? 'costco' :
+                             item.cardKey === 'paypay' ? 'paypay' : 'backup';
 
           const cardShortName = item.cardName.split('(')[0].trim();
 
           const itemEl = document.createElement('div');
           itemEl.className = 'ledger-item';
+          const capLabel = item.ruleSnapshot && item.ruleSnapshot.trackQuota === false
+            ? '無上限回饋'
+            : item.ruleSnapshot && item.ruleSnapshot.capBasis === 'net' ? '回饋上限內' : '加碼上限內';
+          const breakdownText = item.rewardBreakdown
+            ? ` · ${capLabel} NT$${Math.round(item.rewardBreakdown.eligibleSpend).toLocaleString()} / 超出上限按基本回饋 NT$${Math.round(item.rewardBreakdown.baseOnlySpend).toLocaleString()}`
+            : '';
           itemEl.innerHTML = `
             <div class="ledger-info">
               <h4>
                 <span>${escapeHtml(item.memo)}</span>
                 <span class="badge-soft ${badgeClass}">${cardShortName}</span>
               </h4>
-              <span>${item.date} · 預估省下 NT$${(item.rewardTwd || 0).toLocaleString()}</span>
+              <span>${item.date} · 預估淨省 NT$${(item.rewardTwd || 0).toLocaleString()}${breakdownText}</span>
             </div>
             <div style="display:flex; align-items:center;">
               <div class="ledger-amount">
@@ -1728,11 +3164,13 @@
       const item = ledger[idx];
       if (confirm(`確定要刪除「${item.memo}」這筆紀錄嗎？\n原扣除的 NT$${item.twd} 額度將自動歸還至該卡片。`)) {
         if (item.cardKey && quotas[item.cardKey] !== undefined) {
-          quotas[item.cardKey] = Math.min(limits[item.cardKey], quotas[item.cardKey] + item.twd);
+          const returnedQuota = item.rewardBreakdown ? item.rewardBreakdown.eligibleSpend : item.twd;
+          quotas[item.cardKey] = Math.min(limits[item.cardKey], quotas[item.cardKey] + returnedQuota);
           saveQuotas();
         }
         ledger.splice(idx, 1);
-        localStorage.setItem('japan_card_ledger', JSON.stringify(ledger));
+        ledgerRevision++;
+        localStorage.setItem(STORAGE_KEY.ledger, JSON.stringify(ledger));
         renderLedger();
         calculate();
         showToast("已刪除並返還額度！");
@@ -1742,78 +3180,96 @@
     // 清空記帳歷史
     function clearLedger() {
       if (ledger.length === 0) return;
-      if (confirm("確定要清空所有消費記錄嗎？\n注意：此操作不會自動還原已扣除的額度。")) {
-        ledger = [];
-        localStorage.setItem('japan_card_ledger', JSON.stringify(ledger));
-        renderLedger();
-        pushToCloud();
-        showToast("明細已清空");
+      const totalSpend = ledger.reduce((sum, item) => sum + (Number(item.twd) || 0), 0);
+      document.getElementById('clearLedgerSummary').innerText = `即將清除 ${ledger.length} 筆消費明細，共 NT$${totalSpend.toLocaleString()}。請選擇額度要保留或重置。`;
+      document.getElementById('clearLedgerModal').style.display = 'flex';
+    }
+
+    function closeClearLedgerModal() {
+      document.getElementById('clearLedgerModal').style.display = 'none';
+    }
+
+    function confirmClearLedger(mode) {
+      if (ledger.length === 0) {
+        closeClearLedgerModal();
+        return;
       }
+
+      ledger = [];
+      ledgerRevision++;
+      localStorage.setItem(STORAGE_KEY.ledger, JSON.stringify(ledger));
+
+      if (mode === 'reset') {
+        for (const [key, rule] of Object.entries(cardRules)) {
+          if (rule.trackQuota === false) continue;
+          quotas[key] = limits[key];
+          markQuotaReset(key);
+        }
+        saveQuotas();
+      } else {
+        pushToCloud();
+      }
+
+      closeClearLedgerModal();
+      renderLedger();
+      calculate();
+      showToast(mode === 'reset' ? '明細已清空，所有額度已重置' : '明細已清空，剩餘額度保留');
     }
 
     // 單卡重置
     function resetSingle(key) {
       const names = {
+        jcard_transit: '富邦 J 卡 (交通卡儲值)',
         kuma: '玉山熊本熊卡',
-        jcard: '富邦 J 卡',
+        jcard: '富邦 J 卡 (一般滿千)',
         costco: '富邦 Costco 卡',
         paypay: 'PayPay 熊本熊'
       };
-      if (confirm(`要重置【${names[key]}】的加碼額度為上限 $${limits[key].toLocaleString()} 嗎？`)) {
-        quotas[key] = limits[key];
-        saveQuotas();
-        calculate();
-        showToast(`已重置 ${names[key]} 額度`);
-      }
+      if (!names[key]) return;
+      pendingQuotaReset = key;
+      const quotaType = getRule(key).capBasis === 'net' ? '回饋額度' : '加碼額度';
+      document.getElementById('quotaResetMessage').innerText = `要將【${names[key]}】的${quotaType}重置為上限 $${limits[key].toLocaleString()} 嗎？`;
+      document.getElementById('quotaResetModal').style.display = 'flex';
     }
 
     // 全部重置
     function resetAllQuotas() {
-      if (confirm("確定要將所有卡片的加碼剩餘額度全部重置為初始上限嗎？")) {
-        quotas = { ...limits };
+      pendingQuotaReset = 'all';
+      document.getElementById('quotaResetMessage').innerText = '確定要將所有卡片的加碼剩餘額度重置為初始上限嗎？';
+      document.getElementById('quotaResetModal').style.display = 'flex';
+    }
+
+    function closeQuotaResetModal() {
+      pendingQuotaReset = null;
+      document.getElementById('quotaResetModal').style.display = 'none';
+    }
+
+    function markQuotaReset(key, date = new Date()) {
+      const periodKey = getCurrentPeriodKey(key, date);
+      if (periodKey) quotaPeriods[key] = periodKey;
+      else delete quotaPeriods[key];
+      quotaResetAt[key] = date.getTime();
+    }
+
+    function confirmQuotaReset() {
+      const resetKey = pendingQuotaReset;
+      closeQuotaResetModal();
+
+      if (resetKey === 'all') {
+        for (const [key, rule] of Object.entries(cardRules)) {
+          if (rule.trackQuota === false) continue;
+          quotas[key] = limits[key];
+          markQuotaReset(key);
+        }
         saveQuotas();
         calculate();
         showToast("所有卡片額度已重置完畢！");
-      }
-    }
-
-    // 更新自訂上限設定
-    function updateCustomLimits() {
-      limits.kuma = parseFloat(document.getElementById('limit-kuma').value) || DEFAULT_LIMITS.kuma;
-      limits.jcard = parseFloat(document.getElementById('limit-jcard').value) || DEFAULT_LIMITS.jcard;
-      limits.costco = parseFloat(document.getElementById('limit-costco').value) || DEFAULT_LIMITS.costco;
-      limits.paypay = parseFloat(document.getElementById('limit-paypay').value) || DEFAULT_LIMITS.paypay;
-
-      localStorage.setItem('japan_card_limits', JSON.stringify(limits));
-      updateQuotaUI();
-      calculate();
-      pushToCloud();
-      showToast("已更新卡片自訂上限！");
-    }
-
-    // 匯率 Modal
-    function openRateModal() {
-      document.getElementById('customRateInput').value = jpyRate;
-      document.getElementById('rateModal').style.display = 'flex';
-    }
-
-    function closeRateModal() {
-      document.getElementById('rateModal').style.display = 'none';
-    }
-
-    function saveCustomRate() {
-      const newRate = parseFloat(document.getElementById('customRateInput').value);
-      if (newRate > 0) {
-        jpyRate = newRate;
-        localStorage.setItem('japan_card_rate', jpyRate.toString());
-        updateRateDisplay();
-        updateQuotaUI();
+      } else if (resetKey) {
+        quotas[resetKey] = limits[resetKey];
+        markQuotaReset(resetKey);
+        saveQuotas();
         calculate();
-        closeRateModal();
-        pushToCloud();
-        showToast(`匯率已更新為 ${jpyRate.toFixed(4)}`);
-      } else {
-        alert("請輸入大於 0 的有效匯率！");
+        showToast('已重置額度');
       }
     }
 
@@ -1823,7 +3279,11 @@
         exportTime: new Date().toISOString(),
         limits,
         quotas,
+        quotaPeriods,
+        quotaResetAt,
+        rulesUpdatedAt: ruleUpdatedAt,
         jpyRate,
+        cardRules,
         ledger
       };
       const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });

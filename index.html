@@ -513,6 +513,7 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
+      gap: 12px;
       margin-bottom: 6px;
     }
     .card-label {
@@ -636,47 +637,59 @@
       border: 1px solid var(--border);
       border-radius: var(--radius-md);
       padding: 10px 12px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
     }
+    .ledger-info { min-width: 0; }
     .ledger-info h4 {
       margin: 0;
       font-size: 0.9rem;
       font-weight: 700;
-      display: flex;
-      align-items: center;
-      gap: 6px;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: start;
+      gap: 8px;
+      overflow-wrap: anywhere;
     }
+    .ledger-info h4 > span:first-child { min-width: 0; overflow-wrap: anywhere; font-size: 0.9rem; color: var(--text); }
+    .ledger-info h4 .badge-soft { justify-self: end; white-space: nowrap; }
     .ledger-info span {
       font-size: 0.72rem;
       color: var(--text-secondary);
+      overflow-wrap: anywhere;
     }
     .ledger-amount {
-      text-align: right;
+      display: flex;
+      align-items: baseline;
+      gap: 10px;
+      margin-top: 8px;
+      overflow-x: auto;
+      white-space: nowrap;
+      scrollbar-width: none;
     }
+    .ledger-amount::-webkit-scrollbar { display: none; }
     .ledger-jpy {
       font-weight: 800;
       font-size: 0.95rem;
+      flex: 0 0 auto;
     }
     .ledger-twd {
-      font-size: 0.75rem;
+      font-size: 0.82rem;
       color: var(--text-secondary);
+      flex: 0 0 auto;
     }
     .ledger-del {
+      display: block;
+      width: auto;
+      min-height: 30px;
+      margin: 5px 0 0 auto;
+      padding: 4px 0 0 10px;
       background: transparent;
-      border: none;
+      border: 0;
       color: var(--accent);
       cursor: pointer;
-      display: grid;
-      place-items: center;
-      flex: 0 0 32px;
-      width: 32px;
-      height: 32px;
-      padding: 0;
-      margin-left: 6px;
+      font-size: 0.78rem;
+      text-align: right;
     }
-    .ledger-del .line-icon-svg { width: 16px; height: 16px; }
+    .ledger-actions { display: flex; justify-content: flex-end; }
 
     /* Modal */
     .modal-backdrop {
@@ -790,7 +803,7 @@
       position: relative;
       isolation: isolate;
       min-height: 100vh;
-      padding: 14px 16px calc(100px + env(safe-area-inset-bottom));
+      padding: 0 16px calc(100px + env(safe-area-inset-bottom));
       background:
         linear-gradient(rgba(0, 240, 255, 0.025) 1px, transparent 1px),
         linear-gradient(90deg, rgba(0, 240, 255, 0.025) 1px, transparent 1px),
@@ -1001,8 +1014,8 @@
       .card { padding: 22px; margin-bottom: 20px; }
     }
     @media (max-width: 480px) {
-      body { padding: 8px 10px calc(86px + env(safe-area-inset-bottom)); }
-      .app-header { padding: 9px 2px 10px; }
+      body { padding: 0 10px calc(86px + env(safe-area-inset-bottom)); }
+      .app-header { padding: calc(9px + env(safe-area-inset-top)) 2px 10px; }
       .app-title h1 { font-size: 1.08rem; }
       .app-title p { max-width: 210px; font-size: 0.59rem; }
       .header-pills { gap: 4px; }
@@ -1030,6 +1043,7 @@
     .form-group { gap: 10px; margin-bottom: 22px; }
     .form-group + .form-group { margin-top: 6px; }
     .quick-tags { gap: 9px; margin-bottom: 20px; }
+    .card > label + .quick-tags { margin-top: 10px; }
     .quota-item { border: 0; background: rgba(11, 14, 24, 0.46); }
     .quota-item:last-child { border-bottom: 0; }
     .guide-table-wrap { border: 0; }
@@ -1089,6 +1103,28 @@
     .rule-title { display: inline-flex; align-items: center; gap: 7px; }
     .btn-main { box-shadow: 0 0 16px rgba(0, 240, 255, 0.34), 0 0 36px rgba(0, 240, 255, 0.2); }
     .btn-main:active { box-shadow: 0 0 20px rgba(0, 240, 255, 0.42), 0 0 42px rgba(0, 240, 255, 0.24); }
+    .ledger-summary { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; padding: 12px; margin-bottom: 16px; border-radius: 12px; background: var(--card-sub-bg); text-align: center; }
+    .ledger-summary-item { min-width: 0; }
+    .ledger-summary-label { min-height: 2.7em; font-size: 0.72rem; color: var(--text-secondary); overflow-wrap: anywhere; }
+    .ledger-summary-value { font-weight: 800; font-size: 1.05rem; overflow-wrap: anywhere; }
+    .quota-header > .card-label { flex: 1 1 auto; min-width: 0; }
+    .quota-header > .btn-small { flex: 0 0 auto; }
+    .cycle-tag { max-width: 100%; white-space: normal; overflow-wrap: anywhere; line-height: 1.45; }
+    .quota-numbers, .reward-cap-line {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      justify-content: flex-start;
+      gap: 5px;
+      line-height: 1.55;
+    }
+    .quota-numbers { margin-top: 8px; }
+    .quota-numbers > span, .reward-cap-line > span { min-width: 0; max-width: 100%; overflow-wrap: anywhere; }
+    @media (max-width: 620px) {
+      .quota-header { align-items: flex-start; }
+      .card-title { gap: 10px; flex-wrap: wrap; }
+      .card-title > span:first-child { min-width: 0; }
+    }
     @media (min-width: 760px) {
       .nav-tabs { bottom: 0; width: 100%; padding-top: 8px; padding-bottom: calc(8px + env(safe-area-inset-bottom)); border: 0; }
       .nav-items { width: min(calc(100% - 48px), 1040px); }
@@ -1360,20 +1396,18 @@
       </div>
 
       <!-- 統計總額 -->
-      <div style="display:flex; justify-content:space-around; background:var(--card-sub-bg); padding:12px; border-radius:var(--radius-md); margin-bottom:12px; text-align:center;">
-        <div>
-          <div style="font-size:0.75rem; color:var(--text-secondary);">累計日幣支出</div>
-          <div style="font-weight:800; font-size:1.05rem;" id="totalJpyDisplay">¥ 0</div>
+      <div class="ledger-summary">
+        <div class="ledger-summary-item">
+          <div class="ledger-summary-label">累計日幣支出</div>
+          <div class="ledger-summary-value" id="totalJpyDisplay">¥ 0</div>
         </div>
-        <div style="border-left:1px solid var(--border);"></div>
-        <div>
-          <div style="font-size:0.75rem; color:var(--text-secondary);">折合台幣總額</div>
-          <div style="font-weight:800; font-size:1.05rem;" id="totalTwdDisplay">$ 0</div>
+        <div class="ledger-summary-item">
+          <div class="ledger-summary-label">折合台幣總額</div>
+          <div class="ledger-summary-value" id="totalTwdDisplay">$ 0</div>
         </div>
-        <div style="border-left:1px solid var(--border);"></div>
-        <div>
-          <div style="font-size:0.75rem; color:var(--green);">估計省下淨回饋</div>
-          <div style="font-weight:800; font-size:1.05rem; color:var(--green);" id="totalSavedDisplay">$ 0</div>
+        <div class="ledger-summary-item">
+          <div class="ledger-summary-label" style="color:var(--green);">估計省下淨回饋</div>
+          <div class="ledger-summary-value" style="color:var(--green);" id="totalSavedDisplay">$ 0</div>
         </div>
       </div>
 
@@ -3821,13 +3855,11 @@
               </h4>
               <span>${item.date} · 預估淨省 NT$${(item.rewardTwd || 0).toLocaleString()}${breakdownText}</span>
             </div>
-            <div style="display:flex; align-items:center;">
-              <div class="ledger-amount">
-                <div class="ledger-jpy">¥${item.jpy.toLocaleString()}</div>
-                <div class="ledger-twd">≈ NT$${item.twd.toLocaleString()}</div>
-              </div>
-              <button class="ledger-del" title="刪除並返還額度" onclick="deleteLedgerItem(${item.id})">${lineIconSvg('close')}</button>
+            <div class="ledger-amount" aria-label="日幣金額與台幣約值">
+              <span class="ledger-jpy">¥${item.jpy.toLocaleString()}</span>
+              <span class="ledger-twd">≈ NT$${item.twd.toLocaleString()}</span>
             </div>
+            <div class="ledger-actions"><button class="ledger-del" title="刪除並返還額度" onclick="deleteLedgerItem(${item.id})">刪除</button></div>
           `;
           listEl.appendChild(itemEl);
         });

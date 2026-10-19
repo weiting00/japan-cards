@@ -1013,7 +1013,7 @@
         <button class="btn-small" id="toggleRuleEdit" type="button" onclick="toggleRuleEdit()">編輯規則</button>
       </div>
       <p style="font-size:0.76rem; color:var(--text-secondary); margin:0 0 8px; line-height:1.5;">
-        每列代表一條回饋規則。同一張實體卡會在多列重複標示；計算時依消費情境挑選該卡適用的規則，不會把同一張卡當成兩張卡。各列加碼額度分開追蹤。
+        每列代表一條獨立回饋規則與額度池。同一張實體卡可有多列不同權益；拆刷時會按各規則的淨回饋與剩餘額度依序安排，額度不互相混用。
       </p>
       <div class="guide-table-wrap">
         <table class="guide-table">
@@ -1225,6 +1225,7 @@
       quotaResetAt: 'japan_card_quota_reset_at_v1',
       rulesUpdatedAt: 'japan_card_rules_updated_at_v1',
       billingPromptDismissed: 'japan_card_billing_prompt_dismissed_v1',
+      ruleContextMigration: 'japan_card_rule_context_migration_v1',
       ledger:  'japan_card_ledger_v2',
       rate:    'japan_card_rate',
       rateLive:'japan_card_rate_is_live',
@@ -1320,6 +1321,7 @@
         rule.physicalCardName = typeof saved.physicalCardName === 'string' && saved.physicalCardName ? saved.physicalCardName : defaults.physicalCardName;
         rule.quotaPoolId = typeof saved.quotaPoolId === 'string' && saved.quotaPoolId ? saved.quotaPoolId : defaults.quotaPoolId;
         rule.contexts = Array.isArray(saved.contexts) ? saved.contexts.filter(value => typeof value === 'string') : [...defaults.contexts];
+        // 一般消費 J 卡權益不可覆蓋交通儲值專用的 J 卡權益；移除舊存檔中的錯誤情境。
         if (key === 'paypay' && !Object.prototype.hasOwnProperty.call(saved, 'capBasis') && Number(saved.rate) === 3.5) {
           rule.rate = 1.5;
           rule.capBasis = 'net';
@@ -1506,6 +1508,19 @@
     let pendingRuleDraft = null;
     let pendingRuleChanges = [];
     let ruleRevision = 0;
+
+    // Restore transit eligibility once after the previous incorrect rule migration.
+    if (localStorage.getItem(STORAGE_KEY.ruleContextMigration) !== '1') {
+      const generalJRule = cardRules.jcard;
+      if (generalJRule && !generalJRule.contexts.includes('transit')) {
+        generalJRule.contexts.push('transit');
+      }
+      ruleUpdatedAt = Math.max(Date.now(), ruleUpdatedAt + 1);
+      localStorage.setItem(STORAGE_KEY.rules, JSON.stringify(cardRules));
+      localStorage.setItem(STORAGE_KEY.rulesUpdatedAt, String(ruleUpdatedAt));
+      ruleRevision++;
+      localStorage.setItem(STORAGE_KEY.ruleContextMigration, '1');
+    }
 
     // 當前試算決策結果快取
     let currentDecision = {
@@ -1978,7 +1993,7 @@
       const transit = getRule('jcard_transit');
       const kuma = getRule('kuma');
       const paragraphs = [
-        '以下計算器直接讀取上方攻略總表中的回饋率、適用情境、單筆門檻與額度。每次消費會在符合情境的規則中比較實際回饋；同一實體卡的多條規則只會選一條，不會重複當成多張卡。',
+        '以下計算器直接讀取上方攻略總表中的回饋率、適用情境、單筆門檻與額度。符合情境的每條獨立回饋規則都會參與排序；同一張實體卡的不同權益可依各自剩餘額度依序安排。',
         `目前交通儲值規則：${transit.name}，單筆門檻 NT$${Number(transit.minThreshold).toLocaleString()}，淨回饋 ${getNetRate(transit)}%；玉山熊本熊卡目前有 ${Object.values(cardRules).filter(rule => rule.physicalCardId === kuma.physicalCardId).length} 條獨立情境規則。`
       ];
       root.replaceChildren(...paragraphs.map(text => {
@@ -2699,16 +2714,10 @@
       // 情境適用範圍與回饋數值共用攻略表規則。
       const isKumaShop = storeType === 'kuma_shop' && locationType === 'street';
       const contextKey = isTransit ? 'transit' : isPayPay ? 'paypay' : isKumaShop ? 'kuma_shop_street' : 'general';
-      const eligibleByPhysicalCard = new Map();
-      for (const [key, rule] of Object.entries(cardRules)) {
-        if (!Array.isArray(rule.contexts) || !rule.contexts.includes(contextKey)) continue;
-        const physicalCardId = rule.physicalCardId || key;
-        if (!eligibleByPhysicalCard.has(physicalCardId)) eligibleByPhysicalCard.set(physicalCardId, []);
-        eligibleByPhysicalCard.get(physicalCardId).push(key);
-      }
-      // One physical card can contribute only one applicable earning rule to this transaction.
-      let pool = [...eligibleByPhysicalCard.values()].map(ruleKeys => ruleKeys
-        .sort((a, b) => calculateRewardForAmount(twd, b) - calculateRewardForAmount(twd, a) || getNetRate(getRule(b)) - getNetRate(getRule(a)))[0]);
+      // 每條獨立回饋規則都是候選額度池；同一實體卡的不同權益可依序使用。
+      let pool = Object.entries(cardRules)
+        .filter(([, rule]) => Array.isArray(rule.contexts) && rule.contexts.includes(contextKey))
+        .map(([key]) => key);
 
       // 2. 按淨回饋率從高到低排序（考慮門檻：未達門檻時只能拿基本回饋）
       // 先計算每張卡在「達門檻且有額度」時的淨回饋率，作為排序依據
@@ -2719,7 +2728,7 @@
         return getNetRate(rule);
       };
 
-      pool.sort((a, b) => getCardNetRate(b) - getCardNetRate(a));
+      pool.sort((a, b) => getCardNetRate(b) - getCardNetRate(a) || calculateRewardForAmount(twd, b) - calculateRewardForAmount(twd, a));
 
       // 3. 計算單卡最佳方案（懶人方案：整筆刷單張卡）
       let bestSingle = null;
@@ -3016,7 +3025,7 @@
               segments.push({ key, capacity: Infinity, rate: getNetRate(rule) });
             } else {
               const bonusCapacity = Math.max(0, quota - initial.eligibleSpend);
-              if (bonusCapacity > 0) segments.push({ key, capacity: bonusCapacity, rate: Number(rule.rate) || 0 });
+              if (bonusCapacity > 0) segments.push({ key, capacity: bonusCapacity, rate: getNetRate(rule) });
               segments.push({ key, capacity: Infinity, rate: Number(rule.base) - Number(rule.fee) });
             }
           } else {
@@ -3033,7 +3042,7 @@
           if (rule.trackQuota === false) {
             segments.push({ key, capacity: Infinity, rate: getNetRate(rule) });
           } else {
-            if (quota > 0) segments.push({ key, capacity: quota, rate: Number(rule.rate) || 0 });
+            if (quota > 0) segments.push({ key, capacity: quota, rate: getNetRate(rule) });
             segments.push({ key, capacity: Infinity, rate: Number(rule.base) - Number(rule.fee) });
           }
         }

@@ -331,10 +331,11 @@
 
     .result-header {
       display: flex;
-      justify-content: space-between;
+      flex-direction: column;
       align-items: flex-start;
-      gap: 8px;
+      gap: 6px;
     }
+    .result-header > :first-child { min-width: 0; }
     .result-card-name {
       font-size: 1.15rem;
       font-weight: 800;
@@ -359,6 +360,8 @@
       font-weight: 700;
       color: var(--green);
       margin-top: 4px;
+      letter-spacing: normal;
+      font-variant-numeric: tabular-nums;
     }
 
     /* Result Quota Status Box */
@@ -375,10 +378,15 @@
     }
     .quota-status-row {
       display: flex;
-      justify-content: space-between;
-      align-items: center;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 3px;
       font-size: 0.82rem;
+      letter-spacing: normal;
+      overflow-wrap: anywhere;
     }
+    .quota-status-row > span { color: var(--text-secondary); }
+    .quota-status-row .ui-icon { display: none; }
     .quota-badge-avail {
       color: var(--primary);
       font-weight: 700;
@@ -690,6 +698,7 @@
       text-align: right;
     }
     .ledger-actions { display: flex; justify-content: flex-end; }
+    iconify-icon.library-icon { display: inline-flex; flex: 0 0 auto; width: 1.15em; height: 1.15em; vertical-align: -0.16em; color: currentColor; pointer-events: none; }
 
     /* Modal */
     .modal-backdrop {
@@ -951,10 +960,16 @@
     }
     .result-box.kuma, .result-box.jcard_transit, .result-box.jcard, .result-box.costco, .result-box.paypay, .result-box.backup { border-color: rgba(0, 240, 255, 0.45); background: linear-gradient(145deg, rgba(0, 240, 255, 0.1), rgba(11, 14, 24, 0.96) 70%); }
     .result-card-name { color: var(--text); font-size: 1.18rem; }
-    .result-reward { color: var(--green); font-family: "Space Mono", ui-monospace, monospace; }
+    .result-reward { color: var(--green); font-family: inherit; }
     .rate-badge { padding: 5px 9px; border: 1px solid rgba(255, 74, 141, 0.45); border-radius: 0; background: rgba(255, 74, 141, 0.16); color: #ffd9e1; box-shadow: 0 0 12px rgba(255, 74, 141, 0.15); font-family: "Space Mono", ui-monospace, monospace; }
     .quota-status-box { border: 1px solid rgba(0, 240, 255, 0.18); border-radius: 0; background: rgba(11, 14, 24, 0.9); box-shadow: none; }
-    .quota-status-row, .quota-numbers, .reward-cap-line { font-family: "Space Mono", ui-monospace, monospace; font-size: 0.73rem; }
+    .quota-status-row, .quota-numbers, .reward-cap-line { font-size: 0.78rem; }
+    .quota-status-row b { letter-spacing: normal; font-variant-numeric: tabular-nums; }
+    .result-box { letter-spacing: normal; }
+    .result-header { align-items: flex-start; }
+    .result-card-name { gap: 8px; line-height: 1.3; }
+    .rate-badge { font-size: 0.74rem; letter-spacing: normal; }
+    .split-plan-option, .split-opt-label, .split-opt-earn { letter-spacing: normal; }
     .quota-badge-avail, .reward-cap-line, .config-result b { color: var(--primary); }
     .quota-badge-after { color: var(--green); }
     .result-desc, .result-sub-advice { color: #b9cacb; }
@@ -1024,8 +1039,9 @@
       .card-title { font-size: 0.95rem; }
       .tab-btn { font-size: 0.65rem; }
       .nav-tabs { padding-left: 6px; padding-right: 6px; }
-      .result-header { align-items: center; }
+      .result-header { align-items: flex-start; }
       .result-card-name { font-size: 1rem; }
+      .rate-badge { align-self: flex-start; }
     }
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; scroll-behavior: auto !important; transition-duration: 0.01ms !important; }
@@ -1036,6 +1052,7 @@
     .app-header { border-bottom: 0; }
     .nav-tabs { border-top: 0; }
     .card, .result-box, .modal-box { clip-path: none; }
+    .config-card-box, .ledger-item, .alert-box, .quota-status-box, .over-limit-alert, .split-plan-box { clip-path: none; border-radius: 14px; }
     .card { box-shadow: 0 14px 32px rgba(0, 0, 0, 0.2); }
     .card:has(.guide-table) { box-shadow: none; }
     .result-box { box-shadow: 0 0 22px rgba(0, 240, 255, 0.08); }
@@ -1099,6 +1116,8 @@
     .tab-btn.active { border-color: transparent; background: transparent; color: var(--primary); box-shadow: none; }
     .tab-btn.active .nav-icon { background: transparent; filter: drop-shadow(0 0 7px rgba(0, 240, 255, 0.35)); }
     .ui-icon { display: inline-flex; flex: 0 0 auto; width: 1.15em; height: 1.15em; align-items: center; justify-content: center; vertical-align: -0.16em; color: currentColor; }
+    .card-icon { width: 1.25rem; height: 1.25rem; flex: 0 0 1.25rem; vertical-align: middle; }
+    .card-icon iconify-icon.library-icon { display: block; width: 100%; height: 100%; }
     .ui-icon svg, .line-icon-svg { display: block; width: 100%; height: 100%; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; pointer-events: none; }
     .rule-title { display: inline-flex; align-items: center; gap: 7px; }
     .btn-main { box-shadow: 0 0 16px rgba(0, 240, 255, 0.34), 0 0 36px rgba(0, 240, 255, 0.2); }
@@ -1139,6 +1158,7 @@
   <!-- Firebase App & Firestore Compat SDK -->
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+  <script src="https://code.iconify.design/iconify-icon/3.0.0/iconify-icon.min.js" defer></script>
 </head>
 <body>
 
@@ -1151,13 +1171,10 @@
     <symbol id="icon-train" viewBox="0 0 24 24"><rect x="5" y="3" width="14" height="16" rx="3"/><path d="M8 7h8M8 12h.01M16 12h.01M8 19l-2 3M16 19l2 3M8 16h8"/></symbol>
     <symbol id="icon-pill" viewBox="0 0 24 24"><path d="M4.9 19.1a5 5 0 0 1 0-7.1l7.1-7.1a5 5 0 0 1 7.1 7.1L12 19.1a5 5 0 0 1-7.1 0zM8.4 8.4l7.1 7.1"/></symbol>
     <symbol id="icon-store" viewBox="0 0 24 24"><path d="M4 10v10h16V10M3 10l2-6h14l2 6M3 10a3 3 0 0 0 6 0 3 3 0 0 0 6 0 3 3 0 0 0 6 0M9 20v-6h6v6"/></symbol>
-    <symbol id="icon-bear" viewBox="0 0 24 24"><circle cx="6" cy="6" r="2.5"/><circle cx="18" cy="6" r="2.5"/><path d="M4 12a8 8 0 0 1 16 0v3a8 8 0 0 1-16 0z"/><ellipse cx="12" cy="14" rx="3.5" ry="2.5"/><path d="M11 14h2M9 18c1.7 1.3 4.3 1.3 6 0"/></symbol>
-    <symbol id="icon-cart" viewBox="0 0 24 24"><path d="M3 4h2l2.2 11.2a2 2 0 0 0 2 1.6h8.9a2 2 0 0 0 1.9-1.4L22 9H6"/><circle cx="10" cy="20" r="1.2"/><circle cx="18" cy="20" r="1.2"/></symbol>
-    <symbol id="icon-daruma" viewBox="0 0 24 24"><path d="M12 3a8 8 0 0 0-8 8v3a8 8 0 0 0 16 0v-3a8 8 0 0 0-8-8zM7.5 11h.01M16.5 11h.01M9 15c1.7 1.2 4.3 1.2 6 0M5 18h14M8 6l4-3 4 3"/></symbol>
-    <symbol id="icon-tree" viewBox="0 0 24 24"><path d="m12 3 7 8h-4l5 6h-6v4h-4v-4H4l5-6H5z"/></symbol>
     <symbol id="icon-building" viewBox="0 0 24 24"><path d="M4 21V5l8-3 8 3v16M2 21h20M8 8h1M15 8h1M8 12h1M15 12h1M10 21v-5h4v5"/></symbol>
     <symbol id="icon-food" viewBox="0 0 24 24"><path d="M7 3v7M4 3v4a3 3 0 0 0 6 0V3M7 10v11M16 3v18M16 3a5 5 0 0 1 5 5v3h-5"/></symbol>
     <symbol id="icon-phone" viewBox="0 0 24 24"><rect x="6" y="2" width="12" height="20" rx="2"/><path d="M10 5h4M11 18h2"/></symbol>
+    <symbol id="icon-daruma" viewBox="0 0 24 24"><path d="M12 3.5c-5.1 0-8.6 3.9-8.6 9.3 0 3.2 1 5.7 2.6 7.2 1.6.9 3.5 1.3 6 1.3s4.4-.4 6-1.3c1.6-1.5 2.6-4 2.6-7.2 0-5.4-3.5-9.3-8.6-9.3Z"/><circle cx="8.9" cy="11.5" r="1.6"/><circle cx="15.1" cy="11.5" r="1.6"/></symbol>
     <symbol id="icon-alert" viewBox="0 0 24 24"><path d="m10.3 4.3-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.7-2.7l-8-14a2 2 0 0 0-3.4 0zM12 9v4M12 17h.01"/></symbol>
     <symbol id="icon-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></symbol>
     <symbol id="icon-target" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/></symbol>
@@ -1183,11 +1200,11 @@
         <span class="sync-dot" id="syncDot"></span>
         <span id="syncLabel">本地</span>
       </div>
-      <div class="rate-pill" id="ratePill" onclick="openRateModal()" title="點擊檢視/更新即時匯率">
+      <div class="rate-pill" id="ratePill" onclick="openRateModal()" title="點擊檢視/更新臺銀日圓即期賣出匯率">
         <span class="rate-dot" id="rateLiveDot"></span>
         <span class="ui-icon" aria-hidden="true"><svg><use href="#icon-yen"/></svg></span>
-        <span id="rateDisplay">0.2051</span>
-        <span id="rateModeBadge" style="font-size:0.68rem; color:var(--green); font-weight:700;">即時</span>
+        <span id="rateDisplay">0.208800</span>
+        <span id="rateModeBadge" style="font-size:0.68rem; color:var(--warning); font-weight:700;">快取</span>
       </div>
     </div>
   </header>
@@ -1197,7 +1214,7 @@
     <div class="nav-items">
       <button class="tab-btn active" onclick="switchTab('decision')"><span class="nav-icon" aria-hidden="true"><svg><use href="#icon-card"/></svg></span><span class="nav-label">刷卡決策</span></button>
       <button class="tab-btn" onclick="switchTab('quotas')"><span class="nav-icon" aria-hidden="true"><svg><use href="#icon-gauge"/></svg></span><span class="nav-label">額度看板</span></button>
-      <button class="tab-btn" onclick="switchTab('ledger')"><span class="nav-icon" aria-hidden="true"><svg><use href="#icon-receipt"/></svg></span><span class="nav-label">消費明細</span></button>
+      <button class="tab-btn" onclick="switchTab('ledger')"><span class="nav-icon" aria-hidden="true"><iconify-icon class="library-icon" icon="lucide:coins"></iconify-icon></span><span class="nav-label">消費明細</span></button>
       <button class="tab-btn" onclick="switchTab('guide')"><span class="nav-icon" aria-hidden="true"><svg><use href="#icon-book"/></svg></span><span class="nav-label">攻略守則</span></button>
     </div>
   </nav>
@@ -1213,12 +1230,12 @@
       <!-- Quick Preset Tags -->
       <label>常用情境一鍵套用：</label>
       <div class="quick-tags">
-        <button type="button" class="quick-tag" onclick="applyPreset('transit', this)"><span class="ui-icon" aria-hidden="true"><svg><use href="#icon-train"/></svg></span> 交通卡加值 (Suica/PASMO)</button>
-        <button type="button" class="quick-tag" onclick="applyPreset('matsukiyo', this)"><span class="ui-icon" aria-hidden="true"><svg><use href="#icon-pill"/></svg></span> 松本清 / 藥妝</button>
+        <button type="button" class="quick-tag" onclick="applyPreset('transit', this)"><span class="ui-icon" aria-hidden="true"><svg><use href="#icon-train"/></svg></span> 交通卡加值</button>
+        <button type="button" class="quick-tag" onclick="applyPreset('matsukiyo', this)"><span class="ui-icon" aria-hidden="true"><svg><use href="#icon-pill"/></svg></span> 松本清／藥妝</button>
         <button type="button" class="quick-tag" onclick="applyPreset('bic', this)"><span class="ui-icon" aria-hidden="true"><svg><use href="#icon-building"/></svg></span> BicCamera / 電器</button>
         <button type="button" class="quick-tag" onclick="applyPreset('donki', this)"><span class="ui-icon" aria-hidden="true"><svg><use href="#icon-store"/></svg></span> 唐吉訶德</button>
-        <button type="button" class="quick-tag" onclick="applyPreset('dept', this)"><span class="ui-icon" aria-hidden="true"><svg><use href="#icon-building"/></svg></span> 百貨 / 美食街 (店中店)</button>
-        <button type="button" class="quick-tag" onclick="applyPreset('dining', this)"><span class="ui-icon" aria-hidden="true"><svg><use href="#icon-food"/></svg></span> 一般餐廳 / 居酒屋</button>
+        <button type="button" class="quick-tag" onclick="applyPreset('dept', this)"><span class="ui-icon" aria-hidden="true"><svg><use href="#icon-building"/></svg></span> 百貨／美食街</button>
+        <button type="button" class="quick-tag" onclick="applyPreset('dining', this)"><span class="ui-icon" aria-hidden="true"><svg><use href="#icon-food"/></svg></span> 餐廳／居酒屋</button>
         <button type="button" class="quick-tag" onclick="applyPreset('paypay', this)"><span class="ui-icon" aria-hidden="true"><svg><use href="#icon-phone"/></svg></span> PayPay 掃碼店</button>
       </div>
 
@@ -1271,6 +1288,11 @@
         <span id="jcardAlertText"></span>
       </div>
 
+      <div class="alert-box" id="paypayQuotaAlert" style="display:none;">
+        <span class="ui-icon" aria-hidden="true"><svg><use href="#icon-alert"/></svg></span>
+        <span id="paypayQuotaAlertText"></span>
+      </div>
+
       <!-- 結帳金額 -->
       <div class="form-group" style="margin-top: 10px;">
         <label for="jpyAmount">
@@ -1288,8 +1310,8 @@
           <button type="button" class="shortcut-btn" onclick="addAmount(30000)">+30,000</button>
         </div>
         <div class="twd-estimate">
-          <span>折合約：<b id="twdDisplay" style="color:var(--text); font-size:0.95rem;">NT$ 0</b></span>
-          <span style="font-size:0.75rem; color:var(--text-secondary);">匯率: <span id="rateLabel">0.2051</span></span>
+          <span>折合約：<b id="twdDisplay" style="color:var(--text); font-size:0.95rem;">NT$0</b></span>
+          <span style="font-size:0.75rem; color:var(--text-secondary);">匯率: <span id="rateLabel">0.208800</span></span>
         </div>
       </div>
 
@@ -1316,7 +1338,7 @@
         <div class="result-header">
           <div>
             <div class="result-card-name">
-              <span id="bestCardIcon" class="ui-icon" aria-hidden="true"><svg><use href="#icon-card"/></svg></span>
+              <span id="bestCardIcon" class="ui-icon card-icon" aria-hidden="true"><svg><use href="#icon-card"/></svg></span>
               <span id="bestCard">請輸入金額</span>
             </div>
             <div class="result-reward" id="bestReward"></div>
@@ -1327,12 +1349,12 @@
         <!-- 即時額度餘額監控條 -->
         <div class="quota-status-box" id="resultQuotaBox" style="display:none;">
           <div class="quota-status-row">
-            <span><span class="ui-icon" aria-hidden="true"><svg><use href="#icon-target"/></svg></span> <b id="resultCurrentQuotaLabel">當前卡片剩餘加碼額度：</b></span>
-            <b id="resultCurrentQuota" class="quota-badge-avail">NT$ 0</b>
+            <span><span class="ui-icon" aria-hidden="true"><svg><use href="#icon-target"/></svg></span> <b id="resultCurrentQuotaLabel">可用加碼</b></span>
+            <b id="resultCurrentQuota" class="quota-badge-avail">NT$0</b>
           </div>
           <div class="quota-status-row">
-            <span><span class="ui-icon" aria-hidden="true"><svg><use href="#icon-trend"/></svg></span> <b id="resultAfterQuotaLabel">此筆刷後剩餘可刷額度：</b></span>
-            <b id="resultAfterQuota" class="quota-badge-after">NT$ 0</b>
+            <span><span class="ui-icon" aria-hidden="true"><svg><use href="#icon-trend"/></svg></span> <b id="resultAfterQuotaLabel">刷後剩餘</b></span>
+            <b id="resultAfterQuota" class="quota-badge-after">NT$0</b>
           </div>
         </div>
 
@@ -1347,15 +1369,15 @@
         <div id="thresholdOpportunity" class="alert-box" style="display:none; flex-direction:column; align-items:stretch; gap:8px; margin-top:10px;">
           <div id="thresholdOpportunityText"></div>
           <div style="display:flex; flex-wrap:wrap; gap:8px;">
-            <button type="button" class="btn-main" id="thresholdOfferApply" style="margin:0; flex:1;" onclick="applyThresholdOpportunity()">試算補足門檻</button>
-            <button type="button" class="btn-secondary" style="margin:0; flex:1;" onclick="keepThresholdOpportunity()">維持原金額</button>
+            <button type="button" class="btn-main" id="thresholdOfferApply" style="margin:0; flex:1;" onclick="applyThresholdOpportunity()">試算加購</button>
+            <button type="button" class="btn-secondary" style="margin:0; flex:1;" onclick="keepThresholdOpportunity()">維持金額</button>
           </div>
         </div>
         <div id="quotaThresholdOpportunity" class="alert-box" style="display:none; flex-direction:column; align-items:stretch; gap:8px; margin-top:10px;">
           <div id="quotaThresholdOpportunityText"></div>
           <div style="display:flex; flex-wrap:wrap; gap:8px;">
-            <button type="button" class="btn-main" id="quotaThresholdApply" style="margin:0; flex:1;" onclick="applyQuotaThresholdOpportunity()">加購後重新試算</button>
-            <button type="button" class="btn-secondary" id="quotaThresholdDismiss" style="margin:0; flex:1;" onclick="dismissQuotaThresholdOpportunity()">先不加購</button>
+            <button type="button" class="btn-main" id="quotaThresholdApply" style="margin:0; flex:1;" onclick="applyQuotaThresholdOpportunity()">試算加購</button>
+            <button type="button" class="btn-secondary" id="quotaThresholdDismiss" style="margin:0; flex:1;" onclick="dismissQuotaThresholdOpportunity()">不加購</button>
           </div>
         </div>
       </div>
@@ -1364,12 +1386,12 @@
       <div id="singleRecordAction">
         <button class="btn-main" onclick="recordExpense()">
           <span class="ui-icon" aria-hidden="true"><svg><use href="#icon-check"/></svg></span>
-          <span>確認已刷，扣除額度並記帳</span>
+          <span>已刷卡</span>
         </button>
       </div>
       <div id="splitRecordActions" style="display:none; flex-direction:column; gap:8px;">
-        <button class="btn-main" type="button" style="margin:0;" onclick="recordSplitPlan('best')">按最省方案拆刷</button>
-        <button class="btn-secondary" type="button" style="margin:0;" onclick="recordSplitPlan('lazy')">按整筆方案刷卡</button>
+        <button class="btn-main" type="button" style="margin:0;" onclick="recordSplitPlan('best')">依建議拆刷</button>
+        <button class="btn-secondary" type="button" style="margin:0;" onclick="recordSplitPlan('lazy')">整筆刷卡</button>
       </div>
     </div>
   </main>
@@ -1391,7 +1413,7 @@
   <section id="tab-ledger" style="display:none;">
     <div class="card">
       <div class="card-title">
-        <span><span class="ui-icon" aria-hidden="true"><svg><use href="#icon-receipt"/></svg></span> 消費明細</span>
+        <span><iconify-icon class="library-icon" icon="lucide:coins" aria-hidden="true"></iconify-icon> 消費明細</span>
         <button class="btn-small" onclick="exportData()">匯出備份</button>
       </div>
 
@@ -1417,7 +1439,7 @@
       </div>
       <div class="ledger-list" id="ledgerList"></div>
 
-      <button class="btn-secondary" style="margin-top:14px; color:var(--accent);" onclick="clearLedger()"><span class="ui-icon" aria-hidden="true"><svg><use href="#icon-trash"/></svg></span> 清空所有消費記錄</button>
+      <button class="btn-secondary" style="margin-top:14px; color:var(--accent);" onclick="clearLedger()"><span class="ui-icon" aria-hidden="true"><svg><use href="#icon-trash"/></svg></span> 清空明細</button>
     </div>
   </section>
 
@@ -1463,8 +1485,8 @@
       <div id="ruleGuideSummary" style="font-size:0.83rem; line-height:1.65; color:var(--text);"></div>
       <div style="font-size:0.83rem; line-height:1.65; color:var(--text);">
         <p><b><span class="ui-icon" aria-hidden="true"><svg><use href="#icon-refresh"/></svg></span> 【場景四：第二趟北海道額度沒重置 / 加碼全爆掉】</b><br>
-        • <b>即時匯率 > 0.202</b>：建議使用 <b>雙幣外幣帳戶</b> 直接扣換好的 <b>$0.199 便宜日幣</b>（免 1.5% 手續費）。<br>
-        • <b>即時匯率 < 0.202</b>：建議刷 <b>國泰 CUBE 卡（趣旅行 3% - 1.5% = 淨 1.5%）</b> 保底。</p>
+        • <b>臺銀即期賣出 > 0.202</b>：建議使用 <b>雙幣外幣帳戶</b> 直接扣換好的 <b>$0.199 便宜日幣</b>（免 1.5% 手續費）。<br>
+        • <b>臺銀即期賣出 ≤ 0.202</b>：建議刷 <b>國泰 CUBE 卡（趣旅行 3% - 1.5% = 淨 1.5%）</b> 保底。</p>
       </div>
     </div>
 
@@ -1489,8 +1511,8 @@
       <div id="ruleRecalcStartDates"></div>
       <p style="font-size:0.76rem; color:var(--text-secondary); line-height:1.5;">「重算本期」會依新規則重新分配本期加碼上限，超出上限的部分按基本回饋扣手續費計算；「只套用之後」會保留所有舊明細數字。</p>
       <div style="display:flex; flex-direction:column; gap:8px;">
-        <button type="button" class="btn-main" style="margin:0;" onclick="commitRuleChanges('recalculate')">重算本期既有消費</button>
-        <button type="button" class="btn-secondary" style="margin:0;" onclick="commitRuleChanges('future')">只套用之後的消費</button>
+        <button type="button" class="btn-main" style="margin:0;" onclick="commitRuleChanges('recalculate')">重算本期</button>
+        <button type="button" class="btn-secondary" style="margin:0;" onclick="commitRuleChanges('future')">只套用新消費</button>
         <button type="button" class="btn-secondary" style="margin:0;" onclick="closeRuleChangeModal()">返回編輯</button>
       </div>
     </div>
@@ -1499,15 +1521,15 @@
   <div class="modal-backdrop" id="billingSetupModal" role="dialog" aria-modal="true" aria-labelledby="billingSetupTitle">
     <div class="modal-box" style="max-width:420px;">
       <div class="modal-title" id="billingSetupTitle">設定玉山信用卡帳單結帳日</div>
-      <p style="font-size:0.82rem; line-height:1.5;">熊本熊卡和 PayPay 綁定同一張玉山卡，共用一個帳單結帳日。請照銀行帳單輸入每月結帳日。</p>
+      <p style="font-size:0.82rem; line-height:1.5;">此設定只用於熊本熊卡指定店與交通回饋。PayPay 回饋依每季上限計算，不共用帳單週期。</p>
       <div class="form-group">
         <label for="esunStatementDay">每月結帳日（1–31 日）</label>
         <input type="number" id="esunStatementDay" min="1" max="31" step="1" placeholder="未知請留白">
       </div>
-      <p style="font-size:0.76rem; color:var(--text-secondary); line-height:1.5;">例如輸入 30，代表每月 30 日結帳，不是 30 期。留白時不會猜日期，兩張卡維持手動重置。</p>
+      <p style="font-size:0.76rem; color:var(--text-secondary); line-height:1.5;">例如輸入 30，代表每月 30 日結帳，不是 30 期。留白時不會猜日期，熊本熊卡維持手動重置。</p>
       <div style="display:flex; flex-direction:column; gap:8px;">
         <button type="button" class="btn-main" style="margin:0;" onclick="saveEsunStatementDay()">儲存結帳日</button>
-        <button type="button" class="btn-secondary" style="margin:0;" onclick="deferEsunStatementDay()">目前不知道，先手動重置</button>
+        <button type="button" class="btn-secondary" style="margin:0;" onclick="deferEsunStatementDay()">稍後設定</button>
       </div>
     </div>
   </div>
@@ -1518,8 +1540,8 @@
       <p id="clearLedgerSummary" style="font-size:0.84rem; line-height:1.5;"></p>
       <p style="font-size:0.76rem; color:var(--text-secondary); line-height:1.5;">只清除明細會保留目前剩餘額度；若要重新開始一趟旅程，可同時把所有有上限卡片重置到上限。</p>
       <div style="display:flex; flex-direction:column; gap:8px;">
-        <button type="button" class="btn-main" style="margin:0;" onclick="confirmClearLedger('keep')">只清除明細，保留目前額度</button>
-        <button type="button" class="btn-secondary" style="margin:0;" onclick="confirmClearLedger('reset')">清除明細並重置全部額度</button>
+        <button type="button" class="btn-main" style="margin:0;" onclick="confirmClearLedger('keep')">清除明細</button>
+        <button type="button" class="btn-secondary" style="margin:0;" onclick="confirmClearLedger('reset')">清除並重置額度</button>
         <button type="button" class="btn-secondary" style="margin:0;" onclick="closeClearLedgerModal()">取消</button>
       </div>
     </div>
@@ -1541,31 +1563,33 @@
   <div class="modal-backdrop" id="rateModal">
     <div class="modal-box">
       <div class="modal-title">
-        <span><span class="ui-icon" aria-hidden="true"><svg><use href="#icon-yen"/></svg></span> 日幣匯率即時連線與自訂</span>
+        <span><span class="ui-icon" aria-hidden="true"><svg><use href="#icon-yen"/></svg></span> 臺銀日圓匯率與自訂</span>
         <span class="ui-icon" style="cursor:pointer; color:var(--text-secondary);" onclick="closeRateModal()"><svg><use href="#icon-close"/></svg></span>
       </div>
       
       <div style="background:var(--card-sub-bg); border:1px solid var(--border); border-radius:var(--radius-md); padding:10px 12px; margin-bottom:12px;">
         <div style="display:flex; justify-content:space-between; align-items:center;">
-          <span style="font-size:0.82rem; font-weight:700;">即時市場牌告 (國際外匯):</span>
-          <span class="rate-badge" id="modalLiveRate">0.2051</span>
+          <span style="font-size:0.82rem; font-weight:700;">臺銀即期賣出</span>
+          <span class="rate-badge" id="modalLiveRate">0.208800</span>
         </div>
-        <div style="font-size:0.72rem; color:var(--text-secondary); margin-top:4px;" id="rateFetchTime">更新時間：載入中...</div>
+        <div style="font-size:0.72rem; color:var(--text-secondary); margin-top:4px;" id="rateFetchTime">抓取時間：讀取中...</div>
       </div>
 
       <div class="form-group">
         <label>當前應用換算匯率 (1 JPY = ? TWD)</label>
-        <input type="number" id="customRateInput" step="0.0001" placeholder="0.2051">
+        <input type="number" id="customRateInput" step="0.000001" placeholder="0.208800">
       </div>
 
       <div style="background:var(--primary-light); border-left:3px solid var(--primary); padding:8px 10px; border-radius:6px; font-size:0.74rem; line-height:1.45; margin-bottom:12px;">
         <span class="ui-icon" aria-hidden="true"><svg><use href="#icon-info"/></svg></span> <b>0.2020 決策基準線：</b><br>
-        即時匯率 <b>> 0.202</b> 建議直接刷外幣帳戶扣 $0.199 便宜日幣 (免 1.5% 手續費)；<br>
-        即時匯率 <b>&le; 0.202</b> 刷國泰 CUBE 卡 (淨賺 1.5%) 更划算。
+        臺銀即期賣出 <b>> 0.202</b> 建議扣外幣帳戶中以 $0.199 換入的日圓；<br>
+        臺銀即期賣出 <b>&le; 0.202</b> 刷國泰 CUBE 卡 (淨賺 1.5%) 更划算。
       </div>
 
+      <div style="font-size:0.68rem; color:var(--text-secondary); margin:-4px 0 12px;">以臺銀牌告即期賣出計算帳戶日圓成本；抓取時間不代表網銀成交價。<a href="https://rate.bot.com.tw/xrt?Lang=zh-TW" target="_blank" rel="noopener noreferrer" style="color:var(--primary);">臺銀牌告匯率</a></div>
+
       <div style="display:flex; gap:8px;">
-        <button type="button" class="btn-secondary" style="margin:0; flex:1;" onclick="fetchLiveRate(true)"><span class="ui-icon" aria-hidden="true"><svg><use href="#icon-refresh"/></svg></span> 重新連網更新</button>
+        <button type="button" class="btn-secondary" style="margin:0; flex:1;" onclick="fetchLiveRate(true)"><span class="ui-icon" aria-hidden="true"><svg><use href="#icon-refresh"/></svg></span> 更新臺銀匯率</button>
         <button type="button" class="btn-main" style="margin:0; flex:1;" onclick="saveCustomRate()">儲存自訂</button>
       </div>
     </div>
@@ -1597,8 +1621,8 @@
       </div>
 
       <div style="display:flex; gap:8px; margin-top:10px;">
-        <button type="button" class="btn-main" style="margin:0; flex:1;" onclick="joinRoomFromInput()">加入 / 載入房間</button>
-        <button type="button" class="btn-secondary" style="margin:0; flex:1;" onclick="disconnectRoom()">返回單機本地</button>
+        <button type="button" class="btn-main" style="margin:0; flex:1;" onclick="joinRoomFromInput()">加入房間</button>
+        <button type="button" class="btn-secondary" style="margin:0; flex:1;" onclick="disconnectRoom()">切回本機</button>
       </div>
       <div id="syncFeedback" role="status" style="display:none; margin-top:8px; color:var(--accent); font-size:0.78rem; line-height:1.45;"></div>
 
@@ -1611,7 +1635,7 @@
         <p style="font-size:0.75rem; color:var(--text-secondary); margin:0 0 8px;">
           把這個網址傳給旅伴或在自己另一台手機開啟，會直接自動載入此房間！
         </p>
-        <button type="button" class="btn-secondary" style="font-size:0.82rem; padding:8px; width:100%;" onclick="copyShareUrl()"><span class="ui-icon" aria-hidden="true"><svg><use href="#icon-copy"/></svg></span> 一鍵複製同步連結</button>
+        <button type="button" class="btn-secondary" style="font-size:0.82rem; padding:8px; width:100%;" onclick="copyShareUrl()"><span class="ui-icon" aria-hidden="true"><svg><use href="#icon-copy"/></svg></span> 複製連結</button>
       </div>
 
       <!-- 雲端設定說明 -->
@@ -1657,6 +1681,8 @@
       rate:    'japan_card_rate',
       rateLive:'japan_card_rate_is_live',
       rateTime:'japan_card_rate_time',
+      rateRequestAt:'japan_card_rate_request_at_v1',
+      rateSourceTimestamp:'japan_card_rate_source_timestamp_v1',
       room:    'japan_card_room',
       migrated:'japan_card_migrated_v2'  // 旗標，確保只搬一次
     };
@@ -1721,7 +1747,7 @@
       kuma: { name: "🐻 玉山熊本熊卡 (指定特店 / 交通)", physicalCardId: 'esun_kuma', physicalCardName: '玉山熊本熊卡', cap: 500, rate: 6.0, fee: 1.5, base: 2.5, minThreshold: 0, capBasis: 'bonus', capPeriod: '帳單週期', cycleType: 'billing', statementDay: null, billingGroup: 'esun', cycleLabel: '', scope: '指定街邊特店與交通卡儲值', contexts: ['transit', 'kuma_shop_street'] },
       jcard: { name: "🇯 富邦 J 卡 (日韓實體一般消費)", physicalCardId: 'fubon_j', physicalCardName: '富邦 J 卡', cap: 1000, rate: 3.0, fee: 1.5, base: 3.0, minThreshold: 1000, capBasis: 'bonus', capPeriod: '季', cycleType: 'quarter', cycleLabel: '', scope: '日韓實體一般消費', contexts: ['general', 'transit'] },
       costco: { name: "🛒 富邦 Costco 聯名卡 (海外實體)", physicalCardId: 'fubon_costco', physicalCardName: '富邦 Costco 聯名卡', cap: 600, rate: 4.0, fee: 1.5, base: 1.0, minThreshold: 0, capBasis: 'bonus', capPeriod: '月', cycleType: 'month', cycleLabel: '', scope: '海外實體消費', contexts: ['general', 'transit'] },
-      paypay: { name: "📱 玉山 Wallet 綁熊本熊 (PayPay)", physicalCardId: 'esun_kuma', physicalCardName: '玉山熊本熊卡', cap: 100, rate: 1.5, fee: 0.0, base: 2.0, minThreshold: 0, capBasis: 'net', capPeriod: '帳單週期', cycleType: 'billing', statementDay: null, billingGroup: 'esun', cycleLabel: '', scope: '玉山 Wallet 綁卡掃 PayPay', contexts: ['paypay'] },
+      paypay: { name: "📱 玉山 Wallet 綁熊本熊 (PayPay)", physicalCardId: 'esun_kuma', physicalCardName: '玉山熊本熊卡', cap: 100, rate: 3.5, fee: 0.0, base: 0.0, minThreshold: 0, capBasis: 'net', capPeriod: '季', cycleType: 'quarter', statementDay: null, billingGroup: null, disableWhenQuotaExhausted: true, termsVersion: 2, cycleLabel: '', scope: '玉山 Wallet 綁卡掃 PayPay', contexts: ['paypay'] },
       cube: { name: "🌲 國泰 CUBE 卡 (趣旅行)", physicalCardId: 'cathay_cube', physicalCardName: '國泰 CUBE 卡', cap: 0, rate: 0, fee: 1.5, base: 3.0, minThreshold: 0, capBasis: 'bonus', capPeriod: '無上限', cycleType: 'none', cycleLabel: '終極保底卡；不追蹤額度', scope: '海外一般消費', trackQuota: false, contexts: [] }
     };
 
@@ -1748,10 +1774,23 @@
         rule.physicalCardName = typeof saved.physicalCardName === 'string' && saved.physicalCardName ? saved.physicalCardName : defaults.physicalCardName;
         delete rule.quotaPoolId;
         rule.contexts = Array.isArray(saved.contexts) ? saved.contexts.filter(value => typeof value === 'string') : [...defaults.contexts];
-        // 一般消費 J 卡權益不可覆蓋交通儲值專用的 J 卡權益；移除舊存檔中的錯誤情境。
-        if (key === 'paypay' && !Object.prototype.hasOwnProperty.call(saved, 'capBasis') && Number(saved.rate) === 3.5) {
-          rule.rate = 1.5;
-          rule.capBasis = 'net';
+        if (key === 'paypay') {
+          // 舊版 PayPay 規則口徑不一致；一次遷移為銀行公告的完整條件。
+          if (saved.termsVersion !== 2) {
+            Object.assign(rule, {
+              base: 0,
+              rate: 3.5,
+              fee: 0,
+              cap: 100,
+              capBasis: 'net',
+              capPeriod: '季',
+              cycleType: 'quarter',
+              statementDay: null
+            });
+          }
+          rule.billingGroup = null;
+          rule.disableWhenQuotaExhausted = true;
+          rule.termsVersion = 2;
         }
         rule.capBasis = rule.capBasis === 'net' ? 'net' : 'bonus';
         rule.cycleType = ['quarter', 'month', 'billing', 'none'].includes(rule.cycleType) ? rule.cycleType : defaults.cycleType;
@@ -1761,15 +1800,9 @@
         rule.net = getNetRate(rule);
         normalized[key] = rule;
       }
-      const kumaDay = normalized.kuma.statementDay;
-      const paypayDay = normalized.paypay.statementDay;
-      const sharedEsunDay = kumaDay !== null && paypayDay !== null && kumaDay !== paypayDay
-        ? null
-        : kumaDay || paypayDay || null;
-      normalized.kuma.statementDay = sharedEsunDay;
-      normalized.paypay.statementDay = sharedEsunDay;
+      normalized.paypay.statementDay = null;
       normalized.kuma.billingGroup = 'esun';
-      normalized.paypay.billingGroup = 'esun';
+      normalized.paypay.billingGroup = null;
       normalized.kuma.cycleLabel = getCycleLabel(normalized.kuma);
       normalized.paypay.cycleLabel = getCycleLabel(normalized.paypay);
       return normalized;
@@ -1896,6 +1929,11 @@
         if (rule.trackQuota === false) continue;
         const periodKey = getCurrentPeriodKey(key, date);
         if (!periodKey) continue;
+        // PayPay 舊版使用帳單週期；換成官方季週期時保留現有餘額，避免遷移當下補滿額度。
+        if (key === 'paypay' && rule.cycleType === 'quarter' && quotaPeriods[key]?.startsWith('billing:')) {
+          quotaPeriods[key] = periodKey;
+          continue;
+        }
         if (!quotaPeriods[key]) {
           quotaPeriods[key] = periodKey;
           continue;
@@ -1927,9 +1965,14 @@
     let quotaPeriods = JSON.parse(localStorage.getItem(STORAGE_KEY.quotaPeriods)) || {};
     let quotaResetAt = JSON.parse(localStorage.getItem(STORAGE_KEY.quotaResetAt)) || {};
     let ruleUpdatedAt = Number(localStorage.getItem(STORAGE_KEY.rulesUpdatedAt)) || 0;
-    let jpyRate = parseFloat(localStorage.getItem(STORAGE_KEY.rate)) || 0.2051;
+    let jpyRate = parseFloat(localStorage.getItem(STORAGE_KEY.rate)) || 0.2088;
     let isLiveRate = (localStorage.getItem(STORAGE_KEY.rateLive) !== 'false');
+    let hasFreshRateResponse = false;
+    let rateFetchFailed = false;
     let rateFetchTime = localStorage.getItem(STORAGE_KEY.rateTime) || '';
+    let rateSourceTimestamp = Number(localStorage.getItem(STORAGE_KEY.rateSourceTimestamp)) || 0;
+    let rateLastRequestAt = Number(localStorage.getItem(STORAGE_KEY.rateRequestAt)) || 0;
+    let rateFetchInFlight = false;
     let ledger = JSON.parse(localStorage.getItem(STORAGE_KEY.ledger)) || [];
     let currentRoom = localStorage.getItem(STORAGE_KEY.room) || '';
     const SUPABASE_URL = 'https://bcxjbeiqunohwpvxzyaf.supabase.co';
@@ -1999,7 +2042,7 @@
         const label = document.createElement('div');
         label.className = 'card-label';
         const cardIcon = document.createElement('span');
-        cardIcon.className = 'ui-icon';
+        cardIcon.className = 'ui-icon card-icon';
         cardIcon.setAttribute('aria-hidden', 'true');
         cardIcon.innerHTML = getCardIcon(key);
         const name = document.createElement('span');
@@ -2101,7 +2144,7 @@
         const ruleTitle = document.createElement('span');
         ruleTitle.className = 'rule-title';
         const ruleIcon = document.createElement('span');
-        ruleIcon.className = 'ui-icon';
+        ruleIcon.className = 'ui-icon card-icon';
         ruleIcon.setAttribute('aria-hidden', 'true');
         ruleIcon.innerHTML = getCardIcon(key);
         const ruleName = document.createElement('span');
@@ -2470,7 +2513,7 @@
       }
 
       const savedAt = Date.now();
-      for (const key of ['kuma', 'paypay']) {
+      for (const key of ['kuma']) {
         cardRules[key].statementDay = day;
         cardRules[key].cycleLabel = getCycleLabel(cardRules[key]);
         cardRules[key].updatedAt = savedAt;
@@ -2490,13 +2533,13 @@
       updateQuotaUI();
       calculate();
       pushToCloud();
-      showToast(`已設定玉山卡每月 ${day} 日結帳，共用於熊本熊卡與 PayPay`);
+      showToast(`已設定熊本熊卡每月 ${day} 日結帳`);
     }
 
     function deferEsunStatementDay() {
       localStorage.setItem(STORAGE_KEY.billingPromptDismissed, '1');
       document.getElementById('billingSetupModal').style.display = 'none';
-      showToast('帳單日尚未確認；玉山兩項額度維持手動重置');
+      showToast('帳單日尚未確認；熊本熊卡額度維持手動重置');
     }
 
     // 初始化
@@ -2520,8 +2563,8 @@
       renderLedger();
       calculate();
 
-      // 自動連網抓取最新即時匯率
-      fetchLiveRate(false);
+      // 臺銀營業時間可能多次調整牌價；每 15 分鐘檢查一次，自訂模式保留手動匯率。
+      if (isLiveRate) fetchLiveRate(false);
 
       // 檢查網址參數 ?room=XXXX
       const urlParams = new URLSearchParams(window.location.search);
@@ -2539,10 +2582,15 @@
       document.addEventListener('visibilitychange', () => {
         if (document.visibilityState === 'visible') {
           checkQuotaPeriods();
-          fetchLiveRate(false);
+          if (isLiveRate) fetchLiveRate(false);
           if (currentRoom) pullFromCloud(true);
         }
       });
+
+      // 每 15 分鐘檢查一次；非營業時間臺銀牌價可能不變，採用來源頁面時間辨識新舊。
+      setInterval(() => {
+        if (isLiveRate && document.visibilityState === 'visible') fetchLiveRate(false);
+      }, 15 * 60 * 1000);
 
       // 背景定時同步；降低大型房間讀取分段時的 API 請求量
       setInterval(() => {
@@ -2553,46 +2601,52 @@
       }, 60000);
     }
 
-    // 即時匯率連網引擎 (支援多重備援 API，免金鑰、超快速、無 CORS 限制)
+    // 只採用臺銀官方頁面標示的「本行即期賣出」欄位。
     async function fetchLiveRate(forceAlert = false) {
-      const dot = document.getElementById('rateLiveDot');
-      const badge = document.getElementById('rateModeBadge');
-
+      if (rateFetchInFlight) return;
+      const now = Date.now();
+      const minInterval = 15 * 60 * 1000;
+      if (!forceAlert && now - rateLastRequestAt < minInterval) {
+        return;
+      }
+      rateFetchInFlight = true;
+      rateLastRequestAt = now;
+      localStorage.setItem(STORAGE_KEY.rateRequestAt, String(rateLastRequestAt));
       try {
-        const res = await fetch('https://open.er-api.com/v6/latest/JPY');
-        if (res.ok) {
-          const data = await res.json();
-          if (data && data.rates && data.rates.TWD) {
-            applyFetchedRate(data.rates.TWD, forceAlert);
-            return;
-          }
+        const response = await fetch(`${SUPABASE_URL}/functions/v1/bot-jpy-rate`, {
+          headers: supabaseHeaders(),
+          cache: 'no-store'
+        });
+        const data = await response.json();
+        if (!response.ok || !Number.isFinite(Number(data?.rate)) || Number(data.rate) <= 0) {
+          throw new Error(data?.error || `臺銀匯率讀取失敗（HTTP ${response.status}）`);
         }
-        throw new Error('Fallback needed');
-      } catch (err) {
-        try {
-          const res2 = await fetch('https://api.exchangerate-api.com/v4/latest/JPY');
-          if (res2.ok) {
-            const data2 = await res2.json();
-            if (data2 && data2.rates && data2.rates.TWD) {
-              applyFetchedRate(data2.rates.TWD, forceAlert);
-              return;
-            }
-          }
-        } catch (err2) {
-          console.warn('即時匯率網路連線異常，使用快取匯率', err2);
-          if (forceAlert) showToast('網路連線逾時，維持當前匯率');
-        }
+        applyFetchedRate(data.rate, data.fetchedAt, forceAlert);
+      } catch (error) {
+        rateFetchFailed = true;
+        console.warn('臺銀即期賣出匯率讀取失敗，保留上次匯率', error);
+        updateRateDisplay();
+        if (forceAlert) showToast('目前無法取得臺銀即期賣出匯率，保留上次數值');
+      } finally {
+        rateFetchInFlight = false;
       }
     }
 
-    function applyFetchedRate(rateVal, showNotification = false) {
-      jpyRate = parseFloat(parseFloat(rateVal).toFixed(4));
+    function applyFetchedRate(rateVal, providerUpdatedAt, showNotification = false) {
+      jpyRate = parseFloat(parseFloat(rateVal).toFixed(6));
       isLiveRate = true;
-      rateFetchTime = new Date().toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+      hasFreshRateResponse = true;
+      rateFetchFailed = false;
+      const providerDate = providerUpdatedAt ? new Date(providerUpdatedAt) : null;
+      rateFetchTime = providerDate && !Number.isNaN(providerDate.getTime())
+        ? providerDate.toLocaleString('zh-TW', { timeZone: 'Asia/Taipei', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })
+        : '日期未知';
+      rateSourceTimestamp = providerDate && !Number.isNaN(providerDate.getTime()) ? providerDate.getTime() : 0;
 
       localStorage.setItem(STORAGE_KEY.rate, jpyRate.toString());
       localStorage.setItem(STORAGE_KEY.rateLive, 'true');
       localStorage.setItem(STORAGE_KEY.rateTime, rateFetchTime);
+      localStorage.setItem(STORAGE_KEY.rateSourceTimestamp, String(rateSourceTimestamp));
 
       updateRateDisplay();
       updateQuotaUI();
@@ -2600,7 +2654,7 @@
       pushToCloud();
 
       if (showNotification) {
-        showToast(`即時匯率已更新為 ${jpyRate.toFixed(4)}`);
+        showToast(`已更新臺銀即期賣出 ${jpyRate.toFixed(6)}`);
       }
     }
 
@@ -2614,21 +2668,28 @@
       const timeEl = document.getElementById('rateFetchTime');
       const customInput = document.getElementById('customRateInput');
 
-      if (displayEl) displayEl.innerText = jpyRate.toFixed(4);
-      if (labelEl) labelEl.innerText = jpyRate.toFixed(4);
-      if (modalLive) modalLive.innerText = jpyRate.toFixed(4);
-      if (customInput) customInput.value = jpyRate.toFixed(4);
+      if (displayEl) displayEl.innerText = jpyRate.toFixed(6);
+      if (labelEl) labelEl.innerText = jpyRate.toFixed(6);
+      if (modalLive) modalLive.innerText = jpyRate.toFixed(6);
+      if (customInput) customInput.value = jpyRate.toFixed(6);
 
       if (isLiveRate) {
-        dot.className = 'rate-dot';
-        badge.innerText = '即時';
-        badge.style.color = 'var(--green)';
-        if (timeEl) timeEl.innerText = `更新時間：今天 ${rateFetchTime || '最新即時'}`;
+        const legacyFetchClock = /^\d{2}:\d{2}:\d{2}$/.test(rateFetchTime);
+        const shownRateDate = legacyFetchClock ? '日期未知（舊版僅記錄讀取時間）' : rateFetchTime;
+        const sourceAge = rateSourceTimestamp ? Date.now() - rateSourceTimestamp : Infinity;
+        const sourceStatus = rateFetchFailed ? '更新失敗' : !hasFreshRateResponse ? '快取' : !rateSourceTimestamp ? '日期未知' : sourceAge > 36 * 60 * 60 * 1000 ? '來源延遲' : '臺銀牌價';
+        const sourceIsFresh = sourceStatus === '臺銀牌價';
+        dot.className = sourceIsFresh ? 'rate-dot' : 'rate-dot custom';
+        badge.innerText = sourceStatus;
+        badge.style.color = sourceIsFresh ? 'var(--green)' : 'var(--warning)';
+        if (timeEl) timeEl.innerText = shownRateDate
+          ? `${rateFetchFailed ? '更新失敗；沿用上次牌價' : hasFreshRateResponse ? '抓取時間' : '快取抓取時間'}：${shownRateDate}`
+          : '目前使用快取值，尚無資料日期';
       } else {
         dot.className = 'rate-dot custom';
         badge.innerText = '自訂';
         badge.style.color = 'var(--warning)';
-        if (timeEl) timeEl.innerText = `自訂匯率模式`;
+        if (timeEl) timeEl.innerText = `手動設定匯率`;
       }
     }
 
@@ -2645,17 +2706,21 @@
     function saveCustomRate() {
       const newRate = parseFloat(document.getElementById('customRateInput').value);
       if (newRate > 0) {
-        jpyRate = parseFloat(newRate.toFixed(4));
+        jpyRate = parseFloat(newRate.toFixed(6));
         isLiveRate = false;
+        rateSourceTimestamp = Date.now();
+        rateFetchTime = '手動設定';
         localStorage.setItem(STORAGE_KEY.rate, jpyRate.toString());
         localStorage.setItem(STORAGE_KEY.rateLive, 'false');
+        localStorage.setItem(STORAGE_KEY.rateTime, rateFetchTime);
+        localStorage.setItem(STORAGE_KEY.rateSourceTimestamp, String(rateSourceTimestamp));
 
         updateRateDisplay();
         updateQuotaUI();
         calculate();
         closeRateModal();
         pushToCloud();
-        showToast(`已套用自訂匯率 ${jpyRate.toFixed(4)}`);
+        showToast(`已套用自訂匯率 ${jpyRate.toFixed(6)}`);
       } else {
         showAppDialog({ title: '匯率格式錯誤', message: '請輸入大於 0 的有效匯率。', confirmText: '知道了', cancelText: '' });
       }
@@ -2722,7 +2787,7 @@
       } catch(e) {}
 
       updateSyncUI();
-      pullFromCloud(isSilent).finally(maybePromptEsunStatementDay);
+      pullFromCloud(isSilent);
       if (!isSilent) {
         showToast(`正在連線旅程房間：${roomCode}`);
       }
@@ -2818,6 +2883,9 @@
         quotaPeriods,
         quotaResetAt,
         jpyRate,
+        rateSource: isLiveRate ? 'bot_spot_sell' : 'custom',
+        rateSourceTimestamp,
+        rateTime: rateFetchTime,
         ledger
       };
     }
@@ -2922,7 +2990,21 @@
               if (data.quotas) quotas = { ...limits, ...data.quotas };
               quotaPeriods = data.quotaPeriods || quotaPeriods;
               quotaResetAt = data.quotaResetAt || quotaResetAt;
-              if (data.jpyRate && !isLiveRate) jpyRate = data.jpyRate;
+              const cloudRateTimestamp = Number(data.rateSourceTimestamp) || 0;
+              if (data.jpyRate && data.rateSource === 'bot_spot_sell' && cloudRateTimestamp >= rateSourceTimestamp) {
+                jpyRate = Number(data.jpyRate);
+                isLiveRate = true;
+                rateSourceTimestamp = cloudRateTimestamp;
+                rateFetchTime = data.rateTime || '';
+                hasFreshRateResponse = true;
+                rateFetchFailed = false;
+                localStorage.setItem(STORAGE_KEY.rate, String(jpyRate));
+                localStorage.setItem(STORAGE_KEY.rateLive, 'true');
+                localStorage.setItem(STORAGE_KEY.rateTime, rateFetchTime);
+                localStorage.setItem(STORAGE_KEY.rateSourceTimestamp, String(rateSourceTimestamp));
+              } else if (data.jpyRate && !isLiveRate) {
+                jpyRate = data.jpyRate;
+              }
               if (Array.isArray(data.ledger)) ledger = data.ledger;
             }
 
@@ -2964,6 +3046,9 @@
         const pushSucceeded = await pushToCloud();
         if (!pushSucceeded && cloudSyncState === 'error') succeeded = false;
       }
+      // Wait until this room's snapshot has loaded successfully before asking.
+      // A failed read must not make a new device treat the room as unconfigured.
+      if (succeeded) maybePromptEsunStatementDay();
       if (succeeded && !silent) showToast(`已同步【${room}】最新資料`);
       else if (!succeeded && !silent) showToast('雲端同步失敗，請查看房間設定中的錯誤訊息');
       return succeeded;
@@ -3113,7 +3198,7 @@
       const jcardThreshold = Number(jcardRule.minThreshold) || 0;
       const rateLabel = rate => `${Number(rate).toFixed(1)}%`;
 
-      document.getElementById('twdDisplay').innerText = `NT$ ${twd.toLocaleString()}`;
+      document.getElementById('twdDisplay').innerText = `NT$${twd.toLocaleString()}`;
 
       // 欄位聯動控制
       const isTransit = (payType === 'transit');
@@ -3127,6 +3212,8 @@
       const transitAlert = document.getElementById('transitAlert');
       const transitAlertText = document.getElementById('transitAlertText');
       const jcardAlert = document.getElementById('jcardAlert');
+      const paypayQuotaAlert = document.getElementById('paypayQuotaAlert');
+      const paypayQuotaAlertText = document.getElementById('paypayQuotaAlertText');
 
       document.getElementById('deptAlertText').innerHTML = `<b>百貨統收陷阱：</b>此店位於百貨商場內，熊本熊卡無法判定指定特店 (喪失 ${rateLabel(kumaRule.rate)} 加碼)，系統已自動避開並改派最優解！`;
       document.getElementById('jcardAlertText').innerHTML = `<b>未達門檻提醒：</b>金額未達 NT$${jcardThreshold.toLocaleString()}，不符合富邦 J 卡加碼門檻（未達時淨回饋 ${rateLabel(jcardRule.base - jcardRule.fee)}），已自動改派無單筆門檻的 Costco 卡 (淨 ${rateLabel(getNetRate(costcoRule))})！`;
@@ -3140,6 +3227,7 @@
       overLimitAlert.style.display = 'none';
       transitAlert.style.display = 'none';
       jcardAlert.style.display = 'none';
+      paypayQuotaAlert.style.display = 'none';
 
       if (jpy <= 0) {
         currentThresholdOffer = null;
@@ -3168,7 +3256,8 @@
       const contextKey = isTransit ? 'transit' : isPayPay ? 'paypay' : isKumaShop ? 'kuma_shop_street' : 'general';
       // 每條獨立回饋規則都是候選額度池；同一實體卡的不同權益可依序使用。
       let pool = Object.entries(cardRules)
-        .filter(([, rule]) => Array.isArray(rule.contexts) && rule.contexts.includes(contextKey))
+        .filter(([key, rule]) => Array.isArray(rule.contexts) && rule.contexts.includes(contextKey) &&
+          !(rule.disableWhenQuotaExhausted && Number(quotas[key] ?? limits[key] ?? 0) <= 0))
         .map(([key]) => key);
 
       // 2. 按淨回饋率從高到低排序（考慮門檻：未達門檻時只能拿基本回饋）
@@ -3265,51 +3354,51 @@
       
       document.getElementById('bestCard').innerText = bestCardName;
       document.getElementById('bestCardIcon').innerHTML = bestIcon;
-      document.getElementById('rateBadge').innerText = isSplitRecommended ? "最大化回饋" : `淨賺 ${rateLabel(currentDecision.ratePercent)}`;
+      document.getElementById('rateBadge').innerText = isSplitRecommended ? "最佳拆刷" : `淨回饋 ${rateLabel(currentDecision.ratePercent)}`;
       
       if (isSplitRecommended) {
-        document.getElementById('cardDesc').innerText = "偵測到額度不足或門檻限制，建議拆刷以獲得最高回饋！";
-        document.getElementById('subAdvice').innerText = "請查看下方的拆刷建議說明。";
+        document.getElementById('cardDesc').innerText = "依回饋高低安排刷卡順序。";
+        document.getElementById('subAdvice').innerText = "";
         
         const splitParts = currentDecision.splitPlan.best;
         const lazyPart = currentDecision.splitPlan.lazy[0];
         const buildLines = (parts) => parts.map(p => {
           const rule = getRule(p.cardKey === 'backup_cube' ? 'cube' : p.cardKey);
           const thresholdNote = p.thresholdNote ? `；${p.thresholdNote}` : '';
-          return `${rule ? getDisplayRuleName(rule) : getCardDisplayName(p.cardKey)} (約 NT$${p.amountTwd.toLocaleString()}, 淨 ${rateLabel(p.ratePercent)}${thresholdNote})`;
+          return `${rule ? getDisplayRuleName(rule) : getCardDisplayName(p.cardKey)}｜NT$${p.amountTwd.toLocaleString()}・${rateLabel(p.ratePercent)}${thresholdNote}`;
         });
 
         document.getElementById('overLimitAlert').style.display = 'block';
         document.getElementById('overLimitMsg').innerHTML = buildSplitPlanHTML({
-          header: `<span class="ui-icon" aria-hidden="true"><svg><use href="#icon-spark"/></svg></span> 發現更優的回饋組合！`,
+          header: `<span class="ui-icon" aria-hidden="true"><svg><use href="#icon-spark"/></svg></span> 刷卡方案`,
           best: {
-            label: "最省錢方案（拆刷）",
+            label: "依序拆刷",
             lines: buildLines(splitParts),
-            earn: `合計省下約 NT$ ${Math.round(maxReward).toLocaleString()}`
+            earn: `回饋約 NT$${Math.round(maxReward).toLocaleString()}`
           },
           lazy: {
-            label: `懶人方案（整筆刷 ${lazyPart.cardName}）`,
-            lines: [`整筆 NT$${twd.toLocaleString()}`],
-            earn: `省下約 NT$ ${Math.round(bestSingleReward).toLocaleString()}`
+            label: `整筆刷 ${lazyPart.cardName}`,
+            lines: [`NT$${twd.toLocaleString()}`],
+            earn: `回饋約 NT$${Math.round(bestSingleReward).toLocaleString()}`
           }
         });
         resultBox.className = 'result-box';
       } else {
         if (mainCardKey === 'jcard_transit') {
           resultBox.classList.add('jcard_transit');
-          document.getElementById('cardDesc').innerText = `滿額達標！單筆滿 NT$${jTransitThreshold.toLocaleString()} 享加碼，淨賺 ${rateLabel(currentDecision.ratePercent)}！`;
+          document.getElementById('cardDesc').innerText = `已達單筆門檻 NT$${jTransitThreshold.toLocaleString()}。`;
         } else if (mainCardKey === 'kuma') {
           resultBox.classList.add('kuma');
-          document.getElementById('cardDesc').innerText = `指定特店/交通優惠！實拿 ${rateLabel(currentDecision.ratePercent)} 淨回饋！`;
+          document.getElementById('cardDesc').innerText = `適用指定店家／交通優惠。`;
         } else if (mainCardKey === 'jcard') {
           resultBox.classList.add('jcard');
-          document.getElementById('cardDesc').innerText = `實體滿額達標！淨賺 ${rateLabel(currentDecision.ratePercent)}！`;
+          document.getElementById('cardDesc').innerText = `已達實體消費門檻。`;
         } else if (mainCardKey === 'paypay') {
           resultBox.classList.add('paypay');
-          document.getElementById('cardDesc').innerText = `免 1.5% 手續費！實拿 ${rateLabel(currentDecision.ratePercent)} 淨回饋！`;
+          document.getElementById('cardDesc').innerText = `免海外手續費。`;
         } else if (mainCardKey === 'costco') {
           resultBox.classList.add('costco');
-          document.getElementById('cardDesc').innerText = `海外實體穩拿 ${rateLabel(currentDecision.ratePercent)} 回饋！`;
+          document.getElementById('cardDesc').innerText = `海外實體消費。`;
         } else {
           resultBox.classList.add('backup');
           document.getElementById('cardDesc').innerText = currentDecision.cardName.includes('外幣') 
@@ -3317,13 +3406,18 @@
             : `加碼已滿！改用 ${currentDecision.cardName} 保底淨賺 ${rateLabel(currentDecision.ratePercent)}。`;
         }
         const mainLimit = getCardLimit(mainCardKey);
-        document.getElementById('subAdvice').innerText = !mainRule || mainRule.trackQuota === false ? "此方案使用無上限保底。" : `剩餘額度約 NT$${Math.round(quotas[mainCardKey] ?? mainLimit).toLocaleString()}。`;
+        document.getElementById('subAdvice').innerText = !mainRule || mainRule.trackQuota === false ? "無加碼上限。" : "";
       }
 
       if (isTransit && twd < jTransitThreshold) transitAlert.style.display = 'flex';
       if (isGeneralCard && twd > 0 && twd < jcardThreshold && mainCardKey !== 'kuma') jcardAlert.style.display = 'flex';
+      if (isPayPay && paypayRule.disableWhenQuotaExhausted && Number(quotas.paypay ?? limits.paypay ?? 0) <= 0) {
+        const alternatives = [...new Set(bestPlan.map(part => getCardDisplayName(part.key)))].join('、');
+        paypayQuotaAlertText.innerText = `本${paypayRule.capPeriod} PayPay ${getNetRate(paypayRule)}% 回饋已達 NT$${Number(paypayRule.cap).toLocaleString()} 上限；本筆不推薦使用 PayPay，改用${alternatives}。`;
+        paypayQuotaAlert.style.display = 'flex';
+      }
 
-      document.getElementById('bestReward').innerText = `預估現賺淨回饋：NT$ ${Math.round(maxReward).toLocaleString()}`;
+      document.getElementById('bestReward').innerText = `預估回饋 NT$${Math.round(maxReward).toLocaleString()}`;
       document.getElementById('singleRecordAction').style.display = isSplitRecommended ? 'none' : 'block';
       document.getElementById('splitRecordActions').style.display = isSplitRecommended ? 'flex' : 'none';
 
@@ -3332,8 +3426,8 @@
         const curQ = quotas[mainCardKey] ?? mainLimit;
         const firstCharge = bestPlan[0].amount;
         const aftQ = Math.max(0, curQ - firstCharge);
-        document.getElementById('resultCurrentQuota').innerText = `NT$ ${Math.round(curQ).toLocaleString()} (約 ¥${Math.round(curQ / jpyRate).toLocaleString()})`;
-        document.getElementById('resultAfterQuota').innerText = `NT$ ${Math.round(aftQ).toLocaleString()}`;
+        document.getElementById('resultCurrentQuota').innerText = `NT$${Math.round(curQ).toLocaleString()}（約 ¥${Math.round(curQ / jpyRate).toLocaleString()}）`;
+        document.getElementById('resultAfterQuota').innerText = `NT$${Math.round(aftQ).toLocaleString()}`;
       } else {
         quotaStatusBox.style.display = 'none';
       }
@@ -3373,16 +3467,20 @@
     }
 
     function getCardIcon(key) {
-      if (key === 'backup_fx') return lineIconSvg('yen');
-      if (key === 'kuma' || key === 'paypay') return lineIconSvg('bear');
-      if (key === 'costco') return lineIconSvg('cart');
+      if (key === 'backup_fx') return libraryIcon('lucide:coins');
+      if (key === 'kuma' || key === 'paypay') return libraryIcon('lucide-lab:bear-face');
+      if (key === 'costco') return libraryIcon('lucide:shopping-cart');
       if (key === 'jcard' || key === 'jcard_transit') return lineIconSvg('daruma');
-      if (key === 'cube' || key === 'backup_cube') return lineIconSvg('tree');
+      if (key === 'cube' || key === 'backup_cube') return libraryIcon('lucide:tree-pine');
       return lineIconSvg('card');
     }
 
+    function libraryIcon(name) {
+      return `<iconify-icon class="library-icon" icon="${name}" aria-hidden="true"></iconify-icon>`;
+    }
+
     function lineIconSvg(name) {
-      const allowed = new Set(['card', 'gauge', 'receipt', 'book', 'yen', 'train', 'pill', 'store', 'building', 'food', 'phone', 'bear', 'cart', 'daruma', 'tree', 'alert', 'info', 'target', 'trend', 'check', 'refresh', 'dice', 'cloud', 'link', 'copy', 'trash', 'spark', 'close']);
+      const allowed = new Set(['card', 'gauge', 'receipt', 'book', 'yen', 'train', 'pill', 'store', 'building', 'food', 'phone', 'daruma', 'alert', 'info', 'target', 'trend', 'check', 'refresh', 'dice', 'cloud', 'link', 'copy', 'trash', 'spark', 'close']);
       const iconName = allowed.has(name) ? name : 'info';
       return `<svg class="line-icon-svg" aria-hidden="true"><use href="#icon-${iconName}"/></svg>`;
     }
@@ -3521,18 +3619,18 @@
       const applyButton = document.getElementById('quotaThresholdApply');
       const dismissButton = document.getElementById('quotaThresholdDismiss');
       if (bestOffer.kind === 'remaining') {
-        text.textContent = `剩餘加碼額度提醒：這筆已達單筆 NT$${bestOffer.threshold.toLocaleString()} 門檻；扣除後，${bestOffer.name} 約剩 NT$${bestOffer.remainingQuota.toLocaleString()} 加碼額度。因為剩餘額度低於單筆門檻，若沒有再做一筆符合此情境、單筆滿 NT$${bestOffer.threshold.toLocaleString()} 的消費，這 NT$${bestOffer.remainingQuota.toLocaleString()} 額度就無法再用；若本來就要消費，達門檻約可多拿 NT$${bestOffer.additionalReward.toLocaleString()} 加碼回饋。`;
+        text.textContent = `已達單筆門檻 NT$${bestOffer.threshold.toLocaleString()}，刷後約剩 NT$${bestOffer.remainingQuota.toLocaleString()} 加碼額度。剩餘額度低於門檻，無法再單獨使用；若本來還要消費，補到門檻約可多拿 NT$${bestOffer.additionalReward.toLocaleString()} 回饋。`;
         applyButton.style.display = 'none';
         dismissButton.textContent = '知道了';
         box.style.display = 'flex';
         return;
       }
       applyButton.style.display = '';
-      dismissButton.textContent = '先不加購';
+      dismissButton.textContent = '不加購';
       const currentState = bestOffer.currentAllocation > 0
-        ? `目前分配 NT$${Math.round(bestOffer.currentAllocation).toLocaleString()}，未達單筆 NT$${bestOffer.threshold.toLocaleString()} 門檻，這段會按基本回饋計。`
+        ? `目前分配 NT$${Math.round(bestOffer.currentAllocation).toLocaleString()}，未達 NT$${bestOffer.threshold.toLocaleString()} 門檻，按基本回饋計。`
         : `目前方案未分配消費給這條規則，因此剩餘加碼額度尚未使用。`;
-      text.textContent = `加碼門檻與剩餘額度提醒：${bestOffer.name} 尚有約 NT$${bestOffer.remainingQuota.toLocaleString()} 可享加碼；${currentState}若再加購約 NT$${bestOffer.additionalTwd.toLocaleString()}（¥${bestOffer.additionalJpy.toLocaleString()}），重新分配後可達門檻，約 NT$${Math.min(bestOffer.remainingQuota, bestOffer.suggestedAllocation).toLocaleString()} 消費可用加碼；整筆預估回饋約增加 NT$${bestOffer.additionalReward.toLocaleString()}。`;
+      text.textContent = `${bestOffer.name} 尚有 NT$${bestOffer.remainingQuota.toLocaleString()} 加碼額度。${currentState}加購 NT$${bestOffer.additionalTwd.toLocaleString()}（¥${bestOffer.additionalJpy.toLocaleString()}）後可達門檻，預估多回饋 NT$${bestOffer.additionalReward.toLocaleString()}。`;
       box.style.display = 'flex';
     }
 
@@ -3656,7 +3754,7 @@
         currentDecision.icon = "yen";
         currentDecision.rateBadge = "免手續費 (勝出)";
         currentDecision.ratePercent = Number(cubeRule.fee) || 0;
-        currentDecision.desc = `前線加碼已滿！即時匯率 (${rate.toFixed(4)}) > 0.2020 偏高，推薦掏出外幣帳戶直接扣當初換好的 $0.199 便宜日幣（免收 1.5% 海外手續費最省）！`;
+        currentDecision.desc = `前線加碼已滿！臺銀即期賣出 (${rate.toFixed(6)}) > 0.2020，建議扣外幣帳戶中的日幣，免 1.5% 海外手續費。`;
         currentDecision.subAdvice = "避開當前較貴的新台幣現貨匯率與 1.5% 刷卡手續費。";
         return 'backup_fx';
       } else {
@@ -3664,7 +3762,7 @@
         currentDecision.icon = "card";
         currentDecision.rateBadge = `淨賺 ${cubeNet.toFixed(1)}% (無上限)`;
         currentDecision.ratePercent = cubeNet;
-        currentDecision.desc = `前線加碼已滿！即時匯率 (${rate.toFixed(4)}) &le; 0.2020 划算，刷國泰 CUBE 卡享 ${cubeRule.base}% - ${cubeRule.fee}% 手續費 = 淨賺 ${cubeNet.toFixed(1)}% 無上限回饋！`;
+        currentDecision.desc = `前線加碼已滿！臺銀即期賣出 (${rate.toFixed(6)}) ≤ 0.2020，改刷國泰 CUBE 卡，淨回饋 ${cubeNet.toFixed(1)}%，無上限。`;
         currentDecision.subAdvice = "海外實體消費切換至『趣旅行』權益，無回饋上限。";
         return 'backup_cube';
       }

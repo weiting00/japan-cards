@@ -22,6 +22,17 @@ grant select, insert, update on table public.japan_card_data to anon;
 
 目前的 `Allow public read and write` RLS policy 允許匿名使用者讀寫所有房間列。房間代碼只是識別碼，不是存取控制；不要在同步資料放敏感資訊。Supabase publishable key 會公開在網頁程式中，不能當作密碼。
 
+### 臺銀日圓匯率（首次設定一次）
+
+瀏覽器無法直接讀取臺銀頁面，因此需要在現有 Supabase 專案建立一個轉接函式。**不用安裝 CLI，也不用改資料庫**：
+
+1. 開啟 [Supabase 專案](https://supabase.com/dashboard/project/bcxjbeiqunohwpvxzyaf/functions)，進入 **Edge Functions**。
+2. 按 **Deploy a new function → Via Editor**，函式名稱填 `bot-jpy-rate`。
+3. 將本資料夾 `supabase/functions/bot-jpy-rate/index.ts` 的內容貼入編輯器，再按 **Deploy function**。
+4. 回到 App 點「更新臺銀匯率」確認成功。之後 App 會在頁面開啟時及每 15 分鐘自動檢查；以臺銀頁面實際牌價時間為準，非營業時間可能維持原價。
+
+匯率讀取失敗或無法確認臺銀牌價時間時，App 會保留舊值並標示更新失敗，不會把舊資料冒充新報價。臺銀牌價僅供參考，實際交易價格以發卡銀行或臺銀交易畫面為準。
+
 2. **⚡ 櫃檯速查決策器**
    - **依情境推薦卡片**：交通卡、熊本熊指定店、富邦 J 卡、Costco、PayPay 與 CUBE 依規則計算淨回饋與門檻。
     - **PayPay 掃碼支援**：玉山 Wallet 綁熊本熊淨回饋 3.5%，達上限後可切換扣外幣帳戶。
@@ -44,8 +55,8 @@ grant select, insert, update on table public.japan_card_data to anon;
    - 支援一鍵將資料匯出為 JSON 備份檔。
    - 修改規則時可選擇重算本期既有消費（舊資料缺少重置日期時需確認起算日），或只套用到之後的消費。
 
-5. **💴 即時匯率隨手調**
-   - 點擊右上角匯率標籤即可隨時調整自訂匯率（預設 0.2051）。
+5. **💴 臺銀匯率隨手調**
+   - 預設讀取臺銀日圓即期賣出牌價；點擊右上角匯率標籤可手動更新或自訂。
 
 ---
 

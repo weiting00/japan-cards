@@ -1,0 +1,66 @@
+<!doctype html><meta charset="utf-8">
+<style>html,body{margin:0;background:#111}iframe{width:390px;height:844px;border:0;display:block}</style>
+<iframe id="f" src="../index.html"></iframe>
+<script>
+setTimeout(function () {
+  var out = []; var log = function (m) { out.push(m); }; var pass = 0, fail = 0;
+  function check(n, c, e) { if (c) { pass++; log('PASS  ' + n + (e ? ' — ' + e : '')); } else { fail++; log('FAIL  ' + n + (e ? ' — ' + e : '')); } }
+  try {
+    var w = document.getElementById('f').contentWindow, d = w.document;
+    var errs = []; w.addEventListener('error', function(e){ errs.push(e.message); });
+    var cardId = function () { return w.eval('(rulesV3.cards.find(function(c){ return c.name === "ZZ通用規則測試卡"; }) || {}).id'); };
+
+    // 新增一張高回饋卡：8% 一般回饋 + 收手續費（只經由「新增信用卡」畫面）
+    w.openAddCard();
+    var f = d.getElementById('addDynamicCardForm');
+    f.elements.name.value = 'ZZ通用規則測試卡';
+    f.elements.baseRate.value = '8';
+    f.elements.baseFee.checked = true;
+    f.dispatchEvent(new w.Event('submit', { cancelable: true, bubbles: true }));
+    check('新增後自動進入該卡編輯頁', d.getElementById('cardEditorOverlay').hidden === false);
+    check('新增信用卡畫面已關閉', d.getElementById('addCardOverlay').hidden === true);
+    var newCardId = cardId();
+    check('新卡已建立', !!newCardId, newCardId);
+
+    // 決策頁：8% - 1.5% = 6.5% 應該贏過富邦 J 卡
+    w.closeCardEditor();
+    w.switchTab('decision');
+    d.getElementById('jpyAmount').value = '10000';
+    w.calculate();
+    var best = d.getElementById('bestCard').textContent, badge = d.getElementById('rateBadge').textContent;
+    log('決策頁: ' + best + ' | ' + badge);
+    check('新卡有被評估並勝出（8% - 1.5% = 6.5%）', best.indexOf('ZZ通用規則測試卡') >= 0, best + ' ' + badge);
+    check('1.5% 手續費自動套用', /6\.5|6\.50/.test(badge), badge);
+
+    // 關掉手續費 → 淨回饋應該變 8%（在單卡編輯頁改）
+    w.openCardEditor(newCardId);
+    var feeBox = d.getElementById('cardEditorBaseFee');
+    feeBox.checked = false;
+    feeBox.dispatchEvent(new w.Event('change', {bubbles:true}));
+    w.closeCardEditor();
+    d.getElementById('jpyAmount').value = '10000';
+    w.calculate();
+    log('免手續費後: ' + d.getElementById('rateBadge').textContent);
+    check('關掉手續費後淨回饋變 8%', /8\.0|8\.00/.test(d.getElementById('rateBadge').textContent), d.getElementById('rateBadge').textContent);
+
+    // 加一個有上限的加碼活動 → 額度看板應該出現
+    w.openCardEditor(newCardId);
+    d.getElementById('cardEditorAddActivity').click();
+    var af = d.getElementById('addDynamicPlanForm');
+    af.elements.namedItem('name').value = 'ZZ有上限加碼';
+    af.elements.namedItem('rate').value = '5';
+    af.elements.namedItem('cap').value = '3000';
+    af.dispatchEvent(new w.Event('submit', { cancelable: true, bubbles: true }));
+    w.closeCardEditor();
+    w.switchTab('quotas');
+    var q = d.getElementById('quotaCards').textContent;
+    check('有上限的加碼活動會進額度看板', q.indexOf('ZZ通用規則測試卡') >= 0, q.replace(/\s+/g,' ').match(/ZZ通用規則測試卡[^|]{0,60}/)[0]);
+
+    // 額度重置/週期
+    check('額度看板有重置鈕', d.querySelectorAll('#quotaCards [data-v3-reset]').length > 0);
+    check('無 JS 錯誤', errs.length === 0, errs.slice(0,3).join('; '));
+  } catch (e) { fail++; log('EXCEPTION: ' + e.message + ' | ' + (e.stack||'').split('\n')[1]); }
+  log(''); log('=== ' + pass + ' passed, ' + fail + ' failed ===');
+  var pre = document.createElement('pre'); pre.id = 'AUDIT'; pre.textContent = out.join('\n'); document.body.appendChild(pre);
+}, 2600);
+</script>

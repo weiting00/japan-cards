@@ -1,0 +1,99 @@
+<!doctype html><meta charset="utf-8">
+<style>html,body{margin:0;background:#111}iframe{height:900px;border:0;display:block}</style>
+<iframe id="f" src="../index.html"></iframe>
+<script>
+var W = parseInt((location.hash||'#390').slice(1),10) || 390;
+document.getElementById('f').style.width = W + 'px';
+setTimeout(function () {
+  var out = [];
+  try {
+    var w = document.getElementById('f').contentWindow, d = w.document;
+    function rect(el){ if(!el) return null; var r = el.getBoundingClientRect(); return {t:Math.round(r.top),l:Math.round(r.left),w:Math.round(r.width),h:Math.round(r.height),b:Math.round(r.bottom),r:Math.round(r.right)}; }
+    function cs(el,p){ var c=w.getComputedStyle(el),o={}; p.forEach(function(k){o[k]=c[k];}); return o; }
+    out.push('=== viewport width ' + W + ' ===');
+    out.push('main           ' + JSON.stringify(rect(d.querySelector('main'))));
+    out.push('tab-guide      ' + JSON.stringify(rect(d.getElementById('tab-guide'))));
+    out.push('app-header     ' + JSON.stringify(rect(d.querySelector('.app-header'))));
+    out.push('nav-tabs       ' + JSON.stringify(rect(d.querySelector('.nav-tabs'))));
+
+    // 新增頁
+    w.openAddCard();
+    var pg = d.getElementById('addCardOverlay');
+    out.push('-- 新增信用卡頁 --');
+    out.push('page           ' + JSON.stringify(rect(pg)));
+    out.push('head           ' + JSON.stringify(rect(d.querySelector('.add-card-head'))));
+    out.push('body           ' + JSON.stringify(rect(d.querySelector('.add-card-body'))));
+    out.push('form           ' + JSON.stringify(rect(d.getElementById('addDynamicCardForm'))));
+    out.push('foot           ' + JSON.stringify(rect(d.querySelector('.add-card-foot'))));
+    out.push('submit         ' + JSON.stringify(rect(d.querySelector('.add-card-foot button[type=submit]'))));
+    var fld = d.querySelector('#addDynamicCardForm .field');
+    out.push('field1         ' + JSON.stringify(rect(fld)));
+    out.push('field1 label text align / input ' + JSON.stringify(rect(fld.querySelector('input'))));
+    var lbl = fld.childNodes[0];
+    out.push('label text node rect ' + JSON.stringify((function(){var r=d.createRange(); r.selectNodeContents(fld.childNodes[0]); var b=r.getBoundingClientRect(); return {l:Math.round(b.left),t:Math.round(b.top),w:Math.round(b.width)};})()));
+    out.push('field1 style   ' + JSON.stringify(cs(fld,['display','flexDirection','alignItems','textAlign'])));
+    // number input spinner
+    var num = d.querySelector('#addDynamicCardForm input[type=number]');
+    out.push('number input   ' + JSON.stringify(rect(num)) + ' style=' + JSON.stringify(cs(num,['appearance','webkitAppearance','paddingRight','textAlign'])));
+    w.closeAddCard();
+
+    // 單卡編輯頁
+    w.openCardEditor(w.eval('rulesV3.cards[0].id'));
+    out.push('-- 單卡編輯頁 --');
+    out.push('overlay        ' + JSON.stringify(rect(d.getElementById('cardEditorOverlay'))));
+    out.push('panel          ' + JSON.stringify(rect(d.querySelector('#cardEditorOverlay .editor-panel'))));
+    out.push('editor-body    ' + JSON.stringify(rect(d.querySelector('#cardEditorOverlay .editor-body'))));
+    var cf = d.querySelector('#cardEditorOverlay .editor-card-fields');
+    out.push('card-fields    ' + JSON.stringify(rect(cf)));
+    out.push('card-fields style ' + JSON.stringify(cs(cf,['display','gridTemplateColumns'])));
+    out.push('field label    ' + JSON.stringify(rect(cf.querySelector('label'))));
+    out.push('field input    ' + JSON.stringify(rect(cf.querySelector('input'))));
+    out.push('field style    ' + JSON.stringify(cs(cf.querySelector('label'),['display','flexDirection','alignItems','textAlign'])));
+    // 檢查 label 是否置中
+    var lab = cf.querySelector('label');
+    var r1 = lab.getBoundingClientRect();
+    var inp = lab.querySelector('input').getBoundingClientRect();
+    out.push('label 左緣 vs input 左緣: ' + Math.round(r1.left) + ' vs ' + Math.round(inp.left));
+    w.closeCardEditor();
+
+    // 加碼活動表單
+    w.openCardEditor(w.eval('rulesV3.cards[0].id'));
+    d.getElementById('cardEditorAddActivity').click();
+    out.push('-- 加碼活動表單 --');
+    var g = d.querySelector('#addDynamicPlanForm .rule-form-grid');
+    out.push('grid           ' + JSON.stringify(rect(g)) + ' ' + JSON.stringify(cs(g,['gridTemplateColumns'])));
+    var lab2 = g.querySelector('label');
+    out.push('label          ' + JSON.stringify(rect(lab2)));
+    out.push('label text node ' + JSON.stringify((function(){var r=d.createRange(); r.selectNodeContents(lab2.childNodes[0]); var b=r.getBoundingClientRect(); return {l:Math.round(b.left),w:Math.round(b.width)};})()));
+    out.push('label style    ' + JSON.stringify(cs(lab2,['display','flexDirection','alignItems','textAlign'])));
+    w.closeCardEditor();
+
+    // 步進鈕
+    out.push('-- 步進鈕 --');
+    w.openAddCard();
+    var sp = d.querySelector('#addDynamicCardForm .stepper');
+    out.push('stepper rect   ' + JSON.stringify(rect(sp)));
+    out.push('stepper btns   ' + d.querySelectorAll('#addDynamicCardForm .stepper-btn').length);
+    out.push('btn rect       ' + JSON.stringify(rect(d.querySelector('#addDynamicCardForm .stepper-btn'))));
+    var ri = d.querySelector('#addDynamicCardForm input[name=baseRate]');
+    var before = ri.value;
+    d.querySelector('#addDynamicCardForm .stepper-btn[data-dir=up]').click();
+    out.push('baseRate after +: ' + before + ' -> ' + ri.value);
+    d.querySelector('#addDynamicCardForm .stepper-btn[data-dir=down]').click();
+    out.push('baseRate after -: ' + ri.value);
+    var lblR = (function(){var r=d.createRange(); r.selectNodeContents(d.querySelector('#addDynamicCardForm .field').childNodes[0]); var b=r.getBoundingClientRect(); return {l:Math.round(b.left), t:Math.round(b.top), w:Math.round(b.width)};})();
+    var inR = rect(d.querySelector('#addDynamicCardForm .field input'));
+    out.push('label text ' + JSON.stringify(lblR) + ' input ' + JSON.stringify(inR));
+    w.closeAddCard();
+
+    // 決策頁輸入框 vs 底部 tab 覆蓋
+    w.switchTab('decision');
+    out.push('-- 決策頁 --');
+    var amt = d.getElementById('jpyAmount');
+    out.push('amount input   ' + JSON.stringify(rect(amt)));
+    out.push('nav-tabs       ' + JSON.stringify(rect(d.querySelector('.nav-tabs'))));
+    out.push('body padding-bottom ' + w.getComputedStyle(d.body).paddingBottom);
+  } catch(e) { out.push('EXCEPTION: ' + e.message + ' | ' + (e.stack||'').split('\n')[1]); }
+  var pre = document.createElement('pre'); pre.id='AUDIT'; pre.textContent = out.join('\n'); document.body.appendChild(pre);
+}, 2600);
+</script>

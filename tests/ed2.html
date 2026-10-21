@@ -1,0 +1,98 @@
+<!doctype html><meta charset="utf-8">
+<style>html,body{margin:0;background:#111}iframe{width:390px;height:844px;border:0;display:block}</style>
+<iframe id="f" src="../index.html"></iframe>
+<script>
+setTimeout(function () {
+  var out = []; var log = function (m) { out.push(m); }; var pass = 0, fail = 0;
+  function check(n, c, e) { if (c) { pass++; log('PASS  ' + n + (e ? ' — ' + e : '')); } else { fail++; log('FAIL  ' + n + (e ? ' — ' + e : '')); } }
+  try {
+    var w = document.getElementById('f').contentWindow, d = w.document;
+    var errs = []; w.addEventListener('error', function(e){ errs.push(e.message + ' @' + (e.lineno||'')); });
+    d.querySelectorAll('.modal-backdrop').forEach(function (m) { m.style.display = 'none'; });
+
+    // 用「新增信用卡」畫面開一張空白測試卡 → 自動進入該卡的單卡編輯頁
+    w.openAddCard();
+    var af = d.getElementById('addDynamicCardForm');
+    af.elements.name.value = 'ZZ單卡編輯測試卡';
+    af.elements.baseRate.value = '2';
+    af.dispatchEvent(new w.Event('submit', { cancelable: true, bubbles: true }));
+    check('新增後進入單卡編輯頁', d.getElementById('cardEditorOverlay').hidden === false);
+    var cardId = w.eval('(rulesV3.cards.find(function(c){ return c.name === "ZZ單卡編輯測試卡"; }) || {}).id');
+    check('新卡已建立', !!cardId, cardId);
+
+    var rowsBefore = d.querySelectorAll('#cardEditorPlans .editor-plan-row').length;
+
+    // 新增一張交通卡加碼活動
+    d.getElementById('cardEditorAddActivity').click();
+    var form = d.getElementById('addDynamicPlanForm');
+    form.querySelector('input[name="context"][value="transit"]').checked = true;
+    form.querySelector('input[name="context"][value="transit"]').dispatchEvent(new w.Event('change', {bubbles:true}));
+    form.elements.namedItem('name').value = 'ZZ測試交通加碼';
+    form.elements.namedItem('rate').value = '3';
+    form.elements.namedItem('threshold').value = '2000';
+    form.elements.namedItem('cap').value = '5000';
+    form.dispatchEvent(new w.Event('submit', { cancelable: true, bubbles: true }));
+
+    var rowsAfter = d.querySelectorAll('#cardEditorPlans .editor-plan-row').length;
+    check('加碼活動數量 +1', rowsAfter === rowsBefore + 1, rowsBefore + ' -> ' + rowsAfter);
+    var newRow = null;
+    Array.prototype.forEach.call(d.querySelectorAll('#cardEditorPlans .editor-plan-row'), function(r){ if (r.textContent.indexOf('ZZ測試交通加碼') >= 0) newRow = r; });
+    check('新活動出現在該卡的第二層', !!newRow);
+    if (newRow) {
+      var t = newRow.textContent.replace(/\s+/g,' ');
+      check('顯示交通卡情境', /交通卡/.test(t), t.slice(0,90));
+      check('顯示門檻 NT$2,000', /2,000/.test(t));
+      check('顯示上限 NT$5,000', /5,000/.test(t));
+      check('顯示 +3%', /\+3%/.test(t));
+    }
+    // guide tab must reflect it
+    w.closeCardEditor(); w.switchTab('guide');
+    check('攻略卡片同步顯示新活動', d.getElementById('guideCardList').textContent.indexOf('ZZ測試交通加碼') >= 0);
+    var tableText = d.getElementById('guideV3Rows').textContent;
+    check('攻略表格同步顯示新活動', tableText.indexOf('ZZ測試交通加碼') >= 0);
+    w.openCardEditor(cardId);
+
+    // 編輯剛才那個活動
+    var editBtn = null;
+    Array.prototype.forEach.call(d.querySelectorAll('#cardEditorPlans [data-card-edit-plan]'), function(b){
+      if (b.closest('.editor-plan-row').textContent.indexOf('ZZ測試交通加碼') >= 0) editBtn = b;
+    });
+    check('找到該活動的編輯鈕', !!editBtn);
+    editBtn.click();
+    check('編輯時表單在單卡編輯頁內', d.getElementById('cardEditorActivityHost').contains(form));
+    check('編輯標題=編輯加碼活動', d.getElementById('activityFormTitle').textContent === '編輯加碼活動');
+    check('編輯帶入名稱', form.elements.namedItem('name').value === 'ZZ測試交通加碼', form.elements.namedItem('name').value);
+    check('編輯帶入情境=交通卡', form.querySelector('input[name="context"]:checked').value === 'transit');
+    check('編輯帶入門檻', String(form.elements.namedItem('threshold').value) === '2000');
+    check('編輯帶入上限', String(form.elements.namedItem('cap').value) === '5000');
+    check('編輯帶入回饋率', String(form.elements.namedItem('rate').value) === '3');
+
+    // 改成特約商店 -> 店家 chips 出現
+    form.querySelector('input[name="context"][value="merchant"]').checked = true;
+    form.querySelector('input[name="context"][value="merchant"]').dispatchEvent(new w.Event('change', {bubbles:true}));
+    check('切到特約商店顯示店家欄', d.getElementById('planMerchantLabel').hidden === false);
+    var chip = d.querySelector('#planMerchantChoices .merchant-choice');
+    chip.click();
+    check('可點選店家', chip.classList.contains('active'));
+    form.elements.namedItem('name').value = 'ZZ測試特約店加碼';
+    form.dispatchEvent(new w.Event('submit', { cancelable: true, bubbles: true }));
+    var newRow2 = null;
+    Array.prototype.forEach.call(d.querySelectorAll('#cardEditorPlans .editor-plan-row'), function(r){ if (r.textContent.indexOf('ZZ測試特約店加碼') >= 0) newRow2 = r; });
+    check('特約商店活動新增成功', !!newRow2, newRow2 ? newRow2.textContent.replace(/\s+/g,' ').slice(0,80) : '');
+
+    // inline add merchant
+    var before = d.querySelectorAll('#planMerchantChoices .merchant-choice').length;
+    d.getElementById('addMerchantInput').value = 'ZZ測試商店';
+    d.getElementById('addMerchantButton').click();
+    check('可新增店家', d.querySelectorAll('#planMerchantChoices .merchant-choice').length === before + 1);
+
+    // 離開單卡編輯頁 -> 表單收起
+    w.closeCardEditor();
+    check('關閉單卡編輯頁後表單收起', form.hidden === true);
+
+    check('無 JS 錯誤', errs.length === 0, errs.slice(0,4).join('; '));
+  } catch (e) { fail++; log('EXCEPTION: ' + e.message + ' | ' + (e.stack||'').split('\n')[1]); }
+  log(''); log('=== ' + pass + ' passed, ' + fail + ' failed ===');
+  var pre = document.createElement('pre'); pre.id = 'AUDIT'; pre.textContent = out.join('\n'); document.body.appendChild(pre);
+}, 2600);
+</script>

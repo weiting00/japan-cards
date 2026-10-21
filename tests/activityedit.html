@@ -1,0 +1,81 @@
+<!doctype html><meta charset="utf-8">
+<style>html,body{margin:0;background:#111}iframe{border:0;display:block;width:390px;height:844px}</style>
+<iframe id="f" src="../index.html"></iframe>
+<script>
+var out = [], pass = 0, fail = 0;
+function log(m) { out.push(m); }
+function check(n, c, e) { if (c) { pass++; log('PASS  ' + n + (e ? ' — ' + e : '')); } else { fail++; log('FAIL  ' + n + (e ? ' — ' + e : '')); } }
+function sleep(ms) { return new Promise(function (r) { setTimeout(r, ms); }); }
+
+setTimeout(async function () {
+  var w = document.getElementById('f').contentWindow, d = w.document;
+  function R(el) { if (!el) return null; var r = el.getBoundingClientRect(); return { l: Math.round(r.left), w: Math.round(r.width), t: Math.round(r.top), h: Math.round(r.height), b: Math.round(r.bottom) }; }
+  try {
+    var cardId = w.eval('rulesV3.cards.find(c=>c.plans.length).id');
+    var planId = w.eval('rulesV3.cards.find(c=>c.plans.length).plans[0].id');
+    w.openCardEditor(cardId);
+    await sleep(150);
+
+    var form = d.getElementById('addDynamicPlanForm');
+    var scroller = d.querySelector('#cardEditorOverlay .editor-body');
+    var viewportH = d.querySelector('#cardEditorOverlay .editor-panel').getBoundingClientRect().height;
+
+    // ---------- 1. 點「編輯」：表單必須捲進畫面、可以直接編輯 ----------
+    d.querySelector('#cardEditorPlans [data-card-edit-plan]').click();
+    await sleep(250);
+    var editRect = R(form);
+    check('點編輯 → 表單可見（在可視範圍內）', editRect.t >= 0 && editRect.t < viewportH, 'top=' + editRect.t + ' viewport=' + Math.round(viewportH));
+    check('點編輯 → 表單標題是「編輯加碼活動」', form.querySelector('#activityFormTitle').textContent === '編輯加碼活動', form.querySelector('#activityFormTitle').textContent);
+    check('點編輯 → 送出鈕是「儲存活動」', form.querySelector('button[type=submit]').textContent === '儲存活動', form.querySelector('button[type=submit]').textContent);
+    check('點編輯 → 帶入既有活動名稱', form.elements.namedItem('name').value.length > 0, form.elements.namedItem('name').value);
+    check('點編輯 → 帶入既有回饋率', Number(form.elements.namedItem('rate').value) > 0, form.elements.namedItem('rate').value);
+    check('點編輯 → editingPlanId 指向該活動', form.elements.namedItem('editingPlanId').value === planId, form.elements.namedItem('editingPlanId').value);
+    check('點編輯 → 活動名稱欄位自動 focus（可直接打字）', d.activeElement === form.elements.namedItem('name'), d.activeElement && d.activeElement.name);
+
+    // ---------- 2. 點「新增」：同一張表單、同樣捲進畫面 ----------
+    d.getElementById('cancelPlanEdit').click();
+    await sleep(120);
+    d.getElementById('cardEditorAddActivity').click();
+    await sleep(250);
+    var addRect = R(form);
+    check('點新增 → 表單可見（在可視範圍內）', addRect.t >= 0 && addRect.t < viewportH, 'top=' + addRect.t);
+    check('點新增 → 表單標題是「新增加碼活動」', form.querySelector('#activityFormTitle').textContent === '新增加碼活動', form.querySelector('#activityFormTitle').textContent);
+    check('點新增 → 送出鈕是「新增活動」', form.querySelector('button[type=submit]').textContent === '新增活動', form.querySelector('button[type=submit]').textContent);
+    check('點新增 → 活動名稱是空白', form.elements.namedItem('name').value === '', JSON.stringify(form.elements.namedItem('name').value));
+    check('點新增 → 沒有 editingPlanId', form.elements.namedItem('editingPlanId').value === '', form.elements.namedItem('editingPlanId').value);
+
+    // ---------- 3. 新增與編輯的版面必須一模一樣 ----------
+    check('新增與編輯是同一個 form 元素', form === d.getElementById('addDynamicPlanForm'));
+    check('新增與編輯的表單位置完全相同', addRect.t === editRect.t && addRect.l === editRect.l && addRect.w === editRect.w, JSON.stringify(addRect) + ' vs ' + JSON.stringify(editRect));
+    var gridAdd = w.getComputedStyle(form.querySelector('.rule-form-grid')).gridTemplateColumns;
+    var gridEdit = w.getComputedStyle(form.querySelector('.rule-form-grid')).gridTemplateColumns;
+    check('新增與編輯的欄位排版相同', gridAdd === gridEdit, gridAdd + ' vs ' + gridEdit);
+    var labelAdd = w.getComputedStyle(form.querySelector('.rule-form-grid label')).fontSize;
+    var labelEdit = w.getComputedStyle(form.querySelector('.rule-form-grid label')).fontSize;
+    check('新增與編輯的欄位標題樣式相同', labelAdd === labelEdit, labelAdd + ' vs ' + labelEdit);
+    // 編輯模式也要有 ＋/－ 步進鈕
+    check('加碼活動數字欄位有 ＋/－ 步進鈕', d.querySelectorAll('#addDynamicPlanForm .stepper-btn').length >= 8, d.querySelectorAll('#addDynamicPlanForm .stepper-btn').length + ' 個');
+
+    // ---------- 4. 編輯後存檔 → rulesV3 更新 ----------
+    d.getElementById('cancelPlanEdit').click();
+    await sleep(120);
+    d.querySelector('#cardEditorPlans [data-card-edit-plan]').click();
+    await sleep(220);
+    form.elements.namedItem('name').value = '編輯後的活動名稱';
+    form.elements.namedItem('rate').value = '8.5';
+    form.dispatchEvent(new w.Event('submit', { bubbles: true, cancelable: true }));
+    await sleep(300);
+    var saved = w.eval('JSON.stringify(rulesV3.cards.find(c=>c.id==="' + cardId + '").plans.find(p=>p.id==="' + planId + '"))');
+    var savedObj = JSON.parse(saved);
+    check('編輯加碼活動 → 存回 rulesV3（名稱）', savedObj.name === '編輯後的活動名稱', savedObj.name);
+    check('編輯加碼活動 → 存回 rulesV3（回饋率）', Number(savedObj.rewardParts[0].rate) === 8.5, String(savedObj.rewardParts[0].rate));
+    check('編輯加碼活動 → 存檔後表單收起', form.hidden === true);
+
+    // ---------- 5. 加碼活動清單每列都有編輯鈕 ----------
+    check('每個加碼活動都有編輯鈕', d.querySelectorAll('#cardEditorPlans [data-card-edit-plan]').length === w.eval('rulesV3.cards.find(c=>c.id==="' + cardId + '").plans.length'), d.querySelectorAll('#cardEditorPlans [data-card-edit-plan]').length + ' 個');
+  } catch (e) { fail++; log('EXCEPTION: ' + e.message + ' | ' + (e.stack || '').split('\n')[1]); }
+  log('');
+  log('=== ' + pass + ' passed, ' + fail + ' failed ===');
+  var pre = document.createElement('pre'); pre.id = 'AUDIT'; pre.textContent = out.join('\n'); document.body.appendChild(pre);
+}, 2800);
+</script>

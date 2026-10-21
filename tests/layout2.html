@@ -1,0 +1,117 @@
+<!doctype html><meta charset="utf-8">
+<style>html,body{margin:0;background:#111}iframe{width:390px;height:844px;border:0;display:block}</style>
+<iframe id="f" src="../index.html"></iframe>
+<script>
+setTimeout(function () {
+  var out = []; var log = function (m) { out.push(m); }; var pass = 0, fail = 0;
+  function check(n, c, e) { if (c) { pass++; log('PASS  ' + n + (e ? ' — ' + e : '')); } else { fail++; log('FAIL  ' + n + (e ? ' — ' + e : '')); } }
+  try {
+    var w = document.getElementById('f').contentWindow, d = w.document;
+    var errs = []; w.addEventListener('error', function(e){ errs.push(e.message); });
+
+    // ---------- 新增信用卡畫面 ----------
+    w.openAddCard();
+    var addForm = d.getElementById('addDynamicCardForm');
+    var r1 = addForm.getBoundingClientRect();
+    log('新增信用卡表單: top=' + Math.round(r1.top) + ' h=' + Math.round(r1.height));
+    check('新增信用卡畫面已開啟', d.getElementById('addCardOverlay').hidden === false);
+    check('畫面內只有一張表單', d.querySelectorAll('#addCardOverlay form').length === 1);
+    check('沒有信用卡列表', !d.getElementById('dynamicCardsList'));
+    check('表單在第一屏可見', r1.top >= 0 && r1.top < 844, 'top=' + Math.round(r1.top));
+    check('新增信用卡表單高度 <= 400px', r1.height <= 400, Math.round(r1.height) + 'px');
+
+    // ---------- 新增信用卡是「整頁」：右上角叉叉 + 底部固定新增鈕 + 取代底部 tab ----------
+    var page = d.getElementById('addCardOverlay');
+    var pcs = w.getComputedStyle(page), pr = page.getBoundingClientRect();
+    check('新增信用卡是 fixed 整頁', pcs.position === 'fixed' && Math.round(pr.width) >= 389 && Math.round(pr.height) >= 843, pcs.position + ' ' + Math.round(pr.width) + 'x' + Math.round(pr.height));
+    check('底部 tab 已隱藏（由新增鈕取代）', w.getComputedStyle(d.querySelector('.nav-tabs')).display === 'none');
+    var xb = d.querySelector('#addCardOverlay .add-card-close');
+    var xr = xb && xb.getBoundingClientRect();
+    check('右上角叉叉鈕 ≥ 32px 且靠右', !!xr && xr.width >= 32 && xr.height >= 32 && xr.right >= 370, xr ? Math.round(xr.left) + '~' + Math.round(xr.right) : 'none');
+    var fb = d.querySelector('#addCardOverlay .add-card-foot button[type=submit]');
+    var fr = fb && fb.getBoundingClientRect();
+    check('底部固定新增鈕貼齊畫面底部', !!fr && fr.height >= 40 && fr.bottom >= 815 && fr.bottom <= 844, fr ? 'bottom=' + Math.round(fr.bottom) + ' h=' + Math.round(fr.height) : 'none');
+    check('新增鈕綁定表單', !!fb && fb.getAttribute('form') === 'addDynamicCardForm');
+    check('新增頁沒有框中框', d.querySelectorAll('#addCardOverlay .editor-section, #addCardOverlay .rule-form').length === 0);
+    check('新增頁欄位垂直排列', d.querySelectorAll('#addCardOverlay .rule-form-grid').length === 0);
+
+    // ---------- 開關元件 ----------
+    var tgs = d.querySelectorAll('#addCardOverlay .toggle');
+    check('新增頁的 checkbox 已換成開關', tgs.length === 1 && !!tgs[0].querySelector('.toggle-track'));
+    var tgi = tgs[0] && tgs[0].querySelector('input[type=checkbox]');
+    var tgr = tgi && tgi.getBoundingClientRect();
+    check('開關可點擊範圍 ≥ 32px', !!tgr && tgr.height >= 32 && tgr.width >= 32, tgr ? Math.round(tgr.width) + 'x' + Math.round(tgr.height) : 'none');
+    var track = tgs[0] && tgs[0].querySelector('.toggle-track');
+    var tk = track && w.getComputedStyle(track);
+    check('開關滑塊有可見底色與圓角', !!tk && tk.borderRadius !== '0px' && tk.backgroundColor !== 'rgba(0, 0, 0, 0)', tk ? tk.backgroundColor + ' r=' + tk.borderRadius : 'none');
+
+    var small = [];
+    Array.prototype.forEach.call(d.querySelectorAll('#addCardOverlay button, #addCardOverlay input, #addCardOverlay select, #addCardOverlay summary'), function(el){
+      if (el.offsetParent === null) return;
+      var r = el.getBoundingClientRect();
+      if (r.width === 0 || r.height === 0) return;
+      if (r.height < 32) small.push((el.id || el.className || el.textContent.trim().slice(0,14)) + ' h=' + Math.round(r.height));
+    });
+    check('新增信用卡畫面觸控目標 >= 32px', small.length === 0, small.slice(0,6).join(' | '));
+    check('新增信用卡畫面無水平溢出', d.documentElement.scrollWidth <= d.documentElement.clientWidth, d.documentElement.scrollWidth + '<=' + d.documentElement.clientWidth);
+    w.closeAddCard();
+
+    // ---------- 框線可辨識（淺色小外框）----------
+    // 用探測元素讀各類框的計算樣式，不受該類是否已渲染影響
+    function borderOfClass(cls) {
+      var probe = d.createElement('div');
+      probe.className = cls;
+      probe.style.display = 'none';
+      d.body.appendChild(probe);
+      var cs = w.getComputedStyle(probe);
+      var r = { w: cs.borderTopWidth, c: cs.borderTopColor };
+      d.body.removeChild(probe);
+      return r;
+    }
+    var boxes = ['card', 'guide-card', 'guide-part', 'editor-section', 'rule-form', 'quota-item', 'quota-status-box', 'config-card-box', 'ledger-item', 'alert-box', 'guide-table-wrap'];
+    var invisible = [];
+    boxes.forEach(function (cls) {
+      var b = borderOfClass(cls);
+      var transparent = /transparent|rgba\(\s*0,\s*0,\s*0,\s*0\s*\)/.test(b.c);
+      if (transparent || parseFloat(b.w) < 1) invisible.push('.' + cls + ' w=' + b.w + ' c=' + b.c);
+    });
+    check('主要區塊都有淺色外框（不再是透明）', invisible.length === 0, invisible.join(' | '));
+    var gb = borderOfClass('guide-card');
+    check('攻略卡片外框是淺色', /rgba?\(\s*25\d/.test(gb.c), gb.c + ' w=' + gb.w);
+
+    // 危險區維持紅框
+    w.openCardEditor(w.eval('rulesV3.cards[0].id'));
+    var danger = d.querySelector('#cardEditorOverlay .card-editor-danger');
+    if (danger) {
+      var dcs = w.getComputedStyle(danger);
+      check('危險區維持紅色外框', /255,\s*1\d\d,\s*1\d\d|255,\s*140,\s*150/.test(dcs.borderTopColor), dcs.borderTopColor);
+    } else { check('危險區維持紅色外框', false, '找不到 .card-editor-danger'); }
+    w.closeCardEditor();
+
+    // ---------- 單卡編輯頁 ----------
+    w.openCardEditor(w.eval('rulesV3.cards[0].id'));
+    check('單卡編輯頁已開啟', d.getElementById('cardEditorOverlay').hidden === false);
+    d.getElementById('cardEditorAddActivity').click();
+    var form = d.getElementById('addDynamicPlanForm');
+    var host = d.getElementById('cardEditorActivityHost');
+    check('加碼活動表單在單卡編輯頁內', host.contains(form));
+    var hf = host.getBoundingClientRect(), ff = form.getBoundingClientRect();
+    check('表單水平範圍在 host 內', ff.left >= hf.left - 1 && ff.right <= hf.right + 1, Math.round(ff.left) + '~' + Math.round(ff.right) + ' vs ' + Math.round(hf.left) + '~' + Math.round(hf.right));
+
+    var small2 = [];
+    Array.prototype.forEach.call(d.querySelectorAll('#cardEditorOverlay button, #cardEditorOverlay input, #cardEditorOverlay select, #cardEditorOverlay summary'), function(el){
+      if (el.offsetParent === null) return;
+      var r = el.getBoundingClientRect();
+      if (r.width === 0 || r.height === 0) return;
+      if (r.height < 32) small2.push((el.id || el.className || el.textContent.trim().slice(0,14)) + ' h=' + Math.round(r.height));
+    });
+    check('單卡編輯頁觸控目標 >= 32px', small2.length === 0, small2.slice(0,6).join(' | '));
+    check('單卡編輯頁無水平溢出', d.documentElement.scrollWidth <= d.documentElement.clientWidth, d.documentElement.scrollWidth + '<=' + d.documentElement.clientWidth);
+    w.closeCardEditor();
+
+    check('無 JS 錯誤', errs.length === 0, errs.slice(0,3).join('; '));
+  } catch (e) { fail++; log('EXCEPTION: ' + e.message + ' | ' + (e.stack||'').split('\n')[1]); }
+  log(''); log('=== ' + pass + ' passed, ' + fail + ' failed ===');
+  var pre = document.createElement('pre'); pre.id = 'AUDIT'; pre.textContent = out.join('\n'); document.body.appendChild(pre);
+}, 2600);
+</script>

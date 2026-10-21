@@ -1,0 +1,49 @@
+<!doctype html><meta charset="utf-8">
+<style>html,body{margin:0;background:#111}iframe{width:390px;height:844px;border:0;display:block}</style>
+<iframe id="f" src="../index.html"></iframe>
+<script>
+setTimeout(function () {
+  var out = []; var log = function (m) { out.push(m); }; var pass = 0, fail = 0;
+  function check(n, c, e) { if (c) { pass++; log('PASS  ' + n + (e ? ' — ' + e : '')); } else { fail++; log('FAIL  ' + n + (e ? ' — ' + e : '')); } }
+  try {
+    var w = document.getElementById('f').contentWindow, d = w.document;
+    var errs = []; w.addEventListener('error', function(e){ errs.push(e.message); });
+    w.openCardEditor(w.eval('rulesV3.cards[0].id'));
+    var form = d.getElementById('addDynamicPlanForm');
+    var ml = d.getElementById('planMerchantLabel');
+    check('特約商店欄預設真的不顯示', getComputedStyle(ml).display === 'none', getComputedStyle(ml).display);
+    d.getElementById('cardEditorAddActivity').click();
+    form = d.getElementById('addDynamicPlanForm');
+    form.querySelector('input[name="context"][value="merchant"]').checked = true;
+    form.querySelector('input[name="context"][value="merchant"]').dispatchEvent(new w.Event('change', {bubbles:true}));
+    check('切特約商店後真的顯示', getComputedStyle(ml).display !== 'none', getComputedStyle(ml).display);
+
+    // 進階設定摺疊
+    var adv = form.querySelector('.activity-advanced');
+    check('進階設定預設收合', !adv.open);
+    check('進階設定觸控目標 >= 32px', adv.querySelector('summary').getBoundingClientRect().height >= 32, Math.round(adv.querySelector('summary').getBoundingClientRect().height)+'px');
+    adv.open = true;
+    check('展開進階設定可用', !!form.querySelector('input[name="sourceUrl"]') && !!form.querySelector('input[name="extraRate"]'));
+
+    // 舊版規則表已全面移除
+    check('舊版規則表 DOM 已移除', !d.getElementById('ruleGuideRows') && !d.getElementById('toggleRuleEdit') && !d.getElementById('ruleEditActions') && !d.getElementById('ruleChangeModal'));
+    check('舊版規則編輯函式已移除', typeof w.cancelRuleEdit === 'undefined' && typeof w.toggleRuleEdit === 'undefined' && typeof w.renderRuleGuideTable === 'undefined');
+
+    // 保留既有 DOM id
+    check('保留既有 DOM id', ['addDynamicCardForm','addDynamicPlanForm','planMerchantLabel','planMerchantChoices','cancelPlanEdit','ruleGuideSummary','kumaGuideTitle','kumaTransitNet','merchantChoiceList','merchantChoice'].every(function (id) { return !!d.getElementById(id); }));
+    check('信用卡列表 DOM 已移除', !d.getElementById('dynamicCardsList') && !d.getElementById('ruleCardSearch'));
+
+    // 主頁店家選單仍可用
+    w.closeCardEditor();
+    check('主頁店家選單仍有選項', d.getElementById('merchantChoice').options.length > 1, d.getElementById('merchantChoice').options.length + ' 項');
+    check('主頁店家晶片仍存在', d.querySelectorAll('#merchantChoiceList .merchant-choice').length > 0);
+
+    // 分頁正常
+    ['decision','quotas','ledger','guide'].forEach(function(t){ w.switchTab(t); });
+    check('四個分頁切換正常', true);
+    check('無 JS 錯誤', errs.length === 0, errs.slice(0,3).join('; '));
+  } catch (e) { fail++; log('EXCEPTION: ' + e.message + ' | ' + (e.stack||'').split('\n')[1]); }
+  log(''); log('=== ' + pass + ' passed, ' + fail + ' failed ===');
+  var pre = document.createElement('pre'); pre.id = 'AUDIT'; pre.textContent = out.join('\n'); document.body.appendChild(pre);
+}, 2600);
+</script>

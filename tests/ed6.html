@@ -1,0 +1,108 @@
+<!doctype html><meta charset="utf-8">
+<style>html,body{margin:0;background:#111}iframe{width:390px;height:844px;border:0;display:block}</style>
+<iframe id="f" src="../index.html"></iframe>
+<script>
+setTimeout(function () {
+  var out = []; var log = function (m) { out.push(m); }; var pass = 0, fail = 0;
+  function check(n, c, e) { if (c) { pass++; log('PASS  ' + n + (e ? ' — ' + e : '')); } else { fail++; log('FAIL  ' + n + (e ? ' — ' + e : '')); } }
+  function rowFor(planName) { var r = null; Array.prototype.forEach.call(d.querySelectorAll('#cardEditorPlans .editor-plan-row'), function(x){ if (x.textContent.indexOf(planName) >= 0) r = x; }); return r; }
+  try {
+    var w = document.getElementById('f').contentWindow, d = w.document;
+    var errs = []; w.addEventListener('error', function(e){ errs.push(e.message + ' @' + (e.lineno||'')); });
+
+    check('App 載入無 JS 錯誤', errs.length === 0, errs.slice(0,3).join('; '));
+    check('攻略頁兩種檢閱模式', !!d.getElementById('guideCardView') && !!d.getElementById('guideTableView'));
+    w.setGuideView('table');
+    check('切到表格模式', d.getElementById('guideTableView').hidden === false && d.getElementById('guideCardView').hidden === true);
+    w.setGuideView('cards');
+    check('切回卡片模式', d.getElementById('guideCardView').hidden === false);
+
+    // --- 新增信用卡畫面：只有空白表單 ---
+    w.openAddCard();
+    var addForm = d.getElementById('addDynamicCardForm');
+    check('新增信用卡畫面已開啟', d.getElementById('addCardOverlay').hidden === false);
+    check('新增卡片表單可見', addForm.offsetParent !== null && addForm.closest('.add-card-page') !== null);
+    check('新增卡片表單是空白的', addForm.elements.name.value === '' && !addForm.elements.namedItem('network'));
+    check('新增卡片表單沒有發卡銀行欄', !addForm.elements.namedItem('issuer'));
+    check('新增卡片表單沒有卡片組織欄', !addForm.elements.namedItem('network'));
+    check('畫面內沒有信用卡列表', !d.getElementById('dynamicCardsList') && d.querySelectorAll('#addCardOverlay .editor-section').length === 0);
+    check('畫面內不列出既有卡片名稱', d.getElementById('addCardOverlay').textContent.indexOf('富邦') < 0);
+    addForm.elements.name.value = 'ZZ新測試卡';
+    addForm.elements.baseRate.value = '1.8';
+    addForm.dispatchEvent(new w.Event('submit', { cancelable: true, bubbles: true }));
+    check('新增信用卡成功', !!w.eval('rulesV3.cards.find(function(c){ return c.name === "ZZ新測試卡"; })'));
+    check('新增後直接進入該卡編輯頁', d.getElementById('cardEditorOverlay').hidden === false);
+    check('新增信用卡畫面已關閉', d.getElementById('addCardOverlay').hidden === true);
+    var cardId = w.eval('(rulesV3.cards.find(function(c){ return c.name === "ZZ新測試卡"; }) || {}).id');
+
+    // --- 單卡編輯頁第二層 ---
+    check('第二層有空狀態提示', (d.getElementById('cardEditorPlans').textContent || '').indexOf('還沒有加碼活動') >= 0);
+    check('第二層有「＋ 新增加碼活動」', !!d.getElementById('cardEditorAddActivity'));
+
+    // --- 交通卡活動 ---
+    d.getElementById('cardEditorAddActivity').click();
+    var form = d.getElementById('addDynamicPlanForm');
+    check('表單在單卡編輯頁內', d.getElementById('cardEditorActivityHost').contains(form));
+    form.querySelector('input[name="context"][value="transit"]').checked = true;
+    form.querySelector('input[name="context"][value="transit"]').dispatchEvent(new w.Event('change', {bubbles:true}));
+    form.elements.namedItem('name').value = 'ZZ交通加碼';
+    form.elements.namedItem('rate').value = '4';
+    form.dispatchEvent(new w.Event('submit', { cancelable: true, bubbles: true }));
+    check('交通卡活動已加入', !!rowFor('ZZ交通加碼'));
+    check('交通卡活動標示情境', /交通卡/.test(rowFor('ZZ交通加碼').textContent));
+    check('提交後表單收起', form.hidden === true);
+
+    // --- 特約商店活動 ---
+    d.getElementById('cardEditorAddActivity').click();
+    form = d.getElementById('addDynamicPlanForm');
+    form.querySelector('input[name="context"][value="merchant"]').checked = true;
+    form.querySelector('input[name="context"][value="merchant"]').dispatchEvent(new w.Event('change', {bubbles:true}));
+    check('特約商店顯示店家欄', d.getElementById('planMerchantLabel').hidden === false);
+    var chip = d.querySelector('#planMerchantChoices .merchant-choice');
+    var chipName = chip.dataset.planMerchant;
+    chip.click();
+    check('點選店家有 active', chip.classList.contains('active'));
+    form.elements.namedItem('name').value = 'ZZ店家加碼';
+    form.dispatchEvent(new w.Event('submit', { cancelable: true, bubbles: true }));
+    check('特約商店活動已加入', !!rowFor('ZZ店家加碼'));
+    check('店家已記錄並顯示', rowFor('ZZ店家加碼').textContent.indexOf(chipName) >= 0, chipName);
+
+    // --- 編輯既有活動 ---
+    var editBtn = null;
+    Array.prototype.forEach.call(d.querySelectorAll('#cardEditorPlans [data-card-edit-plan]'), function(b){ if (b.closest('.editor-plan-row').textContent.indexOf('ZZ交通加碼') >= 0) editBtn = b; });
+    editBtn.click();
+    check('編輯標題=編輯加碼活動', d.getElementById('activityFormTitle').textContent === '編輯加碼活動');
+    check('編輯帶入名稱', form.elements.namedItem('name').value === 'ZZ交通加碼');
+    check('編輯帶入情境=交通卡', form.querySelector('input[name="context"]:checked').value === 'transit');
+    check('編輯時店家欄收起', d.getElementById('planMerchantLabel').hidden === true);
+    d.getElementById('cancelPlanEdit').click();
+    check('取消後表單收起', form.hidden === true);
+
+    // --- 攻略頁同步 ---
+    w.closeCardEditor(); w.switchTab('guide');
+    check('攻略頁出現新卡與活動', d.getElementById('guideCardList').textContent.indexOf('ZZ新測試卡') >= 0 && d.getElementById('guideCardList').textContent.indexOf('ZZ交通加碼') >= 0);
+    check('攻略表格同步', d.getElementById('guideV3Rows').textContent.indexOf('ZZ店家加碼') >= 0);
+
+    // --- 刪除卡片二次確認 ---
+    w.openCardEditor(cardId);
+    d.getElementById('cardEditorDelete').click();
+    setTimeout(function () {
+      try {
+        var dlg = d.getElementById('appDialogModal');
+        check('刪除卡片有二次確認', dlg && dlg.style.display === 'flex');
+        check('確認對話框有刪除按鈕', /刪除/.test(dlg.textContent));
+        d.getElementById('appDialogCancel').click();
+        setTimeout(function () {
+          check('取消後卡片仍在', !!w.eval('rulesV3.cards.find(function(c){ return c.name === "ZZ新測試卡"; })'));
+          check('無 JS 錯誤', errs.length === 0, errs.slice(0,3).join('; '));
+          check('無水平溢出', d.documentElement.scrollWidth <= d.documentElement.clientWidth, d.documentElement.scrollWidth + '<=' + d.documentElement.clientWidth);
+          log(''); log('=== ' + pass + ' passed, ' + fail + ' failed ===');
+          var pre = document.createElement('pre'); pre.id = 'AUDIT'; pre.textContent = out.join('\n'); document.body.appendChild(pre);
+        }, 200);
+      } catch (e2) { fail++; log('EXCEPTION2: ' + e2.message); }
+    }, 600);
+  } catch (e) { fail++; log('EXCEPTION: ' + e.message + ' | ' + (e.stack||'').split('\n')[1]);
+    log(''); log('=== ' + pass + ' passed, ' + fail + ' failed ===');
+    var pre = document.createElement('pre'); pre.id = 'AUDIT'; pre.textContent = out.join('\n'); document.body.appendChild(pre); }
+}, 2600);
+</script>

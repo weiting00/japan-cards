@@ -1,0 +1,128 @@
+<!doctype html><meta charset="utf-8">
+<style>html,body{margin:0;background:#111}iframe{border:0;display:block}</style>
+<iframe id="f390" src="../index.html" style="width:390px;height:844px"></iframe>
+<iframe id="f1280" src="../index.html" style="width:1280px;height:900px"></iframe>
+<script>
+setTimeout(function () {
+  var out = []; var log = function (m) { out.push(m); }; var pass = 0, fail = 0;
+  function check(n, c, e) { if (c) { pass++; log('PASS  ' + n + (e ? ' — ' + e : '')); } else { fail++; log('FAIL  ' + n + (e ? ' — ' + e : '')); } }
+  function rect(el) { if (!el) return null; var r = el.getBoundingClientRect(); return { l: Math.round(r.left), w: Math.round(r.width), t: Math.round(r.top), h: Math.round(r.height), b: Math.round(r.bottom), r: Math.round(r.right) }; }
+
+  try {
+    var fr = document.getElementById('f390').contentWindow, dr = fr.document;
+    var fw = document.getElementById('f1280').contentWindow, dw = fw.document;
+
+    // ---------------- 1. 所有頁面寬度一致 + 置中 ----------------
+    function widthSuite(w, d, label) {
+      var main = rect(d.querySelector('main'));
+      var header = rect(d.querySelector('.app-header'));
+
+      w.openAddCard();
+      var addForm = rect(d.getElementById('addDynamicCardForm'));
+      var addSubmit = rect(d.querySelector('.add-card-foot button[type=submit]'));
+      var addTitle = rect(d.getElementById('addCardTitle'));
+      var addClose = rect(d.querySelector('.add-card-close'));
+      w.closeAddCard();
+
+      w.openCardEditor(w.eval('rulesV3.cards[0].id'));
+      var panel = rect(d.querySelector('#cardEditorOverlay .editor-panel'));
+      var editorField = rect(d.querySelector('#cardEditorOverlay .editor-card-fields input'));
+      w.closeCardEditor();
+
+      log(label + ' main=' + main.l + '+' + main.w + ' header=' + header.l + '+' + header.w + ' panel=' + panel.l + '+' + panel.w + ' addForm=' + addForm.l + '+' + addForm.w);
+
+      check(label + ' 單卡編輯頁與主頁同寬', panel.w === main.w, panel.w + ' vs ' + main.w);
+      check(label + ' 單卡編輯頁與主頁同位置（置中）', panel.l === main.l, panel.l + ' vs ' + main.l);
+      check(label + ' 新增信用卡頁與主頁同寬', addForm.w === main.w, addForm.w + ' vs ' + main.w);
+      check(label + ' 新增信用卡頁與主頁同位置（置中）', addForm.l === main.l, addForm.l + ' vs ' + main.l);
+      check(label + ' 新增鈕與主頁同寬同位置', addSubmit.w === main.w && addSubmit.l === main.l, addSubmit.l + '+' + addSubmit.w);
+      check(label + ' 標題與主頁左緣對齊', addTitle.l === main.l, addTitle.l + ' vs ' + main.l);
+      check(label + ' 編輯頁欄位在面板內', editorField.l >= panel.l && editorField.r <= panel.r + 1, editorField.l + '~' + editorField.r + ' vs ' + panel.l + '~' + panel.r);
+      return { main: main, panel: panel };
+    }
+
+    widthSuite(fr, dr, '手機 390');
+    widthSuite(fw, dw, '桌面 1280');
+
+    // ---------------- 2. 標題在文字框的左上方 ----------------
+    function labelSuite(w, d, label) {
+      w.openAddCard();
+      var field = d.querySelector('#addDynamicCardForm .field');
+      var range = d.createRange();
+      range.selectNodeContents(field.childNodes[0]);
+      var txt = range.getBoundingClientRect();
+      var input = field.querySelector('input').getBoundingClientRect();
+      w.closeAddCard();
+
+      check(label + ' 標題靠文字框左緣對齊', Math.round(txt.left) === Math.round(input.left), 'label=' + Math.round(txt.left) + ' input=' + Math.round(input.left));
+      check(label + ' 標題在文字框上方', Math.round(txt.bottom) <= Math.round(input.top) + 1, 'labelBottom=' + Math.round(txt.bottom) + ' inputTop=' + Math.round(input.top));
+      check(label + ' 標題沒有置中', Math.round(txt.left) === Math.round(input.left), Math.round(txt.left) + ' vs ' + Math.round(input.left));
+    }
+    labelSuite(fr, dr, '手機 390');
+    labelSuite(fw, dw, '桌面 1280');
+
+    // 單卡編輯頁與加碼活動表單也要靠左上
+    fr.openCardEditor(fr.eval('rulesV3.cards[0].id'));
+    var lab = dr.querySelector('#cardEditorOverlay .editor-card-fields label');
+    var lrange = dr.createRange(); lrange.selectNodeContents(lab.childNodes[0]);
+    var ltxt = lrange.getBoundingClientRect();
+    var linp = lab.querySelector('input').getBoundingClientRect();
+    check('手機 390 編輯頁標題靠左', Math.round(ltxt.left) === Math.round(linp.left), Math.round(ltxt.left) + ' vs ' + Math.round(linp.left));
+    fr.closeCardEditor();
+
+    // ---------------- 3. 回饋率輸入框的 ＋/－ 步進鈕 ----------------
+    fr.openAddCard();
+    var addForm = dr.getElementById('addDynamicCardForm');
+    var rate = addForm.elements.baseRate;
+    check('新增頁回饋率有 ＋/－ 步進鈕', dr.querySelectorAll('#addDynamicCardForm .stepper-btn').length === 2);
+    var upBtn = dr.querySelector('#addDynamicCardForm .stepper-btn[data-dir=up]');
+    var downBtn = dr.querySelector('#addDynamicCardForm .stepper-btn[data-dir=down]');
+    check('步進鈕觸控目標 >= 44px', upBtn.getBoundingClientRect().height >= 44 && upBtn.getBoundingClientRect().width >= 44, JSON.stringify(rect(upBtn)));
+    rate.value = '1';
+    upBtn.click();
+    check('點 ＋ 回饋率增加', Number(rate.value) > 1, rate.value);
+    var bumped = Number(rate.value);
+    downBtn.click();
+    check('點 － 回饋率減少', Number(rate.value) < bumped, bumped + ' -> ' + rate.value);
+    rate.value = '0';
+    downBtn.click();
+    check('回饋率不會低於 0', Number(rate.value) === 0, rate.value);
+
+    // ---------------- 4. 手機優先：輸入框不會被底部按鈕蓋住 ----------------
+    var page = dr.getElementById('addCardOverlay');
+    var scroller = dr.querySelector('.add-card-body');
+    var foot = rect(dr.querySelector('.add-card-foot'));
+    scroller.scrollTop = scroller.scrollHeight;
+    var toggle = rect(dr.querySelector('#addCardOverlay .toggle'));
+    check('捲到底時最後欄位仍在底部按鈕之上', toggle.b <= foot.t + 1, 'toggleBottom=' + toggle.b + ' footTop=' + foot.t);
+
+    // 聚焦輸入框時要捲進可視範圍（鍵盤不會擋住）
+    scroller.scrollTop = 0;
+    rate.focus();
+    setTimeout(function () {
+      try {
+        var rr = rect(rate);
+        check('聚焦後輸入框仍在可視範圍內', rr.t >= 0 && rr.b <= 844, JSON.stringify(rr));
+        check('輸入框有 scroll-margin-bottom（鍵盤避讓）', (function () {
+          var v = fr.getComputedStyle(rate).scrollMarginBottom;
+          return parseFloat(v) >= 40;
+        })(), fr.getComputedStyle(rate).scrollMarginBottom);
+
+        // 桌面也要一致
+        fw.openCardEditor(fw.eval('rulesV3.cards[0].id'));
+        var fstep = dw.querySelectorAll('#cardEditorOverlay .editor-card-fields .stepper-btn').length;
+        check('編輯頁回饋率也有步進鈕', fstep === 2, fstep + ' 個');
+        fw.closeCardEditor();
+        fw.openCardEditor(fw.eval('rulesV3.cards[0].id'));
+        dw.getElementById('cardEditorAddActivity').click();
+        check('加碼活動表單也有步進鈕', dw.querySelectorAll('#addDynamicPlanForm .stepper-btn').length >= 8, dw.querySelectorAll('#addDynamicPlanForm .stepper-btn').length + ' 個');
+        fw.closeCardEditor();
+
+        check('無水平溢出（手機）', dr.documentElement.scrollWidth <= dr.documentElement.clientWidth, dr.documentElement.scrollWidth + '<=' + dr.documentElement.clientWidth);
+        log(''); log('=== ' + pass + ' passed, ' + fail + ' failed ===');
+        var pre = document.createElement('pre'); pre.id = 'AUDIT'; pre.textContent = out.join('\n'); document.body.appendChild(pre);
+      } catch (e2) { fail++; log('EXCEPTION2: ' + e2.message); log('=== ' + pass + ' passed, ' + fail + ' failed ==='); var pre = document.createElement('pre'); pre.id = 'AUDIT'; pre.textContent = out.join('\n'); document.body.appendChild(pre); }
+    }, 400);
+  } catch (e) { fail++; log('EXCEPTION: ' + e.message + ' | ' + (e.stack || '').split('\n')[1]); log('=== ' + pass + ' passed, ' + fail + ' failed ==='); var pre = document.createElement('pre'); pre.id = 'AUDIT'; pre.textContent = out.join('\n'); document.body.appendChild(pre); }
+}, 2800);
+</script>

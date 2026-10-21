@@ -1,0 +1,99 @@
+<!doctype html><meta charset="utf-8">
+<style>html,body{margin:0;background:#111}iframe{width:390px;height:844px;border:0;display:block}</style>
+<iframe id="f" src="../index.html"></iframe>
+<script>
+setTimeout(function () {
+  var out = []; var log = function (m) { out.push(m); }; var pass = 0, fail = 0;
+  function check(name, cond, extra) { if (cond) { pass++; log('PASS  ' + name + (extra ? ' — ' + extra : '')); } else { fail++; log('FAIL  ' + name + (extra ? ' — ' + extra : '')); } }
+  try {
+    var w = document.getElementById('f').contentWindow, d = w.document;
+    var errs = []; w.addEventListener('error', function(e){ errs.push(e.message); });
+    d.querySelectorAll('.modal-backdrop').forEach(function (m) { m.style.display = 'none'; });
+
+    // --- guide page ---
+    w.switchTab('guide');
+    var tab = d.getElementById('tab-guide');
+    check('攻略頁高度 < 1500px', tab.scrollHeight < 1500, tab.scrollHeight + 'px (原 3382px)');
+    check('卡片/表格 toggle 存在', d.querySelectorAll('[data-guide-view]').length === 2);
+    check('卡片模式預設顯示', !d.getElementById('guideCardView').hidden && d.getElementById('guideTableView').hidden);
+    check('卡片清單有內容', d.querySelectorAll('#guideCardList .guide-card').length > 0, d.querySelectorAll('#guideCardList .guide-card').length + ' 張');
+    check('方案預設收合', d.querySelectorAll('#guideCardList details.guide-plan[open]').length === 0);
+    check('攻略頁有「新增信用卡」按鈕', (d.querySelector('.guide-head-actions .btn-small') || {}).textContent.indexOf('新增信用卡') >= 0, (d.querySelector('.guide-head-actions .btn-small') || {}).textContent.trim());
+
+    // toggle persistence
+    w.setGuideView('table');
+    check('切到表格模式', d.getElementById('guideTableView').hidden === false && d.getElementById('guideCardView').hidden === true);
+    check('表格有資料', d.querySelectorAll('#guideV3Rows tr').length > 0, d.querySelectorAll('#guideV3Rows tr').length + ' 列');
+    check('模式寫入 localStorage', w.localStorage.getItem('japan_cards_guide_view') === 'table');
+    w.setGuideView('cards');
+    check('切回卡片模式', d.getElementById('guideCardView').hidden === false);
+
+    // --- 新增信用卡頁（整頁，不是彈窗）---
+    w.openAddCard();
+    var ov = d.getElementById('addCardOverlay');
+    var addForm = d.getElementById('addDynamicCardForm');
+    check('新增信用卡畫面可開啟', ov.hidden === false);
+    check('新增信用卡是整頁不是 modal', ov.classList.contains('add-card-page') && !ov.classList.contains('editor-overlay'));
+    check('整頁填滿視窗', (function(){ var r = ov.getBoundingClientRect(); return r.width >= 380 && r.height >= 830; })(), JSON.stringify(ov.getBoundingClientRect().width) + 'x' + Math.round(ov.getBoundingClientRect().height));
+    check('body 鎖定捲動', d.body.classList.contains('add-card-open'));
+    check('新增信用卡畫面只有空白表單', !!addForm && d.querySelectorAll('#addCardOverlay form').length === 1);
+    check('沒有框中框（無 editor-section / rule-form 包覆）', d.querySelectorAll('#addCardOverlay .editor-section').length === 0 && d.querySelectorAll('#addCardOverlay .rule-form').length === 0);
+    check('欄位垂直排列（無並排 grid）', d.querySelectorAll('#addCardOverlay .rule-form-grid').length === 0);
+    check('新增信用卡畫面沒有信用卡列表', !d.getElementById('dynamicCardsList') && !d.getElementById('ruleCardSearch'));
+    check('新增信用卡畫面不列出任何卡片名稱', d.getElementById('addCardOverlay').textContent.indexOf('富邦') < 0 && d.getElementById('addCardOverlay').textContent.indexOf('玉山') < 0);
+    check('新增卡片表單為空白', (addForm.elements.namedItem('name').value || '') === '');
+    check('新增卡片表單沒有卡片組織欄', !addForm.elements.namedItem('network'));
+    check('右上角有叉叉關閉鈕', (function(){ var b = d.querySelector('#addCardOverlay .add-card-close'); if (!b) return false; var r = b.getBoundingClientRect(); return r.width >= 32 && r.height >= 32 && r.right >= 360; })());
+    check('最下面有固定「新增」鈕', (function(){ var b = d.querySelector('#addCardOverlay .add-card-foot button[type="submit"]'); if (!b) return false; var r = b.getBoundingClientRect(); return r.height >= 40 && r.bottom >= 820 && b.getAttribute('form') === 'addDynamicCardForm'; })());
+    check('開啟時底部 tab 隱藏（取代 tab）', w.getComputedStyle(d.querySelector('.nav-tabs')).display === 'none');
+    check('舊版規則表已移除', !d.getElementById('ruleGuideRows') && !d.getElementById('toggleRuleEdit') && !d.getElementById('ruleEditActions') && !d.getElementById('ruleChangeModal'));
+    check('保留既有 DOM id', ['addDynamicCardForm','addDynamicPlanForm','addMerchantForm','planMerchantLabel','planMerchantChoices','cancelPlanEdit','ruleGuideSummary','kumaGuideTitle','kumaTransitNet','merchantChoiceList','merchantChoice'].every(function (id) { return !!d.getElementById(id); }));
+
+    // --- iOS 開關（取代 checkbox）---
+    var tg = d.querySelector('#addCardOverlay .toggle');
+    check('用開關取代 checkbox（無 check-inline/check-label）', !!tg && !!tg.querySelector('.toggle-track') && d.querySelectorAll('#addCardOverlay .check-inline, #addCardOverlay .check-label').length === 0);
+    check('開關的 checkbox 是透明的真 input', (function(){ var i = tg && tg.querySelector('input[type=checkbox]'); return !!i && w.getComputedStyle(i).opacity === '0'; })());
+    check('點開關會切換 checked', (function(){ var i = tg.querySelector('input[type=checkbox]'); var before = i.checked; tg.querySelector('.toggle-track').click(); return i.checked !== before; })());
+    check('全 App 沒有殘留的 checkbox 方框樣式', d.querySelectorAll('.check-inline, .check-label').length === 0);
+    check('全 App 的 checkbox 都包在開關元件內', Array.prototype.every.call(d.querySelectorAll('input[type=checkbox]'), function (cb) { return !!cb.closest('.toggle'); }));
+
+    // 右上角叉叉可關閉
+    d.querySelector('#addCardOverlay .add-card-close').click();
+    check('右上角叉叉可關閉畫面', ov.hidden === true && !d.body.classList.contains('add-card-open'));
+    check('關閉後底部 tab 回來', w.getComputedStyle(d.querySelector('.nav-tabs')).display !== 'none');
+
+    // Esc closes
+    w.openAddCard();
+    d.dispatchEvent(new w.KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+    check('Esc 關閉新增信用卡畫面', ov.hidden === true && !d.body.classList.contains('add-card-open'));
+
+    // --- 單卡編輯頁（卡片 → 加碼活動兩層）---
+    w.openCardEditor(w.eval('rulesV3.cards[0].id'));
+    check('單卡編輯頁可開啟', d.getElementById('cardEditorOverlay').hidden === false);
+    check('單卡編輯頁有卡片設定欄位', !!d.getElementById('cardEditorNameInput') && !!d.getElementById('cardEditorBaseRate') && !!d.getElementById('cardEditorOwned'));
+    check('單卡編輯頁的手續費/持有改用開關', (function(){ var b = d.getElementById('cardEditorBaseFee'), o = d.getElementById('cardEditorOwned'); return !!b.closest('.toggle') && !!o.closest('.toggle') && !!b.closest('.toggle').querySelector('.toggle-track'); })());
+    check('加碼活動表單改用開關', d.querySelectorAll('#addDynamicPlanForm .activity-toggles .toggle').length === 4);
+    check('單卡編輯頁有加碼活動清單與新增鈕', !!d.getElementById('cardEditorPlans') && !!d.getElementById('cardEditorAddActivity'));
+    check('加碼活動表單在單卡編輯頁內', !!d.querySelector('#cardEditorActivityHost #addDynamicPlanForm'));
+    check('加碼活動表單改為單一表單', d.querySelectorAll('#addDynamicPlanForm details.rule-step').length === 0);
+    check('適用情境分段按鈕含交通卡/特約商店', d.querySelectorAll('#addDynamicPlanForm .context-switch input[value="transit"]').length === 1 && d.querySelectorAll('#addDynamicPlanForm .context-switch input[value="merchant"]').length === 1);
+    w.closeCardEditor();
+
+    // --- responsive ---
+    check('無水平溢出（卡片）', d.documentElement.scrollWidth <= d.documentElement.clientWidth);
+    w.setGuideView('table');
+    check('無水平溢出（表格）', d.documentElement.scrollWidth <= d.documentElement.clientWidth);
+    var wrap = d.querySelector('.guide-table-wrap');
+    check('表格可橫向捲動', wrap.scrollWidth > wrap.clientWidth && w.getComputedStyle(wrap).overflowX === 'auto', wrap.clientWidth + '<' + wrap.scrollWidth);
+    w.setGuideView('cards');
+
+    // --- other tabs unaffected ---
+    ['decision','quotas','ledger'].forEach(function (t) { w.switchTab(t); check('分頁 ' + t + ' 正常', d.getElementById('tab-'+t).scrollHeight > 0); });
+
+    check('無 JS 錯誤', errs.length === 0, errs.slice(0,3).join('; '));
+  } catch (e) { fail++; log('EXCEPTION: ' + e.message + ' | ' + (e.stack||'').split('\n')[1]); }
+  log('');
+  log('=== ' + pass + ' passed, ' + fail + ' failed ===');
+  var pre = document.createElement('pre'); pre.id = 'AUDIT'; pre.textContent = out.join('\n'); document.body.appendChild(pre);
+}, 2600);
+</script>

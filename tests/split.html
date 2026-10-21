@@ -1,0 +1,93 @@
+<!doctype html><meta charset="utf-8">
+<style>html,body{margin:0;background:#111}iframe{width:390px;height:844px;border:0;display:block}</style>
+<iframe id="f" src="../index.html"></iframe>
+<script>
+// 拆刷演算法契約測試
+// 核心規則：拆刷候選依「淨回饋率」排序，加碼回饋上限只決定「這張卡能吃多少金額」，
+// 不影響排名；同一張實體卡的不同方案（交通卡 AP 儲值 / 日韓實體一般消費）都要保留。
+function sleep(ms){ return new Promise(function(r){ setTimeout(r, ms); }); }
+setTimeout(async function () {
+  var out = []; var log = function (m) { out.push(m); }; var pass = 0, fail = 0;
+  function check(n, c, e) { if (c) { pass++; log('PASS  ' + n + (e ? ' — ' + e : '')); } else { fail++; log('FAIL  ' + n + (e ? ' — ' + e : '')); } }
+  function finish() {
+    log(''); log('=== ' + pass + ' passed, ' + fail + ' failed ===');
+    var pre = document.createElement('pre'); pre.id = 'AUDIT'; pre.textContent = out.join('\n'); document.body.appendChild(pre);
+  }
+  try {
+    var frame = document.getElementById('f');
+    var w = frame.contentWindow, d = w.document;
+    var ev = function (code) { return w.eval(code); };
+    var errs = []; w.addEventListener('error', function(e){ errs.push(e.message); });
+
+    // 用內建種子重置規則，避免其他測試殘留的 localStorage 影響
+    w.localStorage.clear();
+    w.location.reload();
+    await sleep(1600);
+    w = frame.contentWindow; d = w.document;
+
+    // 固定匯率，讓斷言與線上即期匯率無關
+    function run(scenarioKey, jpy) {
+      d.querySelector('[data-scenario="' + scenarioKey + '"]').click();
+      d.getElementById('jpyAmount').value = String(jpy);
+      d.getElementById('jpyAmount').dispatchEvent(new w.Event('input', { bubbles: true }));
+      return ev('jpyRate = 0.2088; calculate(); currentDecision;');
+    }
+    var rate = ev('jpyRate = 0.2088; jpyRate;');
+    check('匯率可固定為 0.2088（斷言不受即期匯率影響）', rate === 0.2088, String(rate));
+
+    // ---------- 1. 交通卡 ¥50,000：依淨回饋率拆刷，J 卡交通卡加碼排第一 ----------
+    var dec = run('transit', 50000);
+    var twd = dec.twd;
+    check('交通卡 ¥50,000 → 拆成 2 段', dec.v3Allocations.length === 2, dec.v3Allocations.length + ' 段');
+    var a0 = dec.v3Allocations[0], a1 = dec.v3Allocations[1];
+    check('第 1 段是富邦 J 卡 (交通卡 AP 儲值)', a0 && a0.plan.id === 'plan-jcard-transit', a0 && a0.plan.name);
+    check('第 1 段金額 = 加碼上限可支應的消費額 NT$2,857', a0 && a0.amount === 2857, a0 && String(a0.amount));
+    check('第 2 段是玉山熊本熊卡', a1 && a1.plan.id === 'plan-kuma', a1 && a1.plan.name);
+    check('第 2 段金額 = 剩餘金額', a1 && a1.amount === twd - 2857, a1 && String(a1.amount));
+    check('J 卡交通卡段淨回饋 ≈ NT$243（上限 NT$200 已用盡）', a0 && Math.abs(a0.reward - 242.845) < 0.5, a0 && String(a0.reward));
+    // 匯率固定 0.2088 → ¥50,000 = NT$10,440；玉山段 7,583 × 7% = 530.8
+    check('總淨回饋 ≈ NT$774', Math.abs(dec.rewardTwd - 774) <= 2, 'NT$' + dec.rewardTwd);
+    check('淨回饋率 ≈ 7.4%', Math.abs(dec.ratePercent - 7.41) < 0.15, dec.ratePercent.toFixed(2) + '%');
+
+    // ---------- 2. 排序清單依淨回饋率，交通卡 J 卡要排第一 ----------
+    var ranked = ev('Array.prototype.map.call(document.querySelectorAll("#cardDesc .dynamic-plan"), function(n){ return n.textContent; });');
+    check('排序清單第 1 名是交通卡 J 卡', ranked.length > 0 && /交通卡 AP 儲值/.test(ranked[0]), ranked[0] || '(空)');
+    check('排序清單第 1 名標示淨率 8.50%', ranked.length > 0 && /8\.50%/.test(ranked[0]), ranked[0] || '(空)');
+    check('排序清單含同一張實體卡的兩個方案', ranked.length > 0 && ranked.some(function(t){ return /日韓實體一般消費/.test(t); }), ranked.join(' ／ '));
+
+    // ---------- 3. 交通卡 ¥100,000：同一張實體卡的兩個方案都要能拆進來 ----------
+    var dec2 = run('transit', 100000);
+    var planIds = dec2.v3Allocations.map(function(a){ return a.plan.id; });
+    check('交通卡 ¥100,000 → 拆成 3 段', dec2.v3Allocations.length === 3, dec2.v3Allocations.length + ' 段');
+    check('第 1 段仍是交通卡 J 卡（淨率最高）', planIds[0] === 'plan-jcard-transit', planIds.join(', '));
+    check('同一張富邦 J 卡的交通卡方案與一般消費方案都保留', planIds.indexOf('plan-jcard-transit') >= 0 && planIds.indexOf('plan-jcard-general') >= 0, planIds.join(', '));
+    // 匯率固定 0.2088 → ¥100,000 = NT$20,880；2,857 @8.5% + 8,333 @7% + 9,690 @4.5%
+    check('總淨回饋 ≈ NT$1,262', Math.abs(dec2.rewardTwd - 1262) <= 3, 'NT$' + dec2.rewardTwd);
+
+    // ---------- 4. 未達交通卡加碼門檻時不該硬拆 ----------
+    var dec3 = run('transit', 1500);
+    check('交通卡 ¥1,500（未達 NT$2,000 門檻）→ 不拆刷', dec3.v3Allocations.length === 1, dec3.v3Allocations.length + ' 段');
+    check('交通卡 ¥1,500 → 選玉山熊本熊卡', dec3.v3Allocations[0].plan.id === 'plan-kuma', dec3.v3Allocations[0].plan.name);
+
+    // ---------- 5. 一般消費情境不受拆刷影響 ----------
+    var dec4 = run('general', 50000);
+    check('一般消費 ¥50,000 → 單卡富邦 J 卡（不拆刷）', dec4.v3Allocations.length === 1 && dec4.v3Allocations[0].plan.id === 'plan-jcard-general', dec4.v3Allocations.map(function(a){ return a.plan.id; }).join(', '));
+    check('一般消費 ¥50,000 → 淨回饋 ≈ NT$468', Math.abs(dec4.rewardTwd - 468) <= 2, 'NT$' + dec4.rewardTwd);
+
+    // ---------- 6. 強制整筆刷時不拆 ----------
+    run('transit', 50000);
+    d.getElementById('splitMode').value = 'single';
+    d.getElementById('splitMode').dispatchEvent(new w.Event('change', { bubbles: true }));
+    var dec5 = ev('jpyRate = 0.2088; calculate(); currentDecision;');
+    check('強制整筆刷 → 單卡', dec5.v3Allocations.length === 1, dec5.v3Allocations.length + ' 段');
+    check('強制整筆刷 → 選玉山（整筆淨回饋最高）', dec5.v3Allocations[0].plan.id === 'plan-kuma', dec5.v3Allocations[0].plan.name);
+    check('強制整筆刷 → 淨回饋 ≈ NT$604', Math.abs(dec5.rewardTwd - 604) <= 2, 'NT$' + dec5.rewardTwd);
+    check('強制整筆刷的淨回饋低於拆刷', dec5.rewardTwd < dec.rewardTwd, 'NT$' + dec5.rewardTwd + ' < NT$' + dec.rewardTwd);
+    d.getElementById('splitMode').value = 'auto';
+    d.getElementById('splitMode').dispatchEvent(new w.Event('change', { bubbles: true }));
+
+    check('無 JS 錯誤', errs.length === 0, errs.slice(0,3).join('; '));
+  } catch (e) { fail++; log('EXCEPTION: ' + e.message + ' | ' + (e.stack||'').split('\n')[1]); }
+  finish();
+}, 2600);
+</script>

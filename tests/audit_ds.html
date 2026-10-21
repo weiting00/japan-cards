@@ -1,0 +1,64 @@
+<!doctype html><meta charset="utf-8">
+<style>html,body{margin:0;background:#111}iframe{border:0;display:block;width:1280px;height:1000px}</style>
+<iframe id="f" src="../index.html"></iframe>
+<script>
+setTimeout(function () {
+  var out = [];
+  var w = document.getElementById('f').contentWindow, d = w.document;
+
+  // 收集「同類元件」的所有實例，回報其樣式是否一致
+  var GROUPS = [
+    { name: '欄位標籤', sel: ['#addDynamicCardForm .field', '#cardEditorOverlay .editor-card-fields label', '#addDynamicPlanForm .rule-form-grid label'] },
+    { name: '數字輸入框', sel: ['#addDynamicCardForm input[type=number]', '#cardEditorOverlay .editor-card-fields input[type=number]', '#addDynamicPlanForm input[type=number]'] },
+    { name: '文字輸入框', sel: ['#addDynamicCardForm input[type=text]', '#cardEditorOverlay .editor-card-fields input[type=text]', '#addDynamicPlanForm input[type=text]'] },
+    { name: '下拉選單', sel: ['#addDynamicPlanForm select', '#addDynamicPlanForm select[name=cycle]', '#addDynamicPlanForm select[name=thresholdType]'] },
+    { name: '開關軌道', sel: ['#addDynamicCardForm .toggle-track', '#cardEditorOverlay .editor-card-fields .toggle-track', '#addDynamicPlanForm .toggle-track'] },
+    { name: '步進鈕', sel: ['#addDynamicCardForm .stepper-btn', '#cardEditorOverlay .editor-card-fields .stepper-btn', '#addDynamicPlanForm .stepper-btn'] },
+    { name: '小按鈕', sel: ['#cardEditorOverlay .btn-small', '#addDynamicPlanForm .btn-small', '#addDynamicPlanForm button[type=submit]'] },
+    { name: '區塊容器', sel: ['#cardEditorOverlay .editor-section', '#cardEditorOverlay .editor-section:nth-of-type(2)', '#cardEditorOverlay .editor-card-danger'] },
+    { name: '標題', sel: ['#cardEditorOverlay .card-editor-subtitle', '#cardEditorOverlay .editor-section-head h3', '#addDynamicPlanForm .activity-form-title'] }
+  ];
+  var PROPS = ['fontSize', 'fontWeight', 'lineHeight', 'letterSpacing', 'color', 'paddingTop', 'paddingRight', 'paddingBottom', 'paddingLeft', 'marginTop', 'marginBottom', 'gap', 'minHeight', 'borderRadius', 'borderTopWidth', 'borderTopColor', 'backgroundColor', 'textAlign', 'alignItems', 'justifyContent'];
+
+  function sig(el, props) {
+    var cs = w.getComputedStyle(el);
+    return props.map(function (p) { return p + ':' + cs[p]; }).join('|');
+  }
+
+  // 先把所有相關畫面打開，讓 selector 都找得到
+  w.openCardEditor(w.eval('rulesV3.cards.find(c=>c.plans.length).id'));
+  d.getElementById('cardEditorAddActivity').click();
+
+  GROUPS.forEach(function (g) {
+    out.push('### ' + g.name);
+    var seen = {};
+    g.sel.forEach(function (sel) {
+      var el = d.querySelector(sel);
+      if (!el) { out.push('  [缺] ' + sel); return; }
+      var s = sig(el, PROPS);
+      var r = el.getBoundingClientRect();
+      var tag = sel.replace(/#[^ >]+/g, '').trim() || sel;
+      if (seen[s] === undefined) seen[s] = [];
+      seen[s].push(sel);
+      out.push('  ' + sel);
+      out.push('     ' + s);
+      out.push('     size h=' + Math.round(r.height) + ' w=' + Math.round(r.width));
+    });
+    var keys = Object.keys(seen);
+    out.push('  → 一致? ' + (keys.length === 1 ? 'YES' : 'NO（' + keys.length + ' 種）'));
+    if (keys.length > 1) keys.forEach(function (k) { out.push('     · ' + seen[k].join(' , ')); });
+    out.push('');
+  });
+
+  // 色碼使用統計
+  var text = d.documentElement.outerHTML;
+  var counts = {};
+  (text.match(/rgba\(0,\s*240,\s*255\s*,\s*[0-9.]+\)/g) || []).forEach(function (c) {
+    counts[c] = (counts[c] || 0) + 1;
+  });
+  out.push('### 硬編碼 rgba(0,240,255,*) 分佈');
+  Object.keys(counts).sort(function (a, b) { return counts[b] - counts[a]; }).forEach(function (k) { out.push('  ' + counts[k] + ' × ' + k); });
+
+  var pre = document.createElement('pre'); pre.id = 'AUDIT'; pre.textContent = out.join('\n'); document.body.appendChild(pre);
+}, 3000);
+</script>

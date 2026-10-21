@@ -1,0 +1,204 @@
+<!doctype html><meta charset="utf-8">
+<style>html,body{margin:0;background:#111}iframe{width:1100px;height:900px;border:0;display:block}</style>
+<iframe id="f" src="../index.html"></iframe>
+<script>
+function sleep(ms){ return new Promise(function(r){ setTimeout(r, ms); }); }
+setTimeout(async function () {
+  var out = []; var log = function (m) { out.push(m); }; var pass = 0, fail = 0;
+  function check(n, c, e) { if (c) { pass++; log('PASS  ' + n + (e ? ' — ' + e : '')); } else { fail++; log('FAIL  ' + n + (e ? ' — ' + e : '')); } }
+  function finish() {
+    log(''); log('=== ' + pass + ' passed, ' + fail + ' failed ===');
+    var pre = document.createElement('pre'); pre.id = 'AUDIT'; pre.textContent = out.join('\n'); document.body.appendChild(pre);
+  }
+  try {
+    var w = document.getElementById('f').contentWindow, d = w.document;
+    var ev = function (code) { return w.eval(code); };
+    var errs = []; w.addEventListener('error', function(e){ errs.push(e.message); });
+    var confirmDialog = function () { d.getElementById('appDialogConfirm').click(); };
+    var cardEditor = function () { return d.getElementById('cardEditorOverlay'); };
+    var R = function () { return ev('rulesV3'); };
+
+    // ---------- 1. 攻略頁每張卡都有「編輯」按鈕 ----------
+    ev('switchTab("guide")');
+    await sleep(200);
+    var editBtns = d.querySelectorAll('#guideCardList [data-guide-edit]');
+    check('攻略頁每張卡都有編輯按鈕', editBtns.length === R().cards.length, editBtns.length + ' 個 / ' + R().cards.length + ' 張卡');
+    var firstCard = R().cards[0];
+    check('編輯按鈕帶 data-guide-edit=cardId', editBtns[0] && editBtns[0].dataset.guideEdit === firstCard.id, editBtns[0] && editBtns[0].dataset.guideEdit);
+    check('編輯按鈕文字為「編輯」', editBtns[0] && editBtns[0].textContent.trim() === '編輯', editBtns[0] && editBtns[0].textContent.trim());
+
+    // ---------- 2. 點擊開啟單卡編輯頁（另外一頁） ----------
+    check('單卡編輯頁初始隱藏', cardEditor().hidden === true);
+    editBtns[0].click();
+    await sleep(120);
+    check('點擊後單卡編輯頁開啟', cardEditor().hidden === false);
+    check('新增信用卡畫面沒有被開啟', d.getElementById('addCardOverlay').hidden === true);
+    check('編輯頁標題是該卡名稱', d.getElementById('cardEditorName').textContent.trim() === firstCard.name, d.getElementById('cardEditorName').textContent.trim());
+    check('編輯頁帶該卡的一般回饋率', Number(d.getElementById('cardEditorBaseRate').value) === Number(firstCard.baseRate), d.getElementById('cardEditorBaseRate').value);
+    check('編輯頁帶該卡的持有狀態', d.getElementById('cardEditorOwned').checked === (firstCard.owned !== false));
+    check('編輯頁帶該卡的加碼活動清單', d.querySelectorAll('#cardEditorPlans [data-card-edit-plan]').length === (firstCard.plans || []).length, d.querySelectorAll('#cardEditorPlans [data-card-edit-plan]').length + ' 筆');
+
+    // ---------- 3. 編輯基本欄位 → rulesV3 同步 ----------
+    d.getElementById('cardEditorBaseRate').value = '3.25';
+    d.getElementById('cardEditorBaseRate').dispatchEvent(new w.Event('change'));
+    await sleep(120);
+    check('改一般回饋率 → rulesV3 同步', Number(R().cards[0].baseRate) === 3.25, String(R().cards[0].baseRate));
+
+    d.getElementById('cardEditorNameInput').value = '測試改名卡';
+    d.getElementById('cardEditorNameInput').dispatchEvent(new w.Event('change'));
+    await sleep(120);
+    check('改卡片名稱 → rulesV3 同步', R().cards[0].name === '測試改名卡', R().cards[0].name);
+    check('改名後頁面標題同步', d.getElementById('cardEditorName').textContent.trim() === '測試改名卡', d.getElementById('cardEditorName').textContent.trim());
+
+    d.getElementById('cardEditorOwned').checked = false;
+    d.getElementById('cardEditorOwned').dispatchEvent(new w.Event('change'));
+    await sleep(120);
+    check('改持有狀態 → rulesV3 同步', R().cards[0].owned === false, String(R().cards[0].owned));
+
+    // ---------- 4. 在單卡編輯頁新增加碼活動 ----------
+    var beforePlans = R().cards[0].plans.length;
+    d.getElementById('cardEditorAddActivity').click();
+    await sleep(150);
+    var form = d.getElementById('addDynamicPlanForm');
+    check('新增加碼活動 → 表單出現在單卡編輯頁', form.parentElement && form.parentElement.id === 'cardEditorActivityHost', form.parentElement && form.parentElement.id);
+    check('新增加碼活動 → 表單可見', form.hidden === false);
+    // 情境分段按鈕必須提供「交通卡」與「特約商店」
+    var ctxValues = Array.prototype.map.call(form.querySelectorAll('input[name="context"]'), function(r){ return r.value; });
+    check('適用情境含「交通卡」', ctxValues.indexOf('transit') >= 0, ctxValues.join(','));
+    check('適用情境含「特約商店」', ctxValues.indexOf('merchant') >= 0, ctxValues.join(','));
+    // 填表並送出
+    form.elements.namedItem('name').value = '單卡頁測試活動';
+    form.elements.namedItem('rate').value = '4.5';
+    form.elements.namedItem('threshold').value = '3000';
+    form.dispatchEvent(new w.Event('submit', { bubbles: true, cancelable: true }));
+    await sleep(250);
+    check('新增加碼活動 → rulesV3 同步', R().cards[0].plans.length === beforePlans + 1, R().cards[0].plans.length + ' vs ' + beforePlans);
+    var newPlan = R().cards[0].plans[R().cards[0].plans.length - 1];
+    check('新增加碼活動 → 內容正確', newPlan && newPlan.name === '單卡頁測試活動' && Number(newPlan.rewardParts[0].rate) === 4.5 && Number(newPlan.rewardParts[0].thresholdTwd) === 3000, newPlan ? newPlan.name + '/' + newPlan.rewardParts[0].rate + '/' + newPlan.rewardParts[0].thresholdTwd : 'null');
+    check('新增後編輯頁清單同步', d.querySelectorAll('#cardEditorPlans [data-card-edit-plan]').length === R().cards[0].plans.length);
+    check('新增後表單收起', d.getElementById('addDynamicPlanForm').hidden === true);
+
+    // ---------- 5. 在單卡編輯頁編輯加碼活動 ----------
+    var planBtns = d.querySelectorAll('#cardEditorPlans [data-card-edit-plan]');
+    var targetBtn = planBtns[planBtns.length - 1];
+    targetBtn.click();
+    await sleep(150);
+    check('點編輯 → 表單回到單卡編輯頁', d.getElementById('addDynamicPlanForm').parentElement.id === 'cardEditorActivityHost');
+    check('點編輯 → 表單帶入既有值', d.getElementById('addDynamicPlanForm').elements.namedItem('name').value === '單卡頁測試活動', d.getElementById('addDynamicPlanForm').elements.namedItem('name').value);
+    d.getElementById('addDynamicPlanForm').elements.namedItem('rate').value = '6';
+    d.getElementById('addDynamicPlanForm').dispatchEvent(new w.Event('submit', { bubbles: true, cancelable: true }));
+    await sleep(250);
+    check('編輯加碼活動 → rulesV3 同步', Number(R().cards[0].plans[R().cards[0].plans.length - 1].rewardParts[0].rate) === 6, String(R().cards[0].plans[R().cards[0].plans.length - 1].rewardParts[0].rate));
+
+    // ---------- 6. 在單卡編輯頁刪除加碼活動 ----------
+    var planCount = R().cards[0].plans.length;
+    var delPlanBtns = d.querySelectorAll('#cardEditorPlans [data-card-delete-plan]');
+    delPlanBtns[delPlanBtns.length - 1].click();
+    await sleep(160);
+    check('刪除加碼活動 → 跳出確認對話框', d.getElementById('appDialogModal').style.display === 'flex', d.getElementById('appDialogModal').style.display);
+    confirmDialog();
+    await sleep(200);
+    check('刪除加碼活動 → rulesV3 同步', R().cards[0].plans.length === planCount - 1, R().cards[0].plans.length + ' vs ' + planCount);
+
+    // ---------- 7. 在單卡編輯頁刪除整張卡 ----------
+    var totalBefore = R().cards.length;
+    d.getElementById('cardEditorDelete').click();
+    await sleep(160);
+    check('刪除這張卡 → 跳出確認對話框', d.getElementById('appDialogModal').style.display === 'flex');
+    check('刪除確認前卡片還在', R().cards.length === totalBefore);
+    confirmDialog();
+    await sleep(250);
+    check('刪除這張卡 → rulesV3 移除', R().cards.length === totalBefore - 1, R().cards.length + ' vs ' + totalBefore);
+    check('刪除這張卡 → 編輯頁關閉', cardEditor().hidden === true);
+    check('刪除這張卡 → 攻略頁不再顯示該卡', !Array.prototype.some.call(d.querySelectorAll('#guideCardList [data-guide-edit]'), function(b){ return b.dataset.guideEdit === firstCard.id; }));
+
+    // ---------- 8. 關閉按鈕 ----------
+    var otherBtn = d.querySelector('#guideCardList [data-guide-edit]');
+    otherBtn.click();
+    await sleep(120);
+    check('再開另一張卡的編輯頁', cardEditor().hidden === false);
+    d.querySelector('#cardEditorOverlay .editor-header .btn-small').click();
+    await sleep(120);
+    check('關閉按鈕 → 編輯頁關閉', cardEditor().hidden === true);
+    check('關閉後卡片仍在 rulesV3', R().cards.length === totalBefore - 1, R().cards.length + ' 張');
+
+    check('無 JS 錯誤', errs.length === 0, errs.join(' | '));
+
+    // ---------- 9. 表格檢閱模式也有每張卡的編輯按鈕 ----------
+    ev('applyGuideView("table")');
+    await sleep(200);
+    var tableEdits = d.querySelectorAll('#guideV3Rows [data-guide-edit]');
+    check('表格模式每張卡有編輯按鈕', tableEdits.length === R().cards.length, tableEdits.length + ' 個 / ' + R().cards.length + ' 張卡');
+    var tableIds = Array.prototype.map.call(tableEdits, function(b){ return b.dataset.guideEdit; });
+    check('表格模式編輯按鈕不重複', new Set(tableIds).size === tableIds.length, tableIds.join(','));
+    tableEdits[0].click();
+    await sleep(120);
+    check('表格模式的編輯按鈕也能開啟單卡編輯頁', cardEditor().hidden === false);
+    ev('closeCardEditor()');
+    ev('applyGuideView("cards")');
+    await sleep(150);
+
+    // ---------- 10. 單卡編輯頁版面（觸控目標 / 溢出） ----------
+    var otherBtn2 = d.querySelector('#guideCardList [data-guide-edit]');
+    otherBtn2.click();
+    await sleep(150);
+    var small = [];
+    Array.prototype.forEach.call(d.querySelectorAll('#cardEditorOverlay button, #cardEditorOverlay input, #cardEditorOverlay select, #cardEditorOverlay summary'), function(el){
+      if (el.offsetParent === null) return;
+      var r = el.getBoundingClientRect();
+      if (r.width === 0 || r.height === 0) return;
+      if (r.height < 32) small.push((el.id || el.className || el.textContent.trim().slice(0,14)) + ' h=' + Math.round(r.height));
+    });
+    check('單卡編輯頁觸控目標 >= 32px', small.length === 0, small.slice(0,6).join(' | '));
+    check('單卡編輯頁無水平溢出', d.documentElement.scrollWidth <= d.documentElement.clientWidth, d.documentElement.scrollWidth + '<=' + d.documentElement.clientWidth);
+    check('無 JS 錯誤（末）', errs.length === 0, errs.join(' | '));
+
+    // ---------- 11. 沒有加碼活動的卡片 ----------
+    ev('rulesV3.cards.push({ id:"card-empty-test", name:"空白測試卡", issuer:"", network:"", baseRate:1.5, baseFeeApplies:true, owned:true, plans:[] }); saveRulesV3(); renderGuideViews();');
+    await sleep(200);
+    var emptyBtn = d.querySelector('#guideCardList [data-guide-edit="card-empty-test"]');
+    check('沒有加碼活動的卡也有編輯按鈕', !!emptyBtn);
+    emptyBtn.click();
+    await sleep(150);
+    check('空白卡編輯頁開啟', cardEditor().hidden === false);
+    check('空白卡顯示空狀態提示', (d.getElementById('cardEditorPlans').textContent || '').indexOf('還沒有加碼活動') >= 0, d.getElementById('cardEditorPlans').textContent.trim());
+    d.getElementById('cardEditorAddActivity').click();
+    await sleep(150);
+    check('空白卡也能開加碼活動表單', d.getElementById('addDynamicPlanForm').parentElement.id === 'cardEditorActivityHost' && d.getElementById('addDynamicPlanForm').hidden === false);
+    ev('closeCardEditor()');
+    await sleep(120);
+    ev('rulesV3.cards = rulesV3.cards.filter(function(c){ return c.id !== "card-empty-test"; }); saveRulesV3(); renderGuideViews();');
+    await sleep(150);
+    check('清理測試卡片完成', !R().cards.some(function(c){ return c.id === 'card-empty-test'; }));
+    check('無 JS 錯誤（最末）', errs.length === 0, errs.join(' | '));
+
+    // ---------- 12. 「新增信用卡」畫面：只有空白表單、沒有信用卡列表 ----------
+    var guideBtn = d.querySelector('.guide-head-actions .btn-small');
+    check('攻略頁按鈕是「新增信用卡」', guideBtn && guideBtn.textContent.indexOf('新增信用卡') >= 0, guideBtn && guideBtn.textContent.trim());
+    guideBtn.click();
+    await sleep(150);
+    check('新增信用卡畫面開啟', d.getElementById('addCardOverlay').hidden === false);
+    check('新增信用卡畫面只有一張空白表單', d.querySelectorAll('#addCardOverlay form').length === 1);
+    check('新增信用卡畫面沒有信用卡列表 DOM', !d.getElementById('dynamicCardsList') && !d.getElementById('ruleCardSearch'));
+    var overlayText = d.getElementById('addCardOverlay').textContent;
+    check('新增信用卡畫面不列出既有卡片', overlayText.indexOf('富邦') < 0 && overlayText.indexOf('玉山') < 0 && overlayText.indexOf('國泰') < 0, overlayText.replace(/\s+/g,' ').slice(0, 80));
+    var addForm = d.getElementById('addDynamicCardForm');
+    check('新增信用卡表單是空白的', addForm.elements.namedItem('name').value === '' && !addForm.elements.namedItem('network'));
+    check('新增信用卡表單不再有發卡銀行欄', !addForm.elements.namedItem('issuer'));
+    addForm.elements.namedItem('name').value = 'ZZ新增信用卡測試';
+    addForm.elements.namedItem('baseRate').value = '2.5';
+    addForm.dispatchEvent(new w.Event('submit', { bubbles: true, cancelable: true }));
+    await sleep(250);
+    check('新增信用卡後卡片進入 rulesV3', !!R().cards.find(function(c){ return c.name === 'ZZ新增信用卡測試'; }));
+    check('新增信用卡後直接開啟該卡編輯頁', cardEditor().hidden === false);
+    check('新增信用卡畫面已關閉', d.getElementById('addCardOverlay').hidden === true);
+    check('新增後頁面標題是該卡名稱', d.getElementById('cardEditorName').textContent.trim() === 'ZZ新增信用卡測試', d.getElementById('cardEditorName').textContent.trim());
+    ev('closeCardEditor()');
+    await sleep(120);
+    check('無 JS 錯誤（新增信用卡）', errs.length === 0, errs.join(' | '));
+  } catch (e) {
+    fail++; log('FAIL  例外 — ' + (e && e.message ? e.message : String(e)) + '\n' + (e && e.stack ? e.stack : ''));
+  }
+  finish();
+}, 3000);
+</script>

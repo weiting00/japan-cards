@@ -1,0 +1,67 @@
+<!doctype html><meta charset="utf-8">
+<style>html,body{margin:0;background:#111}iframe{width:390px;height:844px;border:0;display:block}</style>
+<body>
+<script>
+// 先寫入舊版額度資料，再建立 iframe（同一 origin → 共用 localStorage）
+try {
+  localStorage.clear();
+  localStorage.setItem('japan_card_limits_v2', JSON.stringify({ kuma: 500, jcard: 1000 }));
+  localStorage.setItem('japan_card_quotas_v2', JSON.stringify({ kuma: 300, jcard: 0 }));
+} catch (e) {}
+var f = document.createElement('iframe');
+f.id = 'f'; f.width = 390; f.height = 844; f.src = '../index.html';
+document.body.appendChild(f);
+</script>
+<script>
+setTimeout(function () {
+  var out = []; var log = function (m) { out.push(m); }; var pass = 0, fail = 0;
+  function check(n, c, e) { if (c) { pass++; log('PASS  ' + n + (e ? ' — ' + e : '')); } else { fail++; log('FAIL  ' + n + (e ? ' — ' + e : '')); } }
+  try {
+    var w = document.getElementById('f').contentWindow, d = w.document;
+    var ev = function (code) { return w.eval(code); };
+    var R = ev('rulesV3');
+    var partOf = function (planId) {
+      var card = R.cards.filter(function (c) { return (c.plans || []).some(function (p) { return p.id === planId; }); })[0];
+      var plan = card.plans.filter(function (p) { return p.id === planId; })[0];
+      return plan.rewardParts[0];
+    };
+    var kuma = partOf('plan-kuma');
+    var jcard = partOf('plan-jcard-general');
+    var transit = partOf('plan-jcard-transit');
+
+    check('遷移旗標已寫入', w.localStorage.getItem('japan_card_quota_migration_v1') === '1');
+    check('舊版 kuma 已換算為 usedReward', kuma.usedReward === 12, 'usedReward=' + kuma.usedReward + ' (預期 200×6% = 12)');
+    check('舊版 jcard 已換算為 usedReward', jcard.usedReward === 30, 'usedReward=' + jcard.usedReward + ' (預期 1000×3% = 30)');
+    check('沒有對應舊資料的方案維持 0', transit.usedReward === 0, 'usedReward=' + transit.usedReward);
+
+    var quotaText = d.getElementById('quotaCards').textContent.replace(/\s+/g, ' ');
+    check('看板顯示遷移後的已用額度', /已用 NT\$12/.test(quotaText), (quotaText.match(/已用 NT\$[\d,]+/) || [''])[0]);
+    check('看板顯示遷移後的剩餘額度', /剩餘 NT\$488/.test(quotaText), (quotaText.match(/剩餘 NT\$[\d,]+/) || [''])[0]);
+
+    check('舊版 key 未被再次寫回', w.localStorage.getItem('japan_card_limits_v2') === JSON.stringify({ kuma: 500, jcard: 1000 }));
+    check('rulesV3 已寫入 localStorage', !!w.localStorage.getItem('japan_card_rules_v3'));
+    var saved = JSON.parse(w.localStorage.getItem('japan_card_rules_v3'));
+    var savedKuma = saved.cards.filter(function (c) { return c.id === 'esun_kuma'; })[0].plans[0].rewardParts[0];
+    check('持久化的 rulesV3 含遷移結果', savedKuma.usedReward === 12, 'usedReward=' + savedKuma.usedReward);
+
+    // 第二次載入不應重複遷移
+    var f2 = document.createElement('iframe');
+    f2.style.width = '390px'; f2.style.height = '844px';
+    f2.src = '../index.html';
+    document.body.appendChild(f2);
+    setTimeout(function () {
+      try {
+        var w2 = f2.contentWindow;
+        var R2 = w2.eval('rulesV3');
+        var k2 = R2.cards.filter(function (c) { return c.id === 'esun_kuma'; })[0].plans[0].rewardParts[0];
+        check('重新載入不會重複遷移', k2.usedReward === 12, 'usedReward=' + k2.usedReward);
+      } catch (e) { fail++; log('EXCEPTION(2): ' + e.message); }
+      log(''); log('=== ' + pass + ' passed, ' + fail + ' failed ===');
+      var pre = document.createElement('pre'); pre.id = 'AUDIT'; pre.textContent = out.join('\n'); document.body.appendChild(pre);
+    }, 2500);
+  } catch (e) { fail++; log('EXCEPTION(1): ' + e.message + ' | ' + (e.stack || '').split('\n')[1]); }
+  log(''); log('=== ' + pass + ' passed, ' + fail + ' failed ===');
+  var pre = document.createElement('pre'); pre.id = 'AUDIT'; pre.textContent = out.join('\n'); document.body.appendChild(pre);
+}, 3000);
+</script>
+</body>

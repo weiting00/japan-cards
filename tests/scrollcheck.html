@@ -1,0 +1,42 @@
+<!doctype html><meta charset="utf-8">
+<style>html,body{margin:0;background:#111}iframe{border:0;display:block;width:390px;height:844px}</style>
+<iframe id="f" src="../index.html"></iframe>
+<script>
+setTimeout(function(){
+  var out=[];
+  var w=document.getElementById('f').contentWindow, d=w.document;
+  function R(el){ if(!el) return 'null'; var r=el.getBoundingClientRect(); return 'l='+Math.round(r.left)+' w='+Math.round(r.width)+' t='+Math.round(r.top)+' h='+Math.round(r.height)+' b='+Math.round(r.bottom); }
+  try{
+    var cardId = w.eval('rulesV3.cards.find(c=>c.plans.length).id');
+    w.openCardEditor(cardId);
+    var body = d.querySelector('#cardEditorOverlay .editor-body');
+    out.push('editor-body scrollHeight=' + body.scrollHeight + ' clientHeight=' + body.clientHeight);
+    var planRows = d.querySelectorAll('#cardEditorPlans .editor-plan-row');
+    out.push('plan row0 ' + R(planRows[0]));
+    out.push('plan row1 ' + R(planRows[1]));
+    out.push('新增鈕 ' + R(d.getElementById('cardEditorAddActivity')));
+    var form = d.getElementById('addDynamicPlanForm');
+    out.push('form (hidden) ' + R(form));
+    // 點編輯
+    d.querySelector('#cardEditorPlans [data-card-edit-plan]').click();
+    setTimeout(function(){
+      out.push('--- 點編輯 600ms 後 ---');
+      out.push('editor-body scrollTop=' + body.scrollTop);
+      out.push('form ' + R(form));
+      out.push('form title=' + form.querySelector('#activityFormTitle').textContent);
+      out.push('form 可見? top=' + Math.round(form.getBoundingClientRect().top));
+      // 點新增
+      d.getElementById('cancelPlanEdit').click();
+      d.getElementById('cardEditorAddActivity').click();
+      setTimeout(function(){
+        out.push('--- 點新增 600ms 後 ---');
+        out.push('editor-body scrollTop=' + body.scrollTop);
+        out.push('form ' + R(form));
+        out.push('form 可見? top=' + Math.round(form.getBoundingClientRect().top));
+        out.push('新增鈕 ' + R(d.getElementById('cardEditorAddActivity')));
+        var pre=document.createElement('pre'); pre.id='AUDIT'; pre.textContent=out.join('\n'); document.body.appendChild(pre);
+      }, 700);
+    }, 700);
+  }catch(e){ out.push('EXC '+e.message+' | '+(e.stack||'').split('\n')[1]); var pre=document.createElement('pre'); pre.id='AUDIT'; pre.textContent=out.join('\n'); document.body.appendChild(pre); }
+}, 2600);
+</script>

@@ -1,0 +1,181 @@
+<!doctype html><meta charset="utf-8">
+<style>html,body{margin:0;background:#111}iframe{border:0;display:block;width:1280px;height:1000px}</style>
+<iframe id="f" src="../index.html"></iframe>
+<script>
+var out = [], pass = 0, fail = 0;
+function log(m) { out.push(m); }
+function check(n, c, e) { if (c) { pass++; log('PASS  ' + n + (e ? ' — ' + e : '')); } else { fail++; log('FAIL  ' + n + (e ? ' — ' + e : '')); } }
+function sleep(ms) { return new Promise(function (r) { setTimeout(r, ms); }); }
+
+setTimeout(async function () {
+  var w = document.getElementById('f').contentWindow, d = w.document;
+  var root = d.documentElement;
+
+  // 把 token 解析成 px：用探針元素實測（setProperty 需要連字號屬性名）
+  function tokenPx(name, prop) {
+    var p = d.createElement('div');
+    p.style.cssText = 'position:absolute;left:-9999px;top:0;';
+    p.style.setProperty(prop, 'var(' + name + ')');
+    d.body.appendChild(p);
+    var v = w.getComputedStyle(p).getPropertyValue(prop);
+    p.remove();
+    return v;
+  }
+  function sig(el, props) {
+    var cs = w.getComputedStyle(el);
+    return props.map(function (p) { return cs[p]; }).join('|');
+  }
+  function px(v) { return parseFloat(v) || 0; }
+
+  // 打開所有畫面，讓每一種元件都處於「已渲染」狀態
+  w.openAddCard();
+  await sleep(120);
+  var cardId = w.eval('rulesV3.cards.find(c=>c.plans.length).id');
+  w.openCardEditor(cardId);
+  await sleep(150);
+  d.getElementById('cardEditorAddActivity').click();
+  await sleep(200);
+
+  // ================= A. Token 層 =================
+  log('=== A. Design token 層 ===');
+  var REQUIRED = ['--page-width','--page-gutter','--control-h','--tap-min','--stepper-w','--field-gap',
+                  '--btn-h','--btn-sm-h','--toggle-w','--toggle-h','--toggle-knob','--toggle-travel',
+                  '--fs-page-title','--fs-title','--fs-form-title','--fs-body','--fs-label','--fs-small',
+                  '--a03','--a07','--a10','--a12','--a16','--a20','--a24','--a28','--a35','--a45','--a52','--a60','--a70'];
+  var missing = REQUIRED.filter(function (n) { return !w.getComputedStyle(root).getPropertyValue(n).trim(); });
+  check('A1 所有必要 token 都有定義', missing.length === 0, missing.length ? '缺: ' + missing.join(',') : REQUIRED.length + ' 個');
+
+  var styleText = '';
+  Array.prototype.forEach.call(d.querySelectorAll('style'), function (s) { styleText += '\n' + s.textContent; });
+  var rawHits = (styleText.match(/rgba\(\s*0,\s*240,\s*255\s*,\s*[0-9.]+\s*\)/g) || []);
+  var rootBlocks = styleText.match(/:root\s*\{[^}]*\}/g) || [];
+  var defHits = [];
+  rootBlocks.forEach(function (b) {
+    (b.match(/rgba\(\s*0,\s*240,\s*255\s*,\s*[0-9.]+\s*\)/g) || []).forEach(function (h) { defHits.push(h); });
+  });
+  check('A2 :root 之外沒有硬編碼主色 rgba()', rawHits.length === defHits.length, '全站 ' + rawHits.length + ' 處 / token 定義 ' + defHits.length + ' 處');
+  check('A3 硬編碼主色只存在於 token 定義（13 階）', defHits.length === 13, defHits.length + ' 階');
+
+  // ================= B. 元件契約 =================
+  log('');
+  log('=== B. 元件契約（跨頁面一致性）===');
+
+  var FIELDS = ['#addDynamicCardForm .field', '#cardEditorOverlay .editor-card-fields label', '#addDynamicPlanForm .rule-form-grid label'];
+  var FIELD_PROPS = ['fontSize','fontWeight','color','gap','textAlign','alignItems','justifyContent','flexDirection','letterSpacing'];
+  var fieldEls = FIELDS.map(function (s) { return d.querySelector(s); }).filter(Boolean);
+  var fieldSigs = fieldEls.map(function (e) { return sig(e, FIELD_PROPS); });
+  check('B1 欄位標籤三處樣式完全一致', new Set(fieldSigs).size === 1, fieldSigs.length + ' 個實例 / ' + new Set(fieldSigs).size + ' 種樣式');
+  check('B2 欄位標籤使用 --fs-label', w.getComputedStyle(fieldEls[0]).fontSize === tokenPx('--fs-label','font-size'),
+        w.getComputedStyle(fieldEls[0]).fontSize + ' vs token ' + tokenPx('--fs-label','font-size'));
+  check('B3 欄位標籤間距使用 --field-gap', w.getComputedStyle(fieldEls[0]).gap === tokenPx('--field-gap','gap'),
+        w.getComputedStyle(fieldEls[0]).gap + ' vs token ' + tokenPx('--field-gap','gap'));
+  check('B4 欄位標籤靠左對齊', w.getComputedStyle(fieldEls[0]).textAlign === 'left');
+
+  var INPUTS = ['#addDynamicCardForm input[type=number]', '#cardEditorOverlay .editor-card-fields input[type=number]',
+                '#addDynamicPlanForm input[type=number]', '#addDynamicPlanForm select'];
+  var IN_PROPS = ['fontSize','color','paddingTop','paddingRight','paddingBottom','paddingLeft','minHeight','borderRadius','borderTopWidth','borderTopColor','backgroundColor'];
+  var inSigs = INPUTS.map(function (s) { return sig(d.querySelector(s), IN_PROPS); });
+  check('B5 輸入框 / 下拉樣式完全一致', new Set(inSigs).size === 1, new Set(inSigs).size + ' 種樣式');
+  var inp = d.querySelector('#cardEditorOverlay .editor-card-fields input[type=number]');
+  check('B6 輸入框高度 = --control-h', w.getComputedStyle(inp).minHeight === tokenPx('--control-h','min-height'),
+        w.getComputedStyle(inp).minHeight + ' vs ' + tokenPx('--control-h','min-height'));
+  check('B7 輸入框實際高度 = --control-h', Math.round(inp.getBoundingClientRect().height) === Math.round(px(tokenPx('--control-h','min-height'))),
+        Math.round(inp.getBoundingClientRect().height) + 'px');
+
+  var STEPPERS = ['#addDynamicCardForm .stepper-btn', '#cardEditorOverlay .editor-card-fields .stepper-btn', '#addDynamicPlanForm .stepper-btn'];
+  var ST_PROPS = ['width','minHeight','fontSize','fontWeight','color','borderTopWidth','borderTopColor','backgroundColor','borderRadius','paddingTop'];
+  var stSigs = STEPPERS.map(function (s) { return sig(d.querySelector(s), ST_PROPS); });
+  check('B8 步進鈕樣式完全一致', new Set(stSigs).size === 1, new Set(stSigs).size + ' 種樣式');
+  var st = d.querySelector('#cardEditorOverlay .editor-card-fields .stepper-btn');
+  var stR = st.getBoundingClientRect();
+  check('B9 步進鈕尺寸 = --stepper-w × --control-h', Math.round(stR.width) === Math.round(px(tokenPx('--stepper-w','width'))) && Math.round(stR.height) === Math.round(px(tokenPx('--control-h','min-height'))),
+        Math.round(stR.width) + '×' + Math.round(stR.height));
+  check('B10 步進鈕觸控目標 ≥ 44px', stR.width >= 44 && stR.height >= 44, Math.round(stR.width) + '×' + Math.round(stR.height));
+
+  var TOGGLES = ['#addDynamicCardForm .toggle-track', '#cardEditorOverlay .editor-card-fields .toggle-track', '#addDynamicPlanForm .toggle-track'];
+  var TG_PROPS = ['width','height','borderRadius','borderTopWidth','borderTopColor','backgroundColor'];
+  var tgSigs = TOGGLES.map(function (s) { return sig(d.querySelector(s), TG_PROPS); });
+  check('B11 開關軌道樣式完全一致', new Set(tgSigs).size === 1, new Set(tgSigs).size + ' 種樣式');
+  var tg = d.querySelector('#cardEditorOverlay .editor-card-fields .toggle-track');
+  var tgR = tg.getBoundingClientRect();
+  check('B12 開關軌道尺寸 = --toggle-w × --toggle-h', Math.round(tgR.width) === Math.round(px(tokenPx('--toggle-w','width'))) && Math.round(tgR.height) === Math.round(px(tokenPx('--toggle-h','height'))),
+        Math.round(tgR.width) + '×' + Math.round(tgR.height));
+  var TG_TEXT = ['#addDynamicCardForm .toggle-text', '#cardEditorOverlay .editor-card-fields .toggle-text', '#addDynamicPlanForm .toggle-text'];
+  var tgTextSigs = TG_TEXT.map(function (s) { return sig(d.querySelector(s), ['fontSize','color','lineHeight','textAlign']); });
+  check('B13 開關文字排版一致', new Set(tgTextSigs).size === 1, new Set(tgTextSigs).size + ' 種');
+
+  var BTNS = ['#cardEditorOverlay .btn-small', '#addDynamicPlanForm .btn-small', '#addDynamicPlanForm button[type=submit]', '#cardEditorAddActivity'];
+  var BT_PROPS = ['fontSize','fontWeight','color','paddingTop','paddingRight','paddingBottom','paddingLeft','minHeight','borderRadius','borderTopWidth','borderTopColor','backgroundColor','letterSpacing'];
+  var btSigs = BTNS.map(function (s) { return sig(d.querySelector(s), BT_PROPS); });
+  check('B14 小按鈕樣式完全一致', new Set(btSigs).size === 1, new Set(btSigs).size + ' 種樣式');
+  check('B15 小按鈕高度 = --btn-sm-h', w.getComputedStyle(d.querySelector('#cardEditorOverlay .btn-small')).minHeight === tokenPx('--btn-sm-h','min-height'),
+        w.getComputedStyle(d.querySelector('#cardEditorOverlay .btn-small')).minHeight + ' vs ' + tokenPx('--btn-sm-h','min-height'));
+
+  var SECTIONS = ['#cardEditorOverlay .editor-section', '#cardEditorOverlay .editor-section:nth-of-type(2)'];
+  var SE_PROPS = ['paddingTop','paddingRight','paddingBottom','paddingLeft','borderRadius','borderTopWidth','borderTopColor','backgroundColor'];
+  var seSigs = SECTIONS.map(function (s) { return sig(d.querySelector(s), SE_PROPS); });
+  check('B16 區塊容器樣式完全一致', new Set(seSigs).size === 1, new Set(seSigs).size + ' 種樣式');
+
+  // ================= C. 字級階梯 =================
+  log('');
+  log('=== C. 字級階梯 ===');
+  function fs(sel) { var e = d.querySelector(sel); return e ? w.getComputedStyle(e).fontSize : null; }
+  var TITLES = ['#cardEditorOverlay .card-editor-subtitle', '#cardEditorOverlay .editor-section-head h3'];
+  var titleSigs = TITLES.map(function (s) { return sig(d.querySelector(s), ['fontSize','fontWeight','color','lineHeight','letterSpacing']); });
+  check('C1 區塊標題一致', new Set(titleSigs).size === 1, new Set(titleSigs).size + ' 種');
+  check('C2 區塊標題 = --fs-title', fs(TITLES[0]) === tokenPx('--fs-title','font-size'), fs(TITLES[0]) + ' vs ' + tokenPx('--fs-title','font-size'));
+  check('C3 表單標題 = --fs-form-title', fs('#addDynamicPlanForm .activity-form-title') === tokenPx('--fs-form-title','font-size'),
+        fs('#addDynamicPlanForm .activity-form-title') + ' vs ' + tokenPx('--fs-form-title','font-size'));
+  var PAGE_TITLES = ['#addCardOverlay .add-card-head h2', '#cardEditorOverlay .editor-header h2'];
+  var ptSigs = PAGE_TITLES.map(function (s) { return sig(d.querySelector(s), ['fontSize','fontWeight']); });
+  check('C4 頁面標題一致', new Set(ptSigs).size === 1, new Set(ptSigs).size + ' 種');
+  check('C5 頁面標題 = --fs-page-title', fs(PAGE_TITLES[0]) === tokenPx('--fs-page-title','font-size'), fs(PAGE_TITLES[0]) + ' vs ' + tokenPx('--fs-page-title','font-size'));
+  check('C6 字級階梯遞減（頁面 > 區塊 > 表單 > 欄位）',
+        px(fs(PAGE_TITLES[0])) > px(fs(TITLES[0])) && px(fs(TITLES[0])) > px(fs('#addDynamicPlanForm .activity-form-title')) && px(fs('#addDynamicPlanForm .activity-form-title')) > px(fs('#addDynamicCardForm .field')),
+        [fs(PAGE_TITLES[0]), fs(TITLES[0]), fs('#addDynamicPlanForm .activity-form-title'), fs('#addDynamicCardForm .field')].join(' > '));
+
+  // ================= D. 結構性規則 =================
+  log('');
+  log('=== D. 結構規則 ===');
+  var allCheckbox = d.querySelectorAll('input[type=checkbox]');
+  var bare = Array.prototype.filter.call(allCheckbox, function (c) { return !c.closest('.toggle'); });
+  check('D1 沒有裸露的 checkbox（全部都是滑動開關）', bare.length === 0, allCheckbox.length + ' 個 checkbox，裸露 ' + bare.length + ' 個');
+
+  // 設計系統表單內的數字欄位一律有步進鈕；
+  // 例外：計算器主金額（#jpyAmount）、匯率輸入（#customRateInput, step=0.000001）
+  var EXEMPT = ['#jpyAmount', '#customRateInput'];
+  var allNumber = d.querySelectorAll('input[type=number]');
+  var noStepper = Array.prototype.filter.call(allNumber, function (n) {
+    if (n.closest('.stepper')) return false;
+    return EXEMPT.indexOf('#' + n.id) === -1;
+  });
+  check('D2 表單內每個數字欄位都有 ＋/－ 步進鈕', noStepper.length === 0, allNumber.length + ' 個數字欄位，缺步進鈕 ' + noStepper.length + ' 個（例外：計算器主金額、匯率輸入）');
+
+  var allLabels = d.querySelectorAll('#addDynamicCardForm label, #cardEditorOverlay label, #addDynamicPlanForm label');
+  var badLabel = Array.prototype.filter.call(allLabels, function (l) {
+    if (l.closest('.context-switch')) return false;
+    var cs = w.getComputedStyle(l);
+    return cs.textAlign !== 'left' && cs.textAlign !== 'start';
+  });
+  check('D3 表單內所有 label 靠左', badLabel.length === 0, allLabels.length + ' 個 label，不合格 ' + badLabel.length + ' 個');
+
+  // 用 CSSOM 找出「所有宣告欄位規格的規則」，斷言它們是同一條
+  var LEGACY_SEL = ['.rule-form-grid label', '.editor-card-fields label', '.add-card-form .field'];
+  var fieldRules = [];
+  Array.prototype.forEach.call(d.styleSheets, function (sh) {
+    var rules; try { rules = sh.cssRules; } catch (e) { return; }
+    Array.prototype.forEach.call(rules, function (r) {
+      if (!r.selectorText) return;
+      if (LEGACY_SEL.some(function (s) { return r.selectorText.indexOf(s) >= 0; })) fieldRules.push(r.selectorText);
+    });
+  });
+  var oneRule = fieldRules.length === 1
+    && LEGACY_SEL.every(function (s) { return fieldRules[0].indexOf(s) >= 0; })
+    && fieldRules[0].indexOf('.field') >= 0;
+  check('D4 欄位規格只有一條規則（不重複宣告）', oneRule, fieldRules.length + ' 條規則：' + (fieldRules[0] || '無').replace(/\s+/g, ' '));
+
+  log('');
+  log('=== ' + pass + ' passed, ' + fail + ' failed ===');
+  var pre = document.createElement('pre'); pre.id = 'AUDIT'; pre.textContent = out.join('\n'); document.body.appendChild(pre);
+}, 3200);
+</script>

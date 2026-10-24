@@ -3306,89 +3306,51 @@
 
       const renderCard = card => {
         const plans = (card.plans || []).filter(plan => plan.enabled !== false);
-        const baseOnlyNet = (Number(card.baseRate) || 0) - getGuidePlanFee(card, null);
+        const baseOnlyNet = Math.round(((Number(card.baseRate) || 0) - getGuidePlanFee(card, null)) * 100) / 100;
         const bestNet = plans.reduce((best, plan) => Math.max(best, getGuidePlanNet(card, plan)), baseOnlyNet);
-        const planBlocks = [];
-        plans.forEach(plan => {
+        const baseFeeText = card.baseFeeApplies ? '含 1.5% 海外手續費' : '免海外手續費';
+
+        const bonusBlocks = plans.map(plan => {
           const parts = getGuidePlanParts(plan);
-          const threshold = getGuidePlanThreshold(plan);
-          const bonusText = `+${formatGuidePercent(getGuidePlanBonus(plan))}%`;
-          const feeText = getGuidePlanFee(card, plan) ? '-1.5%' : '0%（免收）';
-          const netText = `${formatGuidePercent(getGuidePlanNet(card, plan))}%`;
-          const baseText = plan.includeBaseReward !== false ? `${Number(card.baseRate) || 0}%` : '不併計';
-          const thresholdText = threshold ? `單筆滿 NT$${threshold.toLocaleString()}` : '無門檻';
-          const cycleText = getGuideTableCycleText(plan, parts);
-          const capText = parts.length ? parts.map(part => getGuidePartLimitText(part)).join('；') : '無上限';
-          const fact = (label, value) => `<div class="guide-fact"><span>${label}</span><b>${escapeHtml(value)}</b></div>`;
-          const periodRows = [];
-          getGuidePlanParts(plan).forEach(part => {
-            const extras = [];
-            if (part.start || part.end) extras.push(`期間：${part.start || '不限起日'}～${part.end || '不限迄日'}`);
-            if (extras.length) periodRows.push(`<span class="guide-kv">${escapeHtml(extras.join(' · '))}</span>`);
-          });
-          const metaRow = (periodRows.length || plan.verifiedAt || plan.sourceUrl || plan.noticeFlags)
-            ? `<div class="guide-kv-row">
-                ${periodRows.join('')}
-                ${plan.verifiedAt ? `<span class="guide-kv">最後確認：${escapeHtml(plan.verifiedAt)}</span>` : ''}
-                ${plan.sourceUrl ? '<span class="guide-kv">已記錄官方來源</span>' : ''}
-                ${plan.noticeFlags ? '<span class="guide-tag warn">需手動登錄／切換權益</span>' : ''}
-              </div>` : '';
-          const composition = parts.length > 1
-            ? `<div class="guide-part">
-                <div class="guide-part-head"><b>回饋組成</b><span class="guide-part-rate">${bonusText}</span></div>
-                ${parts.map(part => `<div class="guide-kv-row"><span class="guide-kv">${escapeHtml(part.name || '加碼回饋')}</span><span class="guide-kv">+${formatGuidePercent(part.rate)}%</span><span class="guide-kv">${escapeHtml(getGuidePartCapText(part))}</span></div>`).join('')}
-              </div>` : '';
+          const bonus = getGuidePlanBonus(plan);
           const contexts = (plan.contexts && plan.contexts.length) ? plan.contexts : ['general'];
-          const contextTags = contexts.map(context => `<span class="guide-tag">${escapeHtml(GUIDE_CONTEXT_LABELS[context] || context)}加碼</span>`).join(' ');
-          planBlocks.push(`<details class="guide-plan">
-            <summary>
-              <span class="guide-plan-name"><b>${escapeHtml(getGuidePlanShortName(card, plan))}</b> ${contextTags}</span>
-              <span class="guide-plan-net">淨 ${netText}</span>
-            </summary>
-            <div class="guide-plan-body">
-              <div class="guide-facts">
-                ${fact('適用情境', contexts.map(context => GUIDE_CONTEXT_LABELS[context] || context).join('、'))}
-                ${fact('基本回饋', baseText)}
-                ${fact('加碼', bonusText)}
-                ${fact('手續費', feeText)}
-                ${fact('淨回饋', netText)}
-                ${fact('單筆門檻', thresholdText)}
-                ${fact('計算週期', cycleText)}
-                ${fact('額度上限', capText)}
-              </div>
-              ${composition}
-              ${metaRow}
+          const contextLabel = contexts.map(c => GUIDE_CONTEXT_LABELS[c] || c).join('、');
+          const threshold = getGuidePlanThreshold(plan);
+          const capText = parts.length ? parts.map(part => getGuidePartLimitText(part)).join('；') : '無上限';
+          const cycleText = getGuideTableCycleText(plan, parts);
+          const periodNotes = [];
+          parts.forEach(part => {
+            if (part.start || part.end) periodNotes.push(`期間：${part.start || '不限起日'}～${part.end || '不限迄日'}`);
+          });
+          const thresholdText = threshold ? `單筆滿 NT$${threshold.toLocaleString()}` : '無門檻';
+          const noteText = plan.noticeFlags ? '需手動登錄／切換權益' : '';
+          const extras = [thresholdText, capText !== '無上限' ? `上限 ${capText}` : '', cycleText !== '—' ? cycleText : '', noteText].filter(Boolean);
+          return `<div class="guide-bonus-item">
+            <div class="guide-bonus-head">
+              <span><b>${escapeHtml(getGuidePlanShortName(card, plan))}</b> <span class="guide-tag">${escapeHtml(contextLabel)}加碼</span></span>
+              <span class="guide-bonus-rate">+${formatGuidePercent(bonus)}%</span>
             </div>
-          </details>`);
-        });
-        const planHtml = planBlocks.join('');
+            <div class="guide-bonus-meta">${extras.join(' · ') || '無門檻 · 無上限'}</div>
+            ${periodNotes.length ? `<div class="guide-bonus-meta">${escapeHtml(periodNotes.join(' · '))}</div>` : ''}
+          </div>`;
+        }).join('');
 
         return `<article class="guide-card">
           <div class="guide-card-head">
             <div>
               <div class="guide-card-name">${escapeHtml(card.name)}</div>
-              <div class="guide-card-meta">基本回饋 ${Number(card.baseRate) || 0}%${card.baseFeeApplies ? '（含 1.5% 海外手續費）' : '（免海外手續費）'} · ${plans.length} 個情境加碼方案 · 最高淨回饋 ${formatGuidePercent(bestNet)}%</div>
+              <div class="guide-card-meta">最高淨回饋 ${formatGuidePercent(bestNet)}%</div>
             </div>
             <div class="guide-card-actions">
               <span class="guide-badge${card.owned === false ? ' off' : ''}">${card.owned === false ? '未持有' : '持有中'}</span>
               <button class="btn-small guide-edit-btn" type="button" data-guide-edit="${escapeHtml(card.id)}" aria-label="編輯 ${escapeHtml(card.name)}">編輯</button>
             </div>
           </div>
-          ${planHtml || '<div class="guide-empty" style="padding:14px 0 4px;">尚未建立加碼方案，只會使用基本回饋。</div>'}
-        </article>`;
-
-        return `<article class="guide-card">
-          <div class="guide-card-head">
-            <div>
-              <div class="guide-card-name">${escapeHtml(card.name)}</div>
-              <div class="guide-card-meta">基本回饋 ${Number(card.baseRate) || 0}%${card.baseFeeApplies ? '（含 1.5% 海外手續費）' : '（免海外手續費）'} · ${plans.length} 個方案 · 最高淨回饋 ${formatGuidePercent(bestNet)}%</div>
-            </div>
-            <div class="guide-card-actions">
-              <span class="guide-badge${card.owned === false ? ' off' : ''}">${card.owned === false ? '未持有' : '持有中'}</span>
-              <button class="btn-small guide-edit-btn" type="button" data-guide-edit="${escapeHtml(card.id)}" aria-label="編輯 ${escapeHtml(card.name)}">編輯</button>
-            </div>
+          <div class="guide-base-row">
+            <div><b>基本回饋</b><span class="guide-base-sub">日本全境 · 無上限</span></div>
+            <div class="guide-base-rate">${Number(card.baseRate) || 0}% · ${baseFeeText}</div>
           </div>
-          ${planHtml || '<div class="guide-empty" style="padding:14px 0 4px;">尚未建立加碼方案，只會使用基本回饋。</div>'}
+          ${bonusBlocks ? `<div class="guide-bonus-section"><div class="guide-bonus-title">加碼回饋</div>${bonusBlocks}</div>` : '<div class="guide-bonus-section"><div class="guide-bonus-empty">無加碼</div></div>'}
         </article>`;
       };
 

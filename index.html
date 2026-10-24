@@ -3381,7 +3381,7 @@
           cardGroupIndex++;
           continue;
         }
-        // 一個加碼方案一列，適用情境合併顯示；同一張卡用群組呈現
+        // 一個加碼方案一列，適用情境合併顯示；同一張卡用群組視覺
         let isFirstRowOfCard = true;
         plans.forEach(plan => {
           const parts = getGuidePlanParts(plan);
@@ -3396,7 +3396,7 @@
             rows.push(`<tr class="guide-table-card-group guide-table-card-group-${cardGroupIndex % 2}"><td class="guide-table-card-cell">${cardCell}<br>${editButton}</td><td>${escapeHtml(contextLabel)}</td><td>${escapeHtml(baseCellText)}</td><td>+${formatGuidePercent(getGuidePlanBonus(plan))}%</td><td>${feeCellText}</td><td><b>${formatGuidePercent(getGuidePlanNet(card, plan))}%</b></td><td>${threshold ? `單筆滿 NT$${threshold.toLocaleString()}` : '無門檻'}</td><td>${escapeHtml(cycleText)}</td><td>${escapeHtml(capText)}</td></tr>`);
             isFirstRowOfCard = false;
           } else {
-            rows.push(`<tr class="guide-table-card-group guide-table-card-group-${cardGroupIndex % 2}"><td class="guide-table-card-cell"><div class="guide-table-card-sub">${escapeHtml(card.name)}${card.owned === false ? '<br><span class="guide-kv">未持有</span>' : ''}</div></td><td>${escapeHtml(contextLabel)}</td><td>${escapeHtml(baseCellText)}</td><td>+${formatGuidePercent(getGuidePlanBonus(plan))}%</td><td>${feeCellText}</td><td><b>${formatGuidePercent(getGuidePlanNet(card, plan))}%</b></td><td>${threshold ? `單筆滿 NT$${threshold.toLocaleString()}` : '無門檻'}</td><td>${escapeHtml(cycleText)}</td><td>${escapeHtml(capText)}</td></tr>`);
+            rows.push(`<tr class="guide-table-card-group guide-table-card-group-${cardGroupIndex % 2}"><td class="guide-table-card-cell guide-table-card-cell-group"></td><td>${escapeHtml(contextLabel)}</td><td>${escapeHtml(baseCellText)}</td><td>+${formatGuidePercent(getGuidePlanBonus(plan))}%</td><td>${feeCellText}</td><td><b>${formatGuidePercent(getGuidePlanNet(card, plan))}%</b></td><td>${threshold ? `單筆滿 NT$${threshold.toLocaleString()}` : '無門檻'}</td><td>${escapeHtml(cycleText)}</td><td>${escapeHtml(capText)}</td></tr>`);
           }
         });
       }

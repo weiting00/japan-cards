@@ -3378,7 +3378,7 @@
           rows.push(`<tr><td>${cardCell}<br>${editButton}</td><td>實體店面消費</td><td>${Number(card.baseRate) || 0}%</td><td>+0%</td><td>${card.baseFeeApplies ? '-1.5%' : '0%（免收）'}</td><td><b>${formatGuidePercent(net)}%</b></td><td>無門檻</td><td>—</td><td>無上限</td></tr>`);
           continue;
         }
-        // 一個方案只放一列，適用情境合併顯示（不再一個情境一列）
+        // 每個加碼情境分成一列，同一張卡的列視覺上隸屬同一張卡
         let rowIndex = 0;
         plans.forEach(plan => {
           const parts = getGuidePlanParts(plan);
@@ -3386,18 +3386,20 @@
           const cycleText = getGuideTableCycleText(plan, parts);
           const capText = parts.length ? parts.map(part => getGuidePartLimitText(part)).join('；') : '無上限';
           const contexts = (plan.contexts && plan.contexts.length) ? plan.contexts : ['general'];
-          rows.push(`<tr>
-            <td>${cardCell}${rowIndex === 0 ? `<br>${editButton}` : ''}</td>
-            <td>${contexts.map(context => GUIDE_CONTEXT_LABELS[context] || context).join('、')}</td>
-            <td>${plan.includeBaseReward !== false ? `${Number(card.baseRate) || 0}%` : '不併計'}</td>
-            <td>+${formatGuidePercent(getGuidePlanBonus(plan))}%</td>
-            <td>${getGuidePlanFee(card, plan) ? '-1.5%' : '0%（免收）'}</td>
-            <td><b>${formatGuidePercent(getGuidePlanNet(card, plan))}%</b></td>
-            <td>${threshold ? `單筆滿 NT$${threshold.toLocaleString()}` : '無門檻'}</td>
-            <td>${escapeHtml(cycleText)}</td>
-            <td>${escapeHtml(capText)}</td>
-          </tr>`);
-          rowIndex++;
+          contexts.forEach(context => {
+            rows.push(`<tr class="guide-table-row-group">
+              <td class="guide-table-card-cell">${rowIndex === 0 ? `${cardCell}<br>${editButton}` : `<span class="guide-table-card-indent">${escapeHtml(card.name)}${card.owned === false ? '<br><span class="guide-kv">未持有</span>' : ''}</span>`}</td>
+              <td>${escapeHtml(GUIDE_CONTEXT_LABELS[context] || context)}</td>
+              <td>${plan.includeBaseReward !== false ? `${Number(card.baseRate) || 0}%` : '不併計'}</td>
+              <td>+${formatGuidePercent(getGuidePlanBonus(plan))}%</td>
+              <td>${getGuidePlanFee(card, plan) ? '-1.5%' : '0%（免收）'}</td>
+              <td><b>${formatGuidePercent(getGuidePlanNet(card, plan))}%</b></td>
+              <td>${threshold ? `單筆滿 NT$${threshold.toLocaleString()}` : '無門檻'}</td>
+              <td>${escapeHtml(cycleText)}</td>
+              <td>${escapeHtml(capText)}</td>
+            </tr>`);
+            rowIndex++;
+          });
         });
       }
       root.innerHTML = rows.join('') || '<tr><td colspan="9" class="guide-empty">還沒有任何規則，先按「編輯規則」新增卡片。</td></tr>';

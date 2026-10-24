@@ -3381,7 +3381,7 @@
           cardGroupIndex++;
           continue;
         }
-        // 一個 (加碼方案 × 情境) 一列；同一張卡的列用群組邊框連在一起
+        // 一個加碼方案一列；同一張卡的列用群組視覺
         let isFirstRowOfCard = true;
         plans.forEach(plan => {
           const parts = getGuidePlanParts(plan);
@@ -3389,16 +3389,15 @@
           const cycleText = getGuideTableCycleText(plan, parts);
           const capText = parts.length ? parts.map(part => getGuidePartLimitText(part)).join('；') : '無上限';
           const contexts = (plan.contexts && plan.contexts.length) ? plan.contexts : ['general'];
+          const context = contexts[0];
           const baseCellText = plan.includeBaseReward !== false ? `${Number(card.baseRate) || 0}%` : '不併計（僅此加碼）';
           const feeCellText = plan.foreignFeeApplies !== false ? '-1.5%' : '0%（免收）';
-          contexts.forEach(context => {
-            if (isFirstRowOfCard) {
-              rows.push(`<tr class="guide-table-card-group guide-table-card-group-${cardGroupIndex % 2}"><td class="guide-table-card-cell">${cardCell}<br>${editButton}</td><td>${escapeHtml(GUIDE_CONTEXT_LABELS[context] || context)}</td><td>${escapeHtml(baseCellText)}</td><td>+${formatGuidePercent(getGuidePlanBonus(plan))}%</td><td>${feeCellText}</td><td><b>${formatGuidePercent(getGuidePlanNet(card, plan))}%</b></td><td>${threshold ? `單筆滿 NT$${threshold.toLocaleString()}` : '無門檻'}</td><td>${escapeHtml(cycleText)}</td><td>${escapeHtml(capText)}</td></tr>`);
-              isFirstRowOfCard = false;
-            } else {
-              rows.push(`<tr class="guide-table-card-group guide-table-card-group-${cardGroupIndex % 2}"><td class="guide-table-card-cell guide-table-card-cell-group"></td><td>${escapeHtml(GUIDE_CONTEXT_LABELS[context] || context)}</td><td>${escapeHtml(baseCellText)}</td><td>+${formatGuidePercent(getGuidePlanBonus(plan))}%</td><td>${feeCellText}</td><td><b>${formatGuidePercent(getGuidePlanNet(card, plan))}%</b></td><td>${threshold ? `單筆滿 NT$${threshold.toLocaleString()}` : '無門檻'}</td><td>${escapeHtml(cycleText)}</td><td>${escapeHtml(capText)}</td></tr>`);
-            }
-          });
+          if (isFirstRowOfCard) {
+            rows.push(`<tr class="guide-table-card-group guide-table-card-group-${cardGroupIndex % 2}"><td class="guide-table-card-cell">${cardCell}<br>${editButton}</td><td>${escapeHtml(GUIDE_CONTEXT_LABELS[context] || context)}</td><td>${escapeHtml(baseCellText)}</td><td>+${formatGuidePercent(getGuidePlanBonus(plan))}%</td><td>${feeCellText}</td><td><b>${formatGuidePercent(getGuidePlanNet(card, plan))}%</b></td><td>${threshold ? `單筆滿 NT$${threshold.toLocaleString()}` : '無門檻'}</td><td>${escapeHtml(cycleText)}</td><td>${escapeHtml(capText)}</td></tr>`);
+            isFirstRowOfCard = false;
+          } else {
+            rows.push(`<tr class="guide-table-card-group guide-table-card-group-${cardGroupIndex % 2}"><td class="guide-table-card-cell guide-table-card-cell-group"></td><td>${escapeHtml(GUIDE_CONTEXT_LABELS[context] || context)}</td><td>${escapeHtml(baseCellText)}</td><td>+${formatGuidePercent(getGuidePlanBonus(plan))}%</td><td>${feeCellText}</td><td><b>${formatGuidePercent(getGuidePlanNet(card, plan))}%</b></td><td>${threshold ? `單筆滿 NT$${threshold.toLocaleString()}` : '無門檻'}</td><td>${escapeHtml(cycleText)}</td><td>${escapeHtml(capText)}</td></tr>`);
+          }
         });
       }
       root.innerHTML = rows.join('') || '<tr><td colspan=\"9\" class=\"guide-empty\">還沒有任何規則，先按「編輯規則」新增卡片。</td></tr>';

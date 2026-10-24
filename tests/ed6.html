@@ -67,6 +67,23 @@ setTimeout(function () {
     check('特約商店活動已加入', !!rowFor('ZZ店家加碼'));
     check('店家已記錄並顯示', rowFor('ZZ店家加碼').textContent.indexOf(chipName) >= 0, chipName);
 
+    // --- 帳單週期一定要有結帳日，且寫回同一份 plan.statementDay ---
+    d.getElementById('cardEditorAddActivity').click();
+    form = d.getElementById('addDynamicPlanForm');
+    form.elements.namedItem('name').value = 'ZZ帳單加碼';
+    form.elements.namedItem('rate').value = '1';
+    form.elements.namedItem('cycle').value = 'billing';
+    form.elements.namedItem('cycle').dispatchEvent(new w.Event('change', {bubbles:true}));
+    check('選帳單週期才顯示結帳日', d.getElementById('statementDayField').hidden === false);
+    form.dispatchEvent(new w.Event('submit', { cancelable: true, bubbles: true }));
+    check('帳單週期未填結帳日不可儲存', !rowFor('ZZ帳單加碼'));
+    form.elements.namedItem('statementDay').value = '18';
+    form.dispatchEvent(new w.Event('submit', { cancelable: true, bubbles: true }));
+    check('帳單週期活動已加入', !!rowFor('ZZ帳單加碼'));
+    check('編輯清單顯示結帳日', rowFor('ZZ帳單加碼').textContent.indexOf('每月 18 日結帳') >= 0);
+    var billingPlan = w.eval('rulesV3.cards.find(function(c){return c.id==="' + cardId + '";}).plans.find(function(p){return p.name==="ZZ帳單加碼";})');
+    check('結帳日存進 plan.statementDay', Number(billingPlan.statementDay) === 18, String(billingPlan && billingPlan.statementDay));
+
     // --- 編輯既有活動 ---
     var editBtn = null;
     Array.prototype.forEach.call(d.querySelectorAll('#cardEditorPlans [data-card-edit-plan]'), function(b){ if (b.closest('.editor-plan-row').textContent.indexOf('ZZ交通加碼') >= 0) editBtn = b; });
@@ -81,7 +98,8 @@ setTimeout(function () {
     // --- 攻略頁同步 ---
     w.closeCardEditor(); w.switchTab('guide');
     check('攻略頁出現新卡與活動', d.getElementById('guideCardList').textContent.indexOf('ZZ新測試卡') >= 0 && d.getElementById('guideCardList').textContent.indexOf('ZZ交通加碼') >= 0);
-    check('攻略表格同步', d.getElementById('guideV3Rows').textContent.indexOf('ZZ店家加碼') >= 0);
+    check('攻略表格同步', d.getElementById('guideV3Rows').textContent.indexOf('ZZ新測試卡') >= 0 && d.getElementById('guideV3Rows').textContent.indexOf('特約商店') >= 0);
+    check('攻略表格顯示帳單結帳日', d.getElementById('guideV3Rows').textContent.indexOf('每月 18 日結帳') >= 0);
 
     // --- 刪除卡片二次確認 ---
     w.openCardEditor(cardId);

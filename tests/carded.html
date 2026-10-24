@@ -34,7 +34,7 @@ setTimeout(async function () {
     check('點擊後單卡編輯頁開啟', cardEditor().hidden === false);
     check('新增信用卡畫面沒有被開啟', d.getElementById('addCardOverlay').hidden === true);
     check('編輯頁標題是該卡名稱', d.getElementById('cardEditorName').textContent.trim() === firstCard.name, d.getElementById('cardEditorName').textContent.trim());
-    check('編輯頁帶該卡的一般回饋率', Number(d.getElementById('cardEditorBaseRate').value) === Number(firstCard.baseRate), d.getElementById('cardEditorBaseRate').value);
+    check('編輯頁帶該卡的基本回饋率', Number(d.getElementById('cardEditorBaseRate').value) === Number(firstCard.baseRate), d.getElementById('cardEditorBaseRate').value);
     check('編輯頁帶該卡的持有狀態', d.getElementById('cardEditorOwned').checked === (firstCard.owned !== false));
     check('編輯頁帶該卡的加碼活動清單', d.querySelectorAll('#cardEditorPlans [data-card-edit-plan]').length === (firstCard.plans || []).length, d.querySelectorAll('#cardEditorPlans [data-card-edit-plan]').length + ' 筆');
 
@@ -42,7 +42,7 @@ setTimeout(async function () {
     d.getElementById('cardEditorBaseRate').value = '3.25';
     d.getElementById('cardEditorBaseRate').dispatchEvent(new w.Event('change'));
     await sleep(120);
-    check('改一般回饋率 → rulesV3 同步', Number(R().cards[0].baseRate) === 3.25, String(R().cards[0].baseRate));
+    check('改基本回饋率 → rulesV3 同步', Number(R().cards[0].baseRate) === 3.25, String(R().cards[0].baseRate));
 
     d.getElementById('cardEditorNameInput').value = '測試改名卡';
     d.getElementById('cardEditorNameInput').dispatchEvent(new w.Event('change'));

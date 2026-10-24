@@ -10,7 +10,7 @@ setTimeout(function () {
     var errs = []; w.addEventListener('error', function(e){ errs.push(e.message); });
     var cardId = function () { return w.eval('(rulesV3.cards.find(function(c){ return c.name === "ZZ通用規則測試卡"; }) || {}).id'); };
 
-    // 新增一張高回饋卡：8% 一般回饋 + 收手續費（只經由「新增信用卡」畫面）
+    // 新增一張高回饋卡：8% 基本回饋 + 收手續費（只經由「新增信用卡」畫面）
     w.openAddCard();
     var f = d.getElementById('addDynamicCardForm');
     f.elements.name.value = 'ZZ通用規則測試卡';

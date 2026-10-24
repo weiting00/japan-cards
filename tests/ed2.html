@@ -49,7 +49,7 @@ setTimeout(function () {
     w.closeCardEditor(); w.switchTab('guide');
     check('攻略卡片同步顯示新活動', d.getElementById('guideCardList').textContent.indexOf('ZZ測試交通加碼') >= 0);
     var tableText = d.getElementById('guideV3Rows').textContent;
-    check('攻略表格同步顯示新活動', tableText.indexOf('ZZ測試交通加碼') >= 0);
+    check('攻略表格同步顯示新活動條件', tableText.indexOf('ZZ單卡編輯測試卡') >= 0 && tableText.indexOf('5,000') >= 0);
     w.openCardEditor(cardId);
 
     // 編輯剛才那個活動

@@ -1,0 +1,195 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>信用卡回饋規則 3.3 試作</title>
+  <style>
+    :root{color-scheme:dark;--bg:#0d111b;--panel:#171d2a;--raised:#202838;--text:#e8f7fb;--muted:#a8bac5;--cyan:#00e5f2;--pink:#ff4d91;--green:#45dfa7;--line:rgba(204,229,238,.12)}
+    *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:15px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif}main{max-width:900px;margin:auto;padding:22px 16px 64px}h1{font-size:1.35rem;margin:4px 0}h2{font-size:1.05rem;margin:0 0 12px}h3{font-size:.95rem;margin:0 0 8px}.muted,small{color:var(--muted)}.top{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:16px}.badge{color:var(--cyan);font-size:.75rem;letter-spacing:.08em}.panel{background:var(--panel);border-radius:18px;padding:18px;margin:14px 0;box-shadow:0 10px 28px #0002}.row{display:flex;gap:12px;flex-wrap:wrap}.field{display:flex;flex-direction:column;gap:5px;flex:1 1 150px;margin:7px 0}.field label{font-size:.8rem;color:var(--muted)}input,select{width:100%;border:0;border-radius:10px;background:var(--raised);color:var(--text);padding:11px 12px;font:inherit;min-width:0}input[type=checkbox]{width:18px;height:18px;accent-color:var(--cyan)}.check{display:flex;align-items:center;gap:8px;margin:9px 0;color:var(--text);font-size:.87rem}.btn{border:0;border-radius:12px;padding:11px 15px;background:linear-gradient(105deg,#00d8e8,#00a9c7);color:#051318;font:inherit;font-weight:700;cursor:pointer;box-shadow:0 0 20px #00d8e833}.btn.secondary{background:var(--raised);color:var(--text);box-shadow:none}.btn.danger{color:#ffc3d4;background:#38202d}.btn:disabled{opacity:.45;cursor:not-allowed}.part{background:#111722;border-radius:14px;padding:12px;margin:10px 0}.part-head{display:flex;justify-content:space-between;gap:12px;align-items:center}.plan,.card-item{background:var(--raised);border-radius:14px;padding:14px;margin:10px 0}.plan-head{display:flex;justify-content:space-between;gap:12px}.part-summary{padding:7px 0;border-bottom:1px solid var(--line);font-size:.88rem}.part-summary:last-child{border:0}.callout{border-left:3px solid var(--cyan);padding:10px 12px;background:#0c1821;border-radius:8px;color:var(--muted);font-size:.84rem}.result{border-radius:14px;background:#101722;padding:14px;margin:10px 0}.winner{box-shadow:inset 3px 0 var(--green)}.rate{font-size:1.6rem;font-weight:750;color:var(--green)}.room{font-size:.8rem;color:var(--muted)}.hidden{display:none!important}footer{color:var(--muted);font-size:.77rem;margin-top:18px}@media(max-width:560px){main{padding:16px 12px 48px}.panel{padding:15px}.top{align-items:flex-start;flex-direction:column}.field{flex-basis:130px}}
+  </style>
+</head>
+<body>
+<main>
+  <header class="top">
+    <div><div class="badge">FEATURE BRANCH · RULE ENGINE 3.3</div><h1>信用卡回饋規則試作</h1><div class="muted">一般回饋 + 一個加碼方案；同方案可含官方明定可同享的活動項目</div></div>
+    <div><div class="room" id="syncStatus">本機試作資料</div><button class="btn secondary" id="copyRoom">複製房間連結</button></div>
+  </header>
+  <div class="callout">這是分支上的試作頁。規則和額度資料存於此測試頁的獨立欄位，不改動現有攻略表或正式推薦流程。銀行資格仍請以官方條款為準。</div>
+
+  <section class="panel">
+    <h2>試算推薦</h2>
+    <div class="row">
+      <div class="field"><label for="scenario">付款情境</label><select id="scenario"><option value="direct">日本實體直接刷卡</option><option value="transit">交通卡加值</option><option value="paypay">PayPay</option></select></div>
+      <div class="field"><label for="merchant">店家（可留白）</label><input id="merchant" placeholder="例如 BicCamera"></div>
+      <div class="field"><label for="location">地點</label><input id="location" placeholder="例如 名古屋"></div>
+      <div class="field"><label for="periodSpend">本期已累積符合活動消費（NT$）</label><input id="periodSpend" type="number" min="0" step="1" value="0"></div>
+      <div class="field"><label for="spend">消費金額（NT$）</label><input id="spend" type="number" min="0" step="1" value="10000"></div>
+      <div class="field"><label for="purchaseDate">消費日期</label><input id="purchaseDate" type="date"></div>
+    </div>
+    <button class="btn" id="calculate">比較方案</button>
+    <div id="results" aria-live="polite"></div>
+  </section>
+
+  <section class="panel">
+    <h2>卡片與一般回饋</h2>
+    <p class="muted">先建立實體卡，再新增它的一般回饋；同一張卡可以有多個加碼方案。</p>
+    <form id="cardForm">
+      <div class="row">
+        <div class="field"><label for="cardName">卡片名稱</label><input id="cardName" required placeholder="例如 我的旅遊卡"></div>
+        <div class="field"><label for="baseRate">一般回饋率（%）</label><input id="baseRate" type="number" min="0" step="0.01" required value="1"></div>
+      </div>
+      <button class="btn" type="submit">新增卡片</button>
+    </form>
+    <div id="cardsList"></div>
+  </section>
+
+  <section class="panel">
+    <h2>新增加碼方案</h2>
+    <p class="muted">條件可同時包含付款方式、店家、地點和活動日期。需要多項回饋同享時，加入同一方案並分別設定期間與上限。</p>
+    <form id="planForm">
+      <div class="row">
+        <div class="field"><label for="planCard">所屬卡片</label><select id="planCard" required></select></div>
+        <div class="field"><label for="planName">方案名稱</label><input id="planName" required placeholder="例如 日本指定店＋名古屋活動"></div>
+        <div class="field"><label for="planContext">付款情境</label><select id="planContext"><option value="direct">日本實體直接刷卡</option><option value="transit">交通卡加值</option><option value="paypay">PayPay</option></select></div>
+      </div>
+      <label class="check"><input id="includeBase" type="checkbox" checked>與一般回饋併計</label>
+      <label class="check"><input id="feeApplies" type="checkbox" checked>收海外交易手續費（估算 1.5%）</label>
+      <div class="part-head"><h3>方案內回饋項目</h3><button class="btn secondary" id="addPart" type="button">新增項目</button></div>
+      <div id="partsEditor"></div>
+      <button class="btn" type="submit">新增加碼方案</button>
+    </form>
+  </section>
+
+  <footer>試作頁採漸進式表單；特殊活動可加上店家與地點等複合條件，每個回饋項目可有獨立期間和上限。試作資料與原版卡片資料分開保存。</footer>
+</main>
+<script>
+(() => {
+  const SUPABASE_URL = 'https://bcxjbeiqunohwpvxzyaf.supabase.co';
+  const SUPABASE_KEY = 'sb_publishable_ZY2zF1s--2-anM6HfHhSQw_MSQHajLH';
+  const STORAGE = 'japan_card_rules_v3_prototype';
+  const ROOM_KEY = 'japan_card_room';
+  const params = new URLSearchParams(location.search);
+  let room = (params.get('room') || localStorage.getItem(ROOM_KEY) || '').trim().toUpperCase();
+  let dirty = false;
+  let data = loadLocal();
+  const $ = id => document.getElementById(id);
+  const contexts = {direct:'日本實體直接刷卡',transit:'交通卡加值',paypay:'PayPay'};
+  const esc = value => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const today = new Date().toISOString().slice(0,10);
+
+  function seed() {
+    const kuma = {id:'esun-kuma-v3', name:'玉山熊本熊卡', baseRate:2.5, plans:[
+      {id:'kuma-japan-v3',name:'日本指定店＋名古屋活動',context:'direct',includeBase:true,fee:true,parts:[
+        {id:'kuma-japan-6',name:'日本指定店加碼',rate:6,merchant:'',location:'',start:'2026-07-01',end:'2026-12-31',cap:500,cycle:'帳單週期',threshold:0,used:0},
+        {id:'kuma-nagoya-15',name:'名古屋指定實體店加碼',rate:1.5,merchant:'BicCamera, JR名古屋高島屋, 名古屋PARCO, 松坂屋名古屋店, SUGI藥局, 吉卜力公園',location:'名古屋',start:'2026-09-01',end:'2026-10-31',cap:500,cycle:'活動期間',threshold:10000,thresholdType:'cumulative',used:0}
+      ]},
+      {id:'kuma-paypay-v3',name:'玉山 Wallet PayPay 專屬優惠',context:'paypay',includeBase:false,fee:false,parts:[
+        {id:'kuma-paypay-35',name:'PayPay 回饋',rate:3.5,merchant:'',location:'',start:'2026-01-01',end:'2026-12-31',cap:100,cycle:'每季',threshold:0,used:0}
+      ]}
+    ]};
+    return {cards:[kuma]};
+  }
+  function loadLocal(){ try { const saved=JSON.parse(localStorage.getItem(STORAGE)||'null'); return saved&&Array.isArray(saved.cards)?saved:seed(); } catch { return seed(); } }
+  function setStatus(text){ $('syncStatus').textContent=text; }
+  function headers(extra={}){return {apikey:SUPABASE_KEY,...extra};}
+  function roomUrl(){return `${SUPABASE_URL}/rest/v1/japan_card_data?${new URLSearchParams({select:'data',room_id:`eq.${room}`})}`;}
+  async function pullRoom(){
+    if(!room){setStatus('本機試作資料（尚未加入房間）');return;}
+    localStorage.setItem(ROOM_KEY,room); setStatus(`房間 ${room} · 同步中`);
+    try {
+      const response=await fetch(roomUrl(),{headers:headers()}); if(!response.ok)throw Error(`HTTP ${response.status}`);
+      const rows=await response.json(); const remote=rows[0]?.data?.cardRulesV3Prototype;
+      if(remote?.cards?.length&&Number(remote.updatedAt||0)>=Number(data.updatedAt||0)){data=remote;localStorage.setItem(STORAGE,JSON.stringify(data));dirty=false;}
+      else if(remote&&Number(data.updatedAt||0)>Number(remote.updatedAt||0)&&dirty)await pushRoom();
+      setStatus(`房間 ${room} · 已同步`);render();
+    } catch(error){setStatus(`房間 ${room} · 同步失敗（${error.message}）`);}
+  }
+  async function pushRoom(){
+    data.updatedAt=Date.now();localStorage.setItem(STORAGE,JSON.stringify(data)); dirty=true;
+    if(!room){setStatus('本機已儲存 · 加入房間後可同步');render();return;}
+    setStatus(`房間 ${room} · 同步中`);
+    try {
+      const current=await fetch(roomUrl(),{headers:headers()}); if(!current.ok)throw Error(`HTTP ${current.status}`);
+      const rows=await current.json(); const payload=rows[0]?.data||{};
+      payload.cardRulesV3Prototype=data; payload.updatedAt=Date.now();
+      const response=await fetch(`${SUPABASE_URL}/rest/v1/japan_card_data?on_conflict=room_id`,{
+        method:'POST',headers:headers({'Content-Type':'application/json',Prefer:'resolution=merge-duplicates,return=minimal'}),
+        body:JSON.stringify({room_id:room,data:payload,updated_at:new Date(payload.updatedAt).toISOString()})
+      }); if(!response.ok)throw Error(`HTTP ${response.status}`);
+      dirty=false;setStatus(`房間 ${room} · 已同步`);
+    } catch(error){setStatus(`房間 ${room} · 同步失敗（${error.message}），本機副本已保留`);}
+  }
+  function syncSoon(){clearTimeout(syncSoon.timer);syncSoon.timer=setTimeout(pushRoom,180);}
+  function newId(){return `v3-${Date.now()}-${Math.random().toString(36).slice(2,7)}`;}
+
+  function render(){
+    $('planCard').innerHTML=data.cards.map(c=>`<option value="${esc(c.id)}">${esc(c.name)}</option>`).join('')||'<option value="">請先新增卡片</option>';
+    $('planForm').querySelector('button[type=submit]').disabled=!data.cards.length;
+    $('cardsList').innerHTML=data.cards.map(card=>`<article class="card-item"><div class="plan-head"><div><b>${esc(card.name)}</b><div class="muted">一般回饋 <input data-base-rate="${esc(card.id)}" type="number" min="0" step="0.01" value="${Number(card.baseRate)||0}" style="width:90px;padding:5px">%</div></div><button class="btn danger" data-delete-card="${esc(card.id)}">刪除卡片</button></div>${card.plans.map(plan=>`<div class="plan"><div class="plan-head"><div><b>${esc(plan.name)}</b><div class="muted">${contexts[plan.context]} · ${plan.includeBase?'併計一般回饋':'不併一般回饋'} · ${plan.fee?'收 1.5% 手續費':'免手續費'}</div></div><button class="btn danger" data-delete-plan="${esc(card.id)}|${esc(plan.id)}">刪除方案</button></div>${plan.parts.map(part=>`<div class="part-summary">${esc(part.name)}：+${part.rate}% · ${part.start||'不限起日'}～${part.end||'不限迄日'} · ${part.cap>0?`上限 NT$${part.cap}／${esc(part.cycle)}（已用 $${Number(part.used)||0}）`:'無上限'}${part.threshold>0?` · ${part.thresholdType==='cumulative'?'活動累積':'單筆'}門檻 NT$${part.threshold}`:''}${part.location?` · 地點 ${esc(part.location)}`:''}</div>`).join('')}</div>`).join('')}</article>`).join('');
+    $('cardsList').querySelectorAll('[data-base-rate]').forEach(input=>input.onchange=()=>{const card=data.cards.find(c=>c.id===input.dataset.baseRate);if(card){card.baseRate=Number(input.value)||0;syncSoon();calculate();}});
+    $('cardsList').querySelectorAll('[data-delete-card]').forEach(btn=>btn.onclick=()=>{data.cards=data.cards.filter(c=>c.id!==btn.dataset.deleteCard);syncSoon();render();});
+    $('cardsList').querySelectorAll('[data-delete-plan]').forEach(btn=>btn.onclick=()=>{const [cardId,planId]=btn.dataset.deletePlan.split('|');const card=data.cards.find(c=>c.id===cardId);card.plans=card.plans.filter(p=>p.id!==planId);syncSoon();render();});
+    calculate();
+  }
+
+  function partEditor(){
+    const wrap=document.createElement('div');wrap.className='part';wrap.dataset.part='';
+    wrap.innerHTML=`<div class="part-head"><b>回饋項目</b><button class="btn danger" type="button" data-remove>移除</button></div><div class="row">
+      <div class="field"><label>項目名稱</label><input data-f="name" required placeholder="例如 名古屋店加碼"></div>
+      <div class="field"><label>加碼回饋（%）</label><input data-f="rate" type="number" min="0" step="0.01" required value="1"></div>
+      <div class="field"><label>上限（回饋 NT$；留白=無上限）</label><input data-f="cap" type="number" min="0" step="1" placeholder="無上限"></div>
+      <div class="field"><label>週期</label><select data-f="cycle"><option>每月</option><option>每季</option><option>帳單週期</option><option>活動期間</option></select></div>
+      <div class="field"><label>門檻金額 NT$</label><input data-f="threshold" type="number" min="0" step="1" value="0"></div>
+      <div class="field"><label>門檻算法</label><select data-f="thresholdType"><option value="single">單筆消費</option><option value="cumulative">活動累積</option></select></div>
+      <div class="field"><label>指定店家（逗號分隔）</label><input data-f="merchant" placeholder="留白=不限制"></div>
+      <div class="field"><label>指定地點</label><input data-f="location" placeholder="例如 名古屋"></div>
+      <div class="field"><label>活動開始</label><input data-f="start" type="date"></div><div class="field"><label>活動結束</label><input data-f="end" type="date"></div>
+    </div>`;
+    wrap.querySelector('[data-remove]').onclick=()=>{if($('partsEditor').children.length>1)wrap.remove();};
+    return wrap;
+  }
+  $('addPart').onclick=()=>$('partsEditor').append(partEditor());
+  $('partsEditor').append(partEditor());
+  $('cardForm').onsubmit=event=>{event.preventDefault();const id=newId();data.cards.push({id,name:$('cardName').value.trim(),baseRate:Number($('baseRate').value),plans:[{id:newId(),name:'一般消費',context:'direct',includeBase:true,fee:true,parts:[]}]});event.target.reset();$('baseRate').value='1';syncSoon();render();};
+  $('planForm').onsubmit=event=>{
+    event.preventDefault();const card=data.cards.find(c=>c.id===$('planCard').value);if(!card)return;
+    const parts=[...$('partsEditor').children].map(row=>{const val=k=>row.querySelector(`[data-f="${k}"]`).value;return {id:newId(),name:val('name').trim(),rate:Number(val('rate')),cap:val('cap')===''?0:Number(val('cap')),cycle:val('cycle'),threshold:Number(val('threshold'))||0,thresholdType:val('thresholdType'),merchant:val('merchant').trim(),location:val('location').trim(),start:val('start'),end:val('end'),used:0};});
+    card.plans.push({id:newId(),name:$('planName').value.trim(),context:$('planContext').value,includeBase:$('includeBase').checked,fee:$('feeApplies').checked,parts});
+    event.target.reset();$('includeBase').checked=true;$('feeApplies').checked=true;$('partsEditor').replaceChildren(partEditor());syncSoon();render();
+  };
+
+  function partEligible(part,spend,date,merchant,location,periodSpend){
+    if(part.start&&date<part.start)return false;if(part.end&&date>part.end)return false;
+    if(part.location&& !location.toLowerCase().includes(part.location.toLowerCase()))return false;
+    if(part.merchant){const allowed=part.merchant.split(',').map(s=>s.trim().toLowerCase()).filter(Boolean);if(!allowed.some(name=>merchant.toLowerCase().includes(name)))return false;}
+    if(part.threshold>0&&(part.thresholdType==='cumulative'?periodSpend+spend:spend)<part.threshold)return false;return true;
+  }
+  function calculate(){
+    const spend=Number($('spend').value)||0, date=$('purchaseDate').value||today, scenario=$('scenario').value, merchant=$('merchant').value.trim(), location=$('location').value.trim(), periodSpend=Number($('periodSpend').value)||0;
+    const offers=[];
+    for(const card of data.cards)for(const plan of card.plans){
+      if(plan.context!==scenario)continue;
+      let bonus=0;const matched=[];
+      for(const part of plan.parts){if(!partEligible(part,spend,date,merchant,location,periodSpend))continue;
+        const potential=spend*Number(part.rate)/100;const remaining=part.cap>0?Math.max(0,part.cap-(Number(part.used)||0)):Infinity;const reward=Math.min(potential,remaining);bonus+=reward;if(reward>0)matched.push({part,reward});
+      }
+      if(!plan.includeBase&&!matched.length)continue;
+      const base=plan.includeBase?spend*Number(card.baseRate)/100:0;const gross=base+bonus;const fee=plan.fee?spend*.015:0;const net=gross-fee;
+      offers.push({card,plan,base,bonus,fee,net,matched});
+    }
+    offers.sort((a,b)=>b.net-a.net);
+    $('results').innerHTML=offers.length?offers.map((offer,i)=>`<div class="result ${i===0?'winner':''}"><div><b>${i===0?'推薦 · ':''}${esc(offer.card.name)}｜${esc(offer.plan.name)}</b></div><div class="rate">淨回饋約 NT$${Math.round(offer.net).toLocaleString()}</div><div class="muted">銀行回饋 $${Math.round(offer.base+offer.bonus)}（一般 $${Math.round(offer.base)} + 加碼 $${Math.round(offer.bonus)}）${offer.fee?` · 手續費估 $${Math.round(offer.fee)}`:' · 免手續費'}</div><small>${offer.matched.length?offer.matched.map(x=>`${esc(x.part.name)} +$${Math.round(x.reward)}`).join('；'):'目前沒有符合條件的加碼項目'}${offer.plan.includeBase?'':' · 此方案不計一般回饋'}</small>${offer.matched.length?'<div style="margin-top:10px"><button class="btn secondary" data-record="'+i+'">模擬已刷並扣回饋額度</button></div>':''}</div>`).join(''):'<p class="muted">目前沒有符合這個情境的方案。請新增卡片與加碼方案。</p>';
+    $('results').querySelectorAll('[data-record]').forEach(button=>button.onclick=()=>{const offer=offers[Number(button.dataset.record)];if(!offer)return;for(const item of offer.matched){if(item.part.cap>0)item.part.used=Math.min(item.part.cap,(Number(item.part.used)||0)+item.reward);}syncSoon();render();});
+  }
+  ['scenario','merchant','location','periodSpend','spend','purchaseDate'].forEach(id=>$(id).addEventListener('input',calculate));
+  $('calculate').onclick=calculate;
+  $('copyRoom').onclick=async()=>{if(!room){room=(prompt('輸入現有房間代碼（例如 TOKYO-1234）')||'').trim().toUpperCase();if(!room)return;const url=new URL(location.href);url.searchParams.set('room',room);history.replaceState(null,'',url);await pullRoom();}try{await navigator.clipboard.writeText(location.href);setStatus(`房間 ${room} · 連結已複製`);}catch{prompt('複製此房間連結',location.href);}};
+  $('purchaseDate').value=today;
+  if(room)pullRoom();else render();
+  document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&room&&!dirty)pullRoom();});
+  setInterval(()=>{if(room&&!dirty)pullRoom();},15000);
+})();
+</script>
+</body>
+</html>

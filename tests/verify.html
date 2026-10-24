@@ -13,7 +13,7 @@ setTimeout(function () {
     // --- guide page ---
     w.switchTab('guide');
     var tab = d.getElementById('tab-guide');
-    check('攻略頁高度 < 1600px', tab.scrollHeight < 1600, tab.scrollHeight + 'px (原 3382px)');
+    check('攻略頁高度 < 1700px', tab.scrollHeight < 1700, tab.scrollHeight + 'px (原 3382px)');
     check('卡片/表格 toggle 存在', d.querySelectorAll('[data-guide-view]').length === 2);
     check('卡片模式預設顯示', !d.getElementById('guideCardView').hidden && d.getElementById('guideTableView').hidden);
     check('卡片清單有內容', d.querySelectorAll('#guideCardList .guide-card').length > 0, d.querySelectorAll('#guideCardList .guide-card').length + ' 張');

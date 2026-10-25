@@ -255,18 +255,40 @@
     .view-toggle { display:inline-flex; gap:3px; padding:3px; border-radius:999px; background:var(--card-sub-bg); }
     .view-toggle-btn { min-height:34px; padding:5px 15px; border:0; border-radius:999px; background:transparent; color:var(--text-secondary); font-size:.76rem; font-weight:700; cursor:pointer; }
     .view-toggle-btn.is-active { background:var(--a12); color:var(--primary); box-shadow:inset 0 0 0 1px var(--a28); }
-    .guide-intro { margin:0 0 14px; color:var(--text-secondary); font-size:.78rem; line-height:1.6; }
+    #tab-guide .card { padding: 10px 12px; margin-bottom: 8px; }
+    #tab-guide .card-title { margin-bottom: 8px; }
+    .guide-intro { margin:0 0 8px; color:var(--text-secondary); font-size:.75rem; line-height:1.45; }
     .guide-view[hidden] { display:none !important; }
-    .guide-card-list { display:flex; flex-direction:column; gap:10px; }
-    .guide-card { padding:12px 14px; border-radius:14px; background:rgba(11,14,24,.46); }
-    .guide-card-head { display:flex; align-items:flex-start; justify-content:space-between; gap:10px; }
+    .guide-card-list { display:flex; flex-direction:column; gap:5px; }
+    .guide-card { padding:7px 11px; border-radius:12px; background:rgba(11,14,24,.46); }
+    .guide-card-head { display:flex; align-items:flex-start; justify-content:space-between; gap:8px; }
     .guide-card-name { font-size:var(--fs-title); }
-    .guide-card-meta { margin-top:4px; color:var(--text-secondary); font-size:.76rem; line-height:1.5; }
-    .guide-card-actions { display:flex; align-items:center; gap:8px; flex:0 0 auto; flex-wrap:wrap; }
+    .guide-card-meta { margin-top:1px; color:var(--text-secondary); font-size:.74rem; line-height:1.25; }
+    .guide-card-actions { display:flex; align-items:center; gap:6px; flex:0 0 auto; flex-wrap:wrap; }
+    .guide-card-title-group { min-width:0; }
+    .guide-card-name-row { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+    .guide-icon-btn-group { display:inline-flex; align-items:center; gap:6px; }
+    .guide-bonus-title-row { display:flex; align-items:center; gap:8px; }
+    .guide-bonus-section { margin-top:4px; padding-top:4px; border-top:1px solid var(--a10); }
+    .guide-bonus-title { font-size:.72rem; font-weight:700; color:var(--primary); margin-bottom:2px; }
+    .guide-bonus-item { padding:2px 0; }
+    .guide-base-row { display:flex; align-items:center; justify-content:space-between; padding:2px 0; font-size:.76rem; border-top:1px solid var(--a10); margin-top:4px; }
+    .icon-btn {
+      display:inline-flex; align-items:center; justify-content:center;
+      width:32px; height:32px; padding:0; border-radius:9px;
+      border:1px solid var(--a35); background:rgba(11,14,24,0.7);
+      color:var(--primary); cursor:pointer; transition:all .18s ease;
+      flex:0 0 auto; -webkit-appearance:none;
+    }
+    .icon-btn:hover { background:var(--a16); border-color:var(--primary); color:#fff; transform:translateY(-1px); }
+    .icon-btn:active { background:var(--a28); transform:translateY(0); }
+    .icon-btn .ui-icon { width:1.1em; height:1.1em; }
+    .icon-btn-sm { width:26px; height:26px; border-radius:7px; }
+    .icon-btn-sm .ui-icon { width:0.95em; height:0.95em; }
     .guide-edit-btn { min-height:32px; }
-    .card-editor-subtitle { margin:0 0 10px; font-size:var(--fs-title); font-weight:700; }
+    .card-editor-subtitle, .editor-section-head h3 { margin:0 0 10px; font-size:var(--fs-title); font-weight:700; color:var(--text); line-height:1.3; letter-spacing:normal; }
     .card-editor-danger { border:1px solid rgba(255,140,150,.3); background:rgba(60,12,20,.3); }
-    .card-editor-danger .card-editor-subtitle { color:#ff9aa6; }
+    .card-editor-danger .card-editor-subtitle { color:var(--text); }
     .btn-danger { color:#ffb3bd !important; border-color:rgba(255,140,150,.45) !important; background:rgba(70,16,24,.6) !important; }
     .btn-danger:active { background:rgba(96,22,32,.75) !important; }
     .guide-badge { flex:0 0 auto; padding:3px 9px; border-radius:999px; font-size:.68rem; font-weight:700; letter-spacing:.04em; color:var(--primary); background:var(--a10); }
@@ -1431,6 +1453,8 @@
     <symbol id="icon-trash" viewBox="0 0 24 24"><path d="M3 6h18M8 6V4h8v2M6 6l1 15h10l1-15M10 11v6M14 11v6"/></symbol>
     <symbol id="icon-spark" viewBox="0 0 24 24"><path d="m12 3 1.6 6.4L20 11l-6.4 1.6L12 19l-1.6-6.4L4 11l6.4-1.6L12 3zM19 14l.8 2.2L22 17l-2.2.8L19 20l-.8-2.2L16 17l2.2-.8L19 14z"/></symbol>
     <symbol id="icon-close" viewBox="0 0 24 24"><path d="m18 6-12 12M6 6l12 12"/></symbol>
+    <symbol id="icon-settings" viewBox="0 0 24 24"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></symbol>
+    <symbol id="icon-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
   </svg>
 
   <!-- Header -->
@@ -1788,6 +1812,7 @@
             <label>卡片名稱<input type="text" id="cardEditorNameInput"></label>
             <label>基本回饋率（%）<input type="number" id="cardEditorBaseRate" min="0" step="0.01"></label>
             <label class="toggle toggle-row toggle-wide"><span class="toggle-text">收海外手續費 1.5%</span><input type="checkbox" id="cardEditorBaseFee"><span class="toggle-track"></span></label>
+            <label class="toggle toggle-row toggle-wide"><span class="toggle-text">我持有這張卡</span><input type="checkbox" id="cardEditorOwned"><span class="toggle-track"></span></label>
           </div>
         </section>
 
@@ -1822,7 +1847,7 @@
               </div>
 
               <div class="rule-form-grid">
-                <label style="display:none">活動名稱<input name="name" placeholder="例如：交通卡加值"></label>
+                <label>活動名稱<input name="name" placeholder="例如：交通卡加值"></label>
                 <label>加碼回饋率（%）<input name="rate" type="number" min="0" step="0.01" value="1" required></label>
                 <label>方案基本回饋率（%）<input name="baseRate" type="number" min="0" step="0.01" placeholder="留白＝沿用卡片基本回饋"></label>
                 <label>單筆門檻（NT$）<input name="threshold" type="number" min="0" step="1" value="0" placeholder="0 = 無門檻"></label>
@@ -1834,7 +1859,6 @@
               </div>
 
               <div class="activity-toggles">
-                <label class="toggle toggle-row"><span class="toggle-text">與基本回饋併計</span><input name="includeBase" type="checkbox" checked><span class="toggle-track"></span></label>
                 <label class="toggle toggle-row"><span class="toggle-text">收海外手續費（1.5%）</span><input name="fee" type="checkbox" checked><span class="toggle-track"></span></label>
                 <label class="toggle toggle-row"><span class="toggle-text">需手動登錄或切換權益</span><input name="notice" type="checkbox"><span class="toggle-track"></span></label>
               </div>
@@ -1845,17 +1869,6 @@
                   <label>加碼用完後<select name="fallback"><option value="base">依基本回饋計算</option><option value="none">不回饋</option></select></label>
                   <label>官方規則來源<input name="sourceUrl" type="url" placeholder="https://"></label>
                 </div>
-                <div class="rule-form-grid">
-                  <label>第二項加碼回饋率（%）<input name="extraRate" type="number" min="0" step="0.01" value="0"></label>
-                  <label>第二項回饋上限（NT$）<input name="extraCap" type="number" min="0" step="1" placeholder="無上限"></label>
-                  <label>第二項週期<select name="extraCycle"><option value="campaign">活動期間</option><option value="month">每月</option><option value="quarter">每季</option><option value="billing">帳單週期</option><option value="none">不重置</option></select></label>
-                  <label>第二項門檻（NT$）<input name="extraThreshold" type="number" min="0" step="1" value="0"></label>
-                  <label>門檻計算方式<select name="extraThresholdType"><option value="single">單筆</option><option value="cumulative">週期累積</option></select></label>
-                  <label>第二項結束<input name="extraEnd" type="date"></label>
-                </div>
-                <div class="activity-toggles">
-                  <label class="toggle toggle-row"><span class="toggle-text">與第一項共用額度（僅限銀行條款明定）</span><input name="shareExtraCap" type="checkbox"><span class="toggle-track"></span></label>
-                </div>
               </details>
 
               <div class="activity-actions">
@@ -1864,6 +1877,12 @@
               </div>
             </form>
           </div>
+        </section>
+
+        <section class="editor-section card-editor-danger">
+          <h3 class="card-editor-subtitle">刪除這張卡</h3>
+          <p class="rules-disclaimer">刪除後這張卡與它的所有加碼活動都會移除，但已記錄的歷史消費明細將會保留。</p>
+          <button class="btn-small btn-danger" type="button" id="cardEditorDelete">刪除這張卡</button>
         </section>
       </div>
     </div>
@@ -1902,7 +1921,7 @@
     <div class="editor-panel">
       <header class="editor-header">
         <div>
-          <h2 id="planEditorTitle"><span class="ui-icon" aria-hidden="true"><svg><use href="#icon-book"/></svg></span> 加碼活動設定</h2>
+          <h2 id="planEditorTitle"><span class="ui-icon" aria-hidden="true"><svg><use href="#icon-book"/></svg></span> <span id="planEditorTitleText">加碼活動設定</span></h2>
           <p>僅調整此加碼活動的規則。</p>
         </div>
         <button class="btn-small" type="button" onclick="closePlanEditor()"><span class="ui-icon" aria-hidden="true"><svg><use href="#icon-close"/></svg></span> 關閉</button>
@@ -1924,10 +1943,15 @@
             <div class="activity-field" id="planEditorMerchantLabel" hidden>
               <span class="field-label">適用店家（點選可複選）</span>
               <div id="planEditorMerchantChoices" class="merchant-choice-list" role="group" aria-label="方案適用店家"></div>
+              <div class="merchant-add">
+                <input id="planEditorMerchantInput" placeholder="新增參考店家" aria-label="新增參考店家" autocomplete="off">
+                <button class="btn-small" type="button" id="planEditorMerchantButton">加入店家</button>
+              </div>
+              <small class="rules-disclaimer">加入清單不代表銀行確認該店符合活動。</small>
             </div>
             <div class="rule-form-grid">
-              <label style="display:none">活動名稱<input name="name"></label>
-              <label>加碼回饋率（%）<input name="rate" type="number" min="0" step="0.01" required></label>
+              <label>活動名稱<input name="name" placeholder="例如：交通卡加值"></label>
+              <label>加碼回饋率（%）<input name="rate" type="number" min="0" step="0.01" value="1" required></label>
               <label>方案基本回饋率（%）<input name="baseRate" type="number" min="0" step="0.01" placeholder="留白＝沿用卡片基本回饋"></label>
               <label>單筆門檻（NT$）<input name="threshold" type="number" min="0" step="1" value="0"></label>
               <label>門檻方式<select name="thresholdType"><option value="single">單筆</option><option value="cumulative">週期累積</option></select></label>
@@ -1937,7 +1961,6 @@
               <label>活動截止日期<input name="end" type="date"></label>
             </div>
             <div class="activity-toggles">
-              <label class="toggle toggle-row"><span class="toggle-text">與基本回饋併計</span><input name="includeBase" type="checkbox" checked><span class="toggle-track"></span></label>
               <label class="toggle toggle-row"><span class="toggle-text">收海外手續費（1.5%）</span><input name="fee" type="checkbox" checked><span class="toggle-track"></span></label>
               <label class="toggle toggle-row"><span class="toggle-text">需手動登錄或切換權益</span><input name="notice" type="checkbox"><span class="toggle-track"></span></label>
             </div>
@@ -1945,23 +1968,13 @@
               <summary>進階設定</summary>
               <div class="rule-form-grid">
                 <label>加碼用完後<select name="fallback"><option value="base">依基本回饋計算</option><option value="none">不回饋</option></select></label>
-                <label>官方規則來源<input name="sourceUrl" type="url"></label>
-              </div>
-              <div class="rule-form-grid">
-                <label>第二項加碼回饋率（%）<input name="extraRate" type="number" min="0" step="0.01" value="0"></label>
-                <label>第二項回饋上限（NT$）<input name="extraCap" type="number" min="0" step="1" placeholder="無上限"></label>
-                <label>第二項週期<select name="extraCycle"><option value="campaign">活動期間</option><option value="month">每月</option><option value="quarter">每季</option><option value="billing">帳單週期</option><option value="none">不重置</option></select></label>
-                <label>第二項門檻（NT$）<input name="extraThreshold" type="number" min="0" step="1" value="0"></label>
-                <label>門檻計算方式<select name="extraThresholdType"><option value="single">單筆</option><option value="cumulative">週期累積</option></select></label>
-                <label>第二項結束<input name="extraEnd" type="date"></label>
-              </div>
-              <div class="activity-toggles">
-                <label class="toggle toggle-row"><span class="toggle-text">與第一項共用額度（僅限銀行條款明定）</span><input name="shareExtraCap" type="checkbox"><span class="toggle-track"></span></label>
+                <label>官方規則來源<input name="sourceUrl" type="url" placeholder="https://"></label>
               </div>
             </details>
             <div class="activity-actions">
-              <button class="btn-small" type="submit">儲存</button>
+              <button class="btn-small" type="submit" id="planEditorSubmitBtn">儲存活動</button>
               <button class="btn-small" type="button" onclick="closePlanEditor()">取消</button>
+              <button class="btn-small btn-danger" type="button" id="planEditorDeleteBtn" style="margin-left:auto;" hidden>刪除此活動</button>
             </div>
           </form>
         </section>
@@ -2606,7 +2619,9 @@
       const scopes = [
         document.getElementById('addDynamicCardForm'),
         document.getElementById('addDynamicPlanForm'),
+        document.getElementById('planEditorForm'),
         document.querySelector('#cardEditorOverlay .editor-card-fields'),
+        document.querySelector('#cardSettingsOverlay .editor-card-fields'),
         document.querySelector('#billingSetupModal .form-group')
       ].filter(Boolean);
       scopes.forEach(scope => {
@@ -3237,31 +3252,46 @@
       }
     }
 
-    // 刪除一張卡片（單卡編輯頁）
+    // 刪除一張卡片
     async function deleteCardById(cardId) {
-      if (ledger.some(item => item.physicalCardId === cardId && item.v3PlanId)) { showToast('這張卡已有消費記錄；取消持有即可保留歷史與額度帳本'); return false; }
       const card = rulesV3.cards.find(item => item.id === cardId);
-      const confirmed = await showAppDialog({ title: '刪除卡片', message: `確定要刪除「${card ? card.name : '這張卡'}」及其所有加碼活動嗎？刪除後無法復原。`, confirmText: '刪除' });
+      const confirmed = await showAppDialog({
+        title: '刪除卡片',
+        message: `確定要刪除「${card ? card.name : '這張卡'}」及其所有加碼活動嗎？歷史記帳紀錄將會保留。`,
+        confirmText: '刪除'
+      });
       if (!confirmed) return false;
       rulesV3.cards = rulesV3.cards.filter(item => item.id !== cardId);
       if (activityCardId === cardId) cancelDynamicPlanEdit();
       if (cardEditorCardId === cardId) closeCardEditor();
-      saveRulesV3(); calculate();
+      closeCardSettings();
+      closePlanEditor();
+      saveRulesV3();
+      calculate();
+      renderGuideViews();
+      showToast('已刪除卡片，歷史記帳紀錄已保留');
       return true;
     }
 
     // 刪除一個加碼活動
     async function deletePlanById(cardId, planId) {
-      if (ledger.some(item => item.v3PlanId === planId)) { showToast('這個加碼活動已有消費記錄，請先保留以維持帳本一致'); return false; }
       const card = rulesV3.cards.find(item => item.id === cardId);
       const plan = card?.plans.find(item => item.id === planId);
-      const confirmed = await showAppDialog({ title: '刪除加碼活動', message: `確定要刪除「${plan ? plan.name : '這個加碼活動'}」嗎？刪除後無法復原。`, confirmText: '刪除' });
+      const confirmed = await showAppDialog({
+        title: '刪除加碼活動',
+        message: `確定要刪除「${plan ? plan.name : '這個加碼活動'}」嗎？歷史記帳紀錄將會保留。`,
+        confirmText: '刪除'
+      });
       if (!confirmed) return false;
       if (card) {
         card.plans = card.plans.filter(item => item.id !== planId);
         if (activityForm?.elements.namedItem('editingPlanId').value === planId) cancelDynamicPlanEdit();
-        saveRulesV3(); calculate();
+        saveRulesV3();
+        calculate();
         if (cardEditorCardId === cardId) renderCardEditor();
+        renderGuideViews();
+        closePlanEditor();
+        showToast('已刪除加碼活動，歷史記帳紀錄已保留');
       }
       return true;
     }
@@ -3428,7 +3458,12 @@
           const extras = [contextLabel + '加碼', thresholdText, capText !== '無上限' ? `上限 ${capText}` : '', cycleText !== '—' ? cycleText : '', baseNote, feeNote, noteText].filter(Boolean);
           return `<div class="guide-bonus-item">
             <div class="guide-bonus-head">
-              <span><b>${escapeHtml(getGuidePlanShortName(card, plan))}</b></span>
+              <div class="guide-bonus-title-row">
+                <span><b>${escapeHtml(getGuidePlanShortName(card, plan))}</b></span>
+                <button class="icon-btn icon-btn-sm" type="button" data-guide-plan-settings="${escapeHtml(card.id)}|${escapeHtml(plan.id)}" aria-label="設定 ${escapeHtml(plan.name || '加碼活動')}" title="設定加碼活動">
+                  <span class="ui-icon" aria-hidden="true"><svg><use href="#icon-settings"/></svg></span>
+                </button>
+              </div>
               <span class="guide-bonus-rate">+${formatGuidePercent(bonus)}%</span>
             </div>
             <div class="guide-bonus-meta">${extras.join(' · ')}</div>
@@ -3438,8 +3473,18 @@
 
         return `<article class="guide-card">
           <div class="guide-card-head">
-            <div>
-              <div class="guide-card-name">${escapeHtml(card.name)}</div>
+            <div class="guide-card-title-group">
+              <div class="guide-card-name-row">
+                <span class="guide-card-name">${escapeHtml(card.name)}</span>
+                <div class="guide-icon-btn-group">
+                  <button class="icon-btn" type="button" data-guide-card-settings="${escapeHtml(card.id)}" aria-label="設定 ${escapeHtml(card.name)}" title="卡片設定">
+                    <span class="ui-icon" aria-hidden="true"><svg><use href="#icon-settings"/></svg></span>
+                  </button>
+                  <button class="icon-btn" type="button" data-guide-card-add-plan="${escapeHtml(card.id)}" aria-label="替 ${escapeHtml(card.name)} 新增加碼活動" title="新增加碼活動">
+                    <span class="ui-icon" aria-hidden="true"><svg><use href="#icon-plus"/></svg></span>
+                  </button>
+                </div>
+              </div>
               <div class="guide-card-meta">最高淨回饋 ${formatGuidePercent(bestNet)}%</div>
             </div>
             <div class="guide-card-actions">
@@ -3462,6 +3507,18 @@
         : '<div class="guide-empty">你目前沒有勾選「我持有」的卡片，刷卡決策只會以基本回饋試算。</div>')
         + (others.length ? `<h4 style="margin:20px 0 8px; font-size:.85rem; color:var(--text-secondary);">未持有的卡片</h4>${others.map(renderCard).join('')}` : '');
 
+      root.querySelectorAll('[data-guide-card-settings]').forEach(button => {
+        button.onclick = () => openCardEditor(button.dataset.guideCardSettings);
+      });
+      root.querySelectorAll('[data-guide-card-add-plan]').forEach(button => {
+        button.onclick = () => openPlanEditor(button.dataset.guideCardAddPlan, null);
+      });
+      root.querySelectorAll('[data-guide-plan-settings]').forEach(button => {
+        button.onclick = () => {
+          const [cardId, planId] = button.dataset.guidePlanSettings.split('|');
+          openPlanEditor(cardId, planId);
+        };
+      });
       root.querySelectorAll('[data-guide-edit]').forEach(button => button.onclick = () => openCardEditor(button.dataset.guideEdit));
     }
 
@@ -3587,6 +3644,7 @@
       setValue('cardEditorNameInput', card.name);
       setValue('cardEditorBaseRate', Number(card.baseRate) || 0);
       setChecked('cardEditorBaseFee', card.baseFeeApplies);
+      setChecked('cardEditorOwned', card.owned !== false);
 
       const plans = card.plans || [];
       const root = document.getElementById('cardEditorPlans');
@@ -3605,8 +3663,8 @@
           const baseInfo = plan.baseRateOverride !== undefined && plan.baseRateOverride !== null ? ` · 方案基本回饋 ${Number(plan.baseRateOverride)||0}%` : '';
           return `<div class="editor-plan-row">
             <div class="editor-plan-info">
-              <strong>${escapeHtml(contextText)}加碼</strong>
-              <small>+${formatGuidePercent(bonus)}%${cap > 0 ? ` · 上限 NT$${cap.toLocaleString()}` : ' · 無上限'}${threshold > 0 ? ` · 單筆滿 NT$${threshold.toLocaleString()}` : ''}${plan.includeBaseReward !== false ? ' · 併基本回饋' : ' · 不併基本回饋'}${baseInfo}${plan.foreignFeeApplies !== false ? ' · 收 1.5% 手續費' : ' · 免手續費'}${plan.noticeFlags ? ' · 需登錄／切換權益' : ''}${escapeHtml(cycleText)}${escapeHtml(merchantText)}</small>
+              <strong>${escapeHtml(plan.name || (contextText + '加碼'))}</strong>
+              <small>${escapeHtml(contextText)} · +${formatGuidePercent(bonus)}%${cap > 0 ? ` · 上限 NT$${cap.toLocaleString()}` : ' · 無上限'}${threshold > 0 ? ` · 單筆滿 NT$${threshold.toLocaleString()}` : ''}${plan.includeBaseReward !== false ? ' · 併基本回饋' : ' · 不併基本回饋'}${baseInfo}${plan.foreignFeeApplies !== false ? ' · 收 1.5% 手續費' : ' · 免手續費'}${plan.noticeFlags ? ' · 需登錄／切換權益' : ''}${escapeHtml(cycleText)}${escapeHtml(merchantText)}</small>
             </div>
             <div class="editor-plan-actions">
               <button class="btn-small" type="button" data-card-edit-plan="${escapeHtml(card.id)}|${escapeHtml(plan.id)}">設定</button>
@@ -3712,9 +3770,7 @@
       const cap = Math.max(0, Number(values.get('cap'))||0); const context = String(values.get('context'));
       const merchants=[...(activityForm?.querySelectorAll('#planMerchantChoices .merchant-choice.active')||[])].map(button=>button.dataset.planMerchant);
       if(context==='merchant'&&!merchants.length){showToast('特約商店方案請至少選一間適用店');return;}
-      const shareExtraCap=values.has('shareExtraCap');
-      if(shareExtraCap&&cap<=0){showToast('共用額度需先設定第一項回饋上限');return;}
-      const oldParts=existingPlan?.rewardParts||[];const firstOld=oldParts[0];const extraOld=oldParts[1];
+      const oldParts=existingPlan?.rewardParts||[];const firstOld=oldParts[0];
       const cycle=String(values.get('cycle'));const threshold=Math.max(0,Number(values.get('threshold'))||0);
       const statementDay=Number(values.get('statementDay'))||0;
       if(cycle==='billing'&&(statementDay<1||statementDay>31)){showToast('選擇帳單週期時，請輸入每月結帳日（1–31 日）');activityForm.elements.namedItem('statementDay')?.focus();return;}
@@ -3723,11 +3779,9 @@
       const baseRateOverrideRaw = values.get('baseRate');
       const baseRateOverride = (baseRateOverrideRaw === '' || baseRateOverrideRaw === null || baseRateOverrideRaw === undefined) ? undefined : Math.max(0, Number(baseRateOverrideRaw)||0);
       const planName = String(values.get('name')||'').trim() || `${GUIDE_CONTEXT_LABELS[context] || context}加碼`;
-      const nextPlan={id,name:planName,contexts:[context],includeBaseReward:values.has('includeBase'),foreignFeeApplies:values.has('fee'),noticeFlags:values.has('notice'),merchants:context==='merchant'?merchants:[],locationNotice:context==='merchant',thresholdTwd:threshold,thresholdType,capAmount:cap,cycle,statementDay:cycle==='billing'?statementDay:null,cumulativeSpendTwd:Number(existingPlan?.cumulativeSpendTwd)||0,cumulativePeriodKey:existingPlan?.cumulativePeriodKey||null,sourceUrl:String(values.get('sourceUrl')||'').trim(),verifiedAt:'',enabled:true,fallbackBase:values.get('fallback')!=='none',baseRateOverride:baseRateOverride, rewardParts:[{id:firstOld?.id||`part-${id}`,name:firstOld?.name||'加碼回饋',rewardUnit:'cash',rate:Math.max(0,Number(values.get('rate'))||0),capAmount:cap,quotaGroupId:shareExtraCap?`quota-${id}`:null,usedReward:Number(firstOld?.usedReward)||0,periodKey:firstOld?.periodKey,cumulativeSpendTwd:Number(firstOld?.cumulativeSpendTwd)||0,cumulativePeriodKey:firstOld?.cumulativePeriodKey,cycle,thresholdTwd:threshold,thresholdType,start:'',end:String(values.get('end')||'')}]};
-      const extraRate=Math.max(0,Number(values.get('extraRate'))||0);
-      if(extraRate>0){const extraCycle=String(values.get('extraCycle')||'campaign');const extraCap=shareExtraCap?cap:Math.max(0,Number(values.get('extraCap'))||0);nextPlan.rewardParts.push({id:extraOld?.id||`part-extra-${id}`,name:extraOld?.name||'同享活動加碼',rate:extraRate,capAmount:extraCap,quotaGroupId:shareExtraCap?`quota-${id}`:null,usedReward:Number(extraOld?.usedReward)||0,periodKey:extraOld?.periodKey,cumulativeSpendTwd:Number(extraOld?.cumulativeSpendTwd)||0,cumulativePeriodKey:extraOld?.cumulativePeriodKey,cycle:extraCycle,thresholdTwd:Math.max(0,Number(values.get('extraThreshold'))||0),thresholdType:String(values.get('extraThresholdType')||'single'),start:'',end:String(values.get('extraEnd')||'')});}
-      else if(extraOld&&(Number(extraOld.usedReward)>0||Number(extraOld.cumulativeSpendTwd)>0||ledger.some(item=>item.v3Usage?.some(usage=>usage.partId===extraOld.id)))){nextPlan.rewardParts.push(extraOld);}
-      if(oldParts.length>2)nextPlan.rewardParts.push(...oldParts.slice(2));
+      // includeBaseReward 由情境自動決定：PayPay 不含信用卡基本回饋，其他情境均併計
+      const includeBaseReward = (context !== 'paypay');
+      const nextPlan={id,name:planName,contexts:[context],includeBaseReward,foreignFeeApplies:values.has('fee'),noticeFlags:values.has('notice'),merchants:context==='merchant'?merchants:[],locationNotice:context==='merchant',thresholdTwd:threshold,thresholdType,capAmount:cap,cycle,statementDay:cycle==='billing'?statementDay:null,cumulativeSpendTwd:Number(existingPlan?.cumulativeSpendTwd)||0,cumulativePeriodKey:existingPlan?.cumulativePeriodKey||null,sourceUrl:String(values.get('sourceUrl')||'').trim(),verifiedAt:'',enabled:true,fallbackBase:values.get('fallback')!=='none',baseRateOverride:baseRateOverride, rewardParts:[{id:firstOld?.id||`part-${id}`,name:firstOld?.name||'加碼回饋',rewardUnit:'cash',rate:Math.max(0,Number(values.get('rate'))||0),capAmount:cap,quotaGroupId:null,usedReward:Number(firstOld?.usedReward)||0,periodKey:firstOld?.periodKey,cumulativeSpendTwd:Number(firstOld?.cumulativeSpendTwd)||0,cumulativePeriodKey:firstOld?.cumulativePeriodKey,cycle,thresholdTwd:threshold,thresholdType,start:'',end:String(values.get('end')||'')}]};
       if(existingPlan)Object.assign(existingPlan,nextPlan);else card.plans.push(nextPlan);
       cancelDynamicPlanEdit();saveRulesV3();calculate();
       if(cardEditorCardId)renderCardEditor();
@@ -3752,6 +3806,9 @@
     });
     document.getElementById('cardEditorBaseFee')?.addEventListener('change', (e)=>{
       const card=getCardEditorCard(); if(!card)return; card.baseFeeApplies=e.target.checked; saveRulesV3();calculate();renderCardEditor();
+    });
+    document.getElementById('cardEditorOwned')?.addEventListener('change', (e)=>{
+      const card=getCardEditorCard(); if(!card)return; card.owned=e.target.checked; saveRulesV3();calculate();renderCardEditor();
     });
     document.getElementById('cardSettingsNameInput')?.addEventListener('change', (e)=>{
       const card=getCardEditorCard(); if(!card)return; card.name=e.target.value.trim()||card.name; saveRulesV3();calculate();renderCardEditor();
@@ -4518,82 +4575,187 @@
       if (overlay) overlay.hidden = true;
       if (cardEditorCardId) renderCardEditor();
     }
-    function openPlanEditor(cardId, planId) {
+    function syncPlanEditorMerchants(selectedList = []) {
+      const choices = document.getElementById('planEditorMerchantChoices');
+      if (!choices || !rulesV3) return;
+      const names = [...new Set([...(rulesV3.merchants || FEATURED_MERCHANTS), ...rulesV3.cards.flatMap(c => (c.plans || []).flatMap(p => p.merchants || []))])];
+      const selected = new Set(selectedList);
+      choices.innerHTML = names.map(name => `<button type="button" class="merchant-choice${selected.has(name) ? ' active' : ''}" data-plan-merchant="${escapeHtml(name)}">${escapeHtml(name)}</button>`).join('');
+      choices.querySelectorAll('[data-plan-merchant]').forEach(btn => {
+        btn.onclick = () => btn.classList.toggle('active');
+      });
+    }
+
+    document.getElementById('planEditorMerchantButton')?.addEventListener('click', () => {
+      const input = document.getElementById('planEditorMerchantInput');
+      const name = String(input?.value || '').trim();
+      if (!name) return;
+      if (!rulesV3.merchants.some(item => item.toLocaleLowerCase() === name.toLocaleLowerCase())) {
+        rulesV3.merchants.push(name);
+        saveRulesV3(); calculate();
+      }
+      input.value = '';
+      syncRuleInputs();
+      const currentSelected = [...(document.querySelectorAll('#planEditorMerchantChoices .merchant-choice.active') || [])].map(b => b.dataset.planMerchant);
+      syncPlanEditorMerchants(currentSelected.concat(name));
+    });
+    document.getElementById('planEditorMerchantInput')?.addEventListener('keydown', e => {
+      if (e.key === 'Enter') { e.preventDefault(); document.getElementById('planEditorMerchantButton')?.click(); }
+    });
+
+    function openPlanEditor(cardId, planId = null) {
       const card = rulesV3.cards.find(c => c.id === cardId);
       if (!card) return;
-      const plan = planId ? card?.plans.find(p => p.id === planId) : null;
+      const isEditing = Boolean(planId);
+      const plan = isEditing ? card.plans.find(p => p.id === planId) : null;
       const form = document.getElementById('planEditorForm');
       if (!form) return;
-      form.elements.namedItem('editingPlanId').value = plan?.id || '';
+
+      const titleEl = document.getElementById('planEditorTitleText');
+      if (titleEl) titleEl.textContent = isEditing ? '編輯加碼活動' : '新增加碼活動';
+      const submitBtn = document.getElementById('planEditorSubmitBtn');
+      if (submitBtn) submitBtn.textContent = isEditing ? '儲存活動' : '新增活動';
+
+      form.elements.namedItem('editingPlanId').value = plan ? plan.id : '';
       form.elements.namedItem('cardId').value = card.id;
-      const set = (n,v)=>{const el=form.elements.namedItem(n); if(el&&'value'in el) el.value=v??'';};
-      const ctx = plan?.contexts?.[0]||'general';
-      form.querySelectorAll('input[name="context"]').forEach(r=>{r.checked = r.value===ctx;});
-      set('rate', plan?.rewardParts?.[0]?.rate||1);
-      set('baseRate', plan?.baseRateOverride??'');
-      set('cap', plan?.rewardParts?.[0]?.capAmount||'');
-      set('cycle', plan?.rewardParts?.[0]?.cycle||plan?.cycle||'month');
-      set('statementDay', plan?.statementDay||'');
-      set('threshold', plan?.rewardParts?.[0]?.thresholdTwd||plan?.thresholdTwd||0);
-      set('thresholdType', plan?.rewardParts?.[0]?.thresholdType||plan?.thresholdType||'single');
-      set('end', plan?.rewardParts?.[0]?.end||'');
-      set('sourceUrl', plan?.sourceUrl||'');
-      set('fallback', plan?.fallbackBase===false?'none':'base');
-      if(form.elements.namedItem('includeBase')) form.elements.namedItem('includeBase').checked = plan?.includeBaseReward!==false;
-      if(form.elements.namedItem('fee')) form.elements.namedItem('fee').checked = plan?.foreignFeeApplies!==false;
-      if(form.elements.namedItem('notice')) form.elements.namedItem('notice').checked = !!plan?.noticeFlags;
-      const extra = plan?.rewardParts?.[1];
-      set('extraRate', extra?.rate||0); set('extraCap', extra?.capAmount||''); set('extraCycle', extra?.cycle||'campaign');
-      set('extraThreshold', extra?.thresholdTwd||0); set('extraThresholdType', extra?.thresholdType||'single'); set('extraEnd', extra?.end||'');
-      if(form.elements.namedItem('shareExtraCap')) form.elements.namedItem('shareExtraCap').checked = !!(extra?.quotaGroupId && extra?.quotaGroupId===plan?.rewardParts?.[0]?.quotaGroupId);
+      const set = (n, v) => { const el = form.elements.namedItem(n); if (el && 'value' in el) el.value = v ?? ''; };
+      set('name', plan ? (plan.name || '') : '');
+      const ctx = plan?.contexts?.[0] || 'general';
+      form.querySelectorAll('input[name="context"]').forEach(r => { r.checked = (r.value === ctx); });
+      set('rate', plan ? (plan.rewardParts?.[0]?.rate ?? 1) : 1);
+      set('baseRate', plan?.baseRateOverride ?? '');
+      set('threshold', plan ? (plan.rewardParts?.[0]?.thresholdTwd ?? plan.thresholdTwd ?? 0) : 0);
+      set('thresholdType', plan ? (plan.rewardParts?.[0]?.thresholdType ?? plan.thresholdType ?? 'single') : 'single');
+      set('cap', plan ? (plan.rewardParts?.[0]?.capAmount ?? '') : '');
+      set('cycle', plan ? (plan.rewardParts?.[0]?.cycle ?? plan.cycle ?? 'month') : 'month');
+      set('statementDay', plan?.statementDay ?? '');
+      set('end', plan ? (plan.rewardParts?.[0]?.end ?? '') : '');
+      set('sourceUrl', plan?.sourceUrl ?? '');
+      set('fallback', plan?.fallbackBase === false ? 'none' : 'base');
+      if (form.elements.namedItem('fee')) form.elements.namedItem('fee').checked = plan ? (plan.foreignFeeApplies !== false) : true;
+      if (form.elements.namedItem('notice')) form.elements.namedItem('notice').checked = Boolean(plan?.noticeFlags);
+
       const merchantLabel = document.getElementById('planEditorMerchantLabel');
-      const merchantChoices = document.getElementById('planEditorMerchantChoices');
-      if(merchantLabel) merchantLabel.hidden = ctx!=='merchant';
-      if(merchantChoices){
-        merchantChoices.innerHTML='';
-        (plan?.merchants||[]).forEach(m=>{
-          const b=document.createElement('button'); b.type='button'; b.className='merchant-choice active'; b.textContent=m; merchantChoices.appendChild(b);
-        });
-      }
+      if (merchantLabel) merchantLabel.hidden = (ctx !== 'merchant');
+      syncPlanEditorMerchants(plan ? (plan.merchants || []) : []);
+
       const sdf = document.getElementById('planEditorStatementDayField');
-      if(sdf) sdf.hidden = (form.elements.namedItem('cycle')?.value||'month')!=='billing';
-      form.querySelectorAll('input[name="context"]').forEach(r=>r.onchange = ()=>{ if(merchantLabel) merchantLabel.hidden = r.value!=='merchant' && r.checked;});
-      form.elements.namedItem('cycle')?.addEventListener('change', ()=>{ if(sdf) sdf.hidden = form.elements.namedItem('cycle')?.value!=='billing';}, {once:true});
+      if (sdf) sdf.hidden = ((form.elements.namedItem('cycle')?.value || 'month') !== 'billing');
+
+      form.querySelectorAll('input[name="context"]').forEach(r => {
+        r.onchange = () => { if (merchantLabel) merchantLabel.hidden = (r.value !== 'merchant' || !r.checked); };
+      });
+      form.elements.namedItem('cycle')?.addEventListener('change', () => {
+        if (sdf) sdf.hidden = ((form.elements.namedItem('cycle')?.value || 'month') !== 'billing');
+      });
+
+      const delBtn = document.getElementById('planEditorDeleteBtn');
+      if (delBtn) {
+        delBtn.hidden = !isEditing;
+        delBtn.onclick = async () => {
+          if (!isEditing || !plan) return;
+          await deletePlanById(card.id, plan.id);
+        };
+      }
+
       const overlay = document.getElementById('planEditorOverlay');
-      if(overlay) overlay.hidden = false;
+      if (overlay) overlay.hidden = false;
+      document.body.classList.add('editor-open');
+
+      if (isEditing) {
+        beginEditDynamicPlan(cardId, planId);
+      } else {
+        startAddActivity(cardId);
+      }
     }
-    function closePlanEditor(){
+
+    function closePlanEditor() {
       const overlay = document.getElementById('planEditorOverlay');
-      if(overlay) overlay.hidden = true;
-      if(cardEditorCardId) renderCardEditor();
+      if (overlay) overlay.hidden = true;
+      if (!cardEditorCardId) document.body.classList.remove('editor-open');
+      if (cardEditorCardId) renderCardEditor();
     }
 
     const planEditorFormEl = document.getElementById('planEditorForm');
-    planEditorFormEl?.addEventListener('submit', (e)=>{
+    planEditorFormEl?.addEventListener('submit', (e) => {
       e.preventDefault();
       const form = planEditorFormEl;
       const values = new FormData(form);
       const cardId = String(values.get('cardId'));
-      const card = rulesV3.cards.find(c=>c.id===cardId);
-      if(!card) return;
-      const editingId = String(values.get('editingPlanId')||'');
-      const existingPlan = editingId ? card.plans.find(p=>p.id===editingId) : null;
+      const card = rulesV3.cards.find(c => c.id === cardId);
+      if (!card) return;
+      const editingId = String(values.get('editingPlanId') || '');
+      const existingPlan = editingId ? card.plans.find(p => p.id === editingId) : null;
       const context = String(values.get('context'));
+      const merchants = [...(document.querySelectorAll('#planEditorMerchantChoices .merchant-choice.active') || [])].map(b => b.dataset.planMerchant);
+      if (context === 'merchant' && !merchants.length) {
+        showToast('特約商店方案請至少選一間適用店');
+        return;
+      }
       const cycle = String(values.get('cycle'));
-      const statementDay = Number(values.get('statementDay'))||0;
-      if(cycle==='billing'&&(statementDay<1||statementDay>31)){showToast('選擇帳單週期時，請輸入每月結帳日（1–31 日）');return;}
+      const statementDay = Number(values.get('statementDay')) || 0;
+      if (cycle === 'billing' && (statementDay < 1 || statementDay > 31)) {
+        showToast('選擇帳單週期時，請輸入每月結帳日（1–31 日）');
+        return;
+      }
       const baseRateOverrideRaw = values.get('baseRate');
-      const baseRateOverride = (baseRateOverrideRaw===''||baseRateOverrideRaw===null)?undefined:Math.max(0,Number(baseRateOverrideRaw)||0);
-      const planName = `${GUIDE_CONTEXT_LABELS[context]||context}加碼`;
-      const id = editingId || `plan-${Date.now()}-${Math.random().toString(36).slice(2,7)}`;
-      const threshold=Math.max(0,Number(values.get('threshold'))||0);
-      const thresholdType=String(values.get('thresholdType')||'single');
-      const cap=Math.max(0,Number(values.get('cap'))||0);
-      const nextPlan={id,name:planName,contexts:[context],includeBaseReward:values.has('includeBase'),foreignFeeApplies:values.has('fee'),noticeFlags:values.has('notice'),merchants:context==='merchant'?(existingPlan?.merchants||[]):[],locationNotice:context==='merchant',thresholdTwd:threshold,thresholdType,capAmount:cap,cycle,statementDay:cycle==='billing'?statementDay:null,sourceUrl:String(values.get('sourceUrl')||'').trim(),verifiedAt:'',enabled:true,fallbackBase:values.get('fallback')!=='none',baseRateOverride, rewardParts:[{id:existingPlan?.rewardParts?.[0]?.id||`part-${id}`,name:'加碼回饋',rewardUnit:'cash',rate:Math.max(0,Number(values.get('rate'))||0),capAmount:cap,usedReward:Number(existingPlan?.rewardParts?.[0]?.usedReward)||0,cycle,thresholdTwd:threshold,thresholdType,start:'',end:String(values.get('end')||'')}]};
-      const extraRate=Math.max(0,Number(values.get('extraRate'))||0);
-      if(extraRate>0){nextPlan.rewardParts.push({id:existingPlan?.rewardParts?.[1]?.id||`part-extra-${id}`,name:'同享活動加碼',rate:extraRate,capAmount:Math.max(0,Number(values.get('extraCap'))||0),usedReward:Number(existingPlan?.rewardParts?.[1]?.usedReward)||0,cycle:String(values.get('extraCycle')||'campaign'),thresholdTwd:Math.max(0,Number(values.get('extraThreshold'))||0),thresholdType:String(values.get('extraThresholdType')||'single'),start:'',end:String(values.get('extraEnd')||'')});}
-      if(existingPlan)Object.assign(existingPlan,nextPlan);else card.plans.push(nextPlan);
-      saveRulesV3();calculate();renderCardEditor();closePlanEditor();showToast('已儲存加碼活動');
+      const baseRateOverride = (baseRateOverrideRaw === '' || baseRateOverrideRaw === null) ? undefined : Math.max(0, Number(baseRateOverrideRaw) || 0);
+      const customName = String(values.get('name') || '').trim();
+      const planName = customName || `${GUIDE_CONTEXT_LABELS[context] || context}加碼`;
+      const id = editingId || `plan-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+      const threshold = Math.max(0, Number(values.get('threshold')) || 0);
+      const thresholdType = String(values.get('thresholdType') || 'single');
+      const cap = Math.max(0, Number(values.get('cap')) || 0);
+      const shareExtraCap = values.has('shareExtraCap');
+      if (shareExtraCap && cap <= 0) {
+        showToast('共用額度需先設定第一項回饋上限');
+        return;
+      }
+      const oldParts = existingPlan?.rewardParts || [];
+      const firstOld = oldParts[0];
+      // includeBaseReward 由情境自動決定：PayPay 不含信用卡基本回饋，其他情境均併計
+      const includeBaseReward = (context !== 'paypay');
+      const nextPlan = {
+        id,
+        name: planName,
+        contexts: [context],
+        includeBaseReward,
+        foreignFeeApplies: values.has('fee'),
+        noticeFlags: values.has('notice'),
+        merchants: context === 'merchant' ? merchants : [],
+        locationNotice: context === 'merchant',
+        thresholdTwd: threshold,
+        thresholdType,
+        capAmount: cap,
+        cycle,
+        statementDay: cycle === 'billing' ? statementDay : null,
+        sourceUrl: String(values.get('sourceUrl') || '').trim(),
+        verifiedAt: '',
+        enabled: true,
+        fallbackBase: values.get('fallback') !== 'none',
+        baseRateOverride,
+        rewardParts: [{
+          id: firstOld?.id || `part-${id}`,
+          name: firstOld?.name || '加碼回饋',
+          rewardUnit: 'cash',
+          rate: Math.max(0, Number(values.get('rate')) || 0),
+          capAmount: cap,
+          quotaGroupId: null,
+          usedReward: Number(firstOld?.usedReward) || 0,
+          cycle,
+          thresholdTwd: threshold,
+          thresholdType,
+          start: '',
+          end: String(values.get('end') || '')
+        }]
+      };
+      if (existingPlan) Object.assign(existingPlan, nextPlan); else card.plans.push(nextPlan);
+      saveRulesV3();
+      calculate();
+      renderCardEditor();
+      renderGuideViews();
+      closePlanEditor();
+      showToast('已儲存加碼活動');
     });
 
     try { window.switchTab = switchTab; } catch(e){}

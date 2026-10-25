@@ -23,7 +23,7 @@ setTimeout(function () {
     check('進階設定預設收合', !adv.open);
     check('進階設定觸控目標 >= 32px', adv.querySelector('summary').getBoundingClientRect().height >= 32, Math.round(adv.querySelector('summary').getBoundingClientRect().height)+'px');
     adv.open = true;
-    check('展開進階設定可用', !!form.querySelector('input[name="sourceUrl"]') && !!form.querySelector('input[name="extraRate"]'));
+    check('展開進階設定可用', !!form.querySelector('input[name="sourceUrl"]'));
 
     // 舊版規則表已全面移除
     check('舊版規則表 DOM 已移除', !d.getElementById('ruleGuideRows') && !d.getElementById('toggleRuleEdit') && !d.getElementById('ruleEditActions') && !d.getElementById('ruleChangeModal'));

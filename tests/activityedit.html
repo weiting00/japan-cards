@@ -54,7 +54,7 @@ setTimeout(async function () {
     var labelEdit = w.getComputedStyle(form.querySelector('.rule-form-grid label')).fontSize;
     check('新增與編輯的欄位標題樣式相同', labelAdd === labelEdit, labelAdd + ' vs ' + labelEdit);
     // 編輯模式也要有 ＋/－ 步進鈕
-    check('加碼活動數字欄位有 ＋/－ 步進鈕', d.querySelectorAll('#addDynamicPlanForm .stepper-btn').length >= 8, d.querySelectorAll('#addDynamicPlanForm .stepper-btn').length + ' 個');
+    check('加碼活動數字欄位有 ＋/－ 步進鈕', d.querySelectorAll('#addDynamicPlanForm .stepper-btn').length >= 4, d.querySelectorAll('#addDynamicPlanForm .stepper-btn').length + ' 個');
 
     // ---------- 4. 編輯後存檔 → rulesV3 更新 ----------
     d.getElementById('cancelPlanEdit').click();

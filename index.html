@@ -1826,8 +1826,8 @@
               </div>
 
               <div class="rule-form-grid">
-                <label>活動名稱<input name="name" required placeholder="例如：交通卡加值"></label>
                 <label>加碼回饋率（%）<input name="rate" type="number" min="0" step="0.01" value="1" required></label>
+                <label>方案基本回饋率（%）<input name="baseRate" type="number" min="0" step="0.01" placeholder="留白＝沿用卡片基本回饋"></label>
                 <label>單筆門檻（NT$）<input name="threshold" type="number" min="0" step="1" value="0" placeholder="0 = 無門檻"></label>
                 <label>門檻方式<select name="thresholdType"><option value="single">單筆</option><option value="cumulative">週期累積</option></select></label>
                 <label>回饋上限（NT$）<input name="cap" type="number" min="0" step="1" placeholder="留白 = 無上限"></label>
@@ -3094,6 +3094,8 @@
       if (tabId === 'guide') { applyGuideView(getStoredGuideView()); renderGuideViews(); }
     }
 
+    window.switchTab = switchTab;
+
     // ---- 規則編輯：單卡編輯頁（第一層卡片 → 第二層加碼活動）----
     const activityForm = document.getElementById('addDynamicPlanForm');
     let activityCardId = null;          // 目前表單屬於哪張卡
@@ -3244,7 +3246,8 @@
     }
 
     function getGuidePlanNet(card, plan) {
-      const base = plan && plan.includeBaseReward !== false ? (Number(card.baseRate) || 0) : 0;
+      const planBaseRate = plan && plan.baseRateOverride !== undefined && plan.baseRateOverride !== null ? Math.max(0, Number(plan.baseRateOverride) || 0) : (Number(card.baseRate) || 0);
+      const base = plan && plan.includeBaseReward !== false ? planBaseRate : 0;
       return Math.round((base + getGuidePlanBonus(plan) - getGuidePlanFee(card, plan)) * 100) / 100;
     }
 
@@ -3393,10 +3396,10 @@
           const baseCellText = plan.includeBaseReward !== false ? `${Number(card.baseRate) || 0}%` : '不併計（僅此加碼）';
           const feeCellText = plan.foreignFeeApplies !== false ? '-1.5%' : '0%（免收）';
           if (isFirstRowOfCard) {
-            rows.push(`<tr class="guide-table-card-group guide-table-card-group-${cardGroupIndex % 2}"><td class="guide-table-card-cell">${cardCell}<br>${editButton}</td><td>${escapeHtml(GUIDE_CONTEXT_LABELS[context] || context)}</td><td>${escapeHtml(baseCellText)}</td><td>+${formatGuidePercent(getGuidePlanBonus(plan))}%</td><td>${feeCellText}</td><td><b>${formatGuidePercent(getGuidePlanNet(card, plan))}%</b></td><td>${threshold ? `單筆滿 NT$${threshold.toLocaleString()}` : '無門檻'}</td><td>${escapeHtml(cycleText)}</td><td>${escapeHtml(capText)}</td></tr>`);
+            rows.push(`<tr class="guide-table-card-group guide-table-card-group-${cardGroupIndex % 2}"><td class="guide-table-card-cell">${cardCell}<br>${editButton}</td><td>${escapeHtml(GUIDE_CONTEXT_LABELS[context] || context)}</td><td>${escapeHtml(baseCellText)}</td><td>+${formatGuidePercent(getGuidePlanBonus(plan))}%</td><td>${feeCellText}</td><td><b>${formatGuidePercent(getGuidePlanNet(card, plan))}%</b></td><td>${threshold ? `單筆滿 NT${threshold.toLocaleString()}` : '無門檻'}</td><td>${escapeHtml(cycleText)}</td><td>${escapeHtml(capText)}</td></tr>`);
             isFirstRowOfCard = false;
           } else {
-            rows.push(`<tr class="guide-table-card-group guide-table-card-group-${cardGroupIndex % 2}"><td class="guide-table-card-cell guide-table-card-cell-group"></td><td>${escapeHtml(GUIDE_CONTEXT_LABELS[context] || context)}</td><td>${escapeHtml(baseCellText)}</td><td>+${formatGuidePercent(getGuidePlanBonus(plan))}%</td><td>${feeCellText}</td><td><b>${formatGuidePercent(getGuidePlanNet(card, plan))}%</b></td><td>${threshold ? `單筆滿 NT$${threshold.toLocaleString()}` : '無門檻'}</td><td>${escapeHtml(cycleText)}</td><td>${escapeHtml(capText)}</td></tr>`);
+            rows.push(`<tr class="guide-table-card-group guide-table-card-group-${cardGroupIndex % 2}"><td class="guide-table-card-cell guide-table-card-cell-group"></td><td>${escapeHtml(GUIDE_CONTEXT_LABELS[context] || context)}</td><td>${escapeHtml(baseCellText)}</td><td>+${formatGuidePercent(getGuidePlanBonus(plan))}%</td><td>${feeCellText}</td><td><b>${formatGuidePercent(getGuidePlanNet(card, plan))}%</b></td><td>${threshold ? `單筆滿 NT${threshold.toLocaleString()}` : '無門檻'}</td><td>${escapeHtml(cycleText)}</td><td>${escapeHtml(capText)}</td></tr>`);
           }
         });
       }
@@ -3506,10 +3509,11 @@
             ? ` · 帳單週期${Number(plan.statementDay) >= 1 ? `（每月 ${Number(plan.statementDay)} 日結帳）` : '（結帳日未設定）'}`
             : (planCycle !== 'none' ? ` · ${GUIDE_CYCLE_LABELS[planCycle] || planCycle}` : '');
           const merchantText = (plan.merchants || []).length ? ` · 店家：${(plan.merchants || []).join('、')}` : '';
+          const baseInfo = plan.baseRateOverride !== undefined && plan.baseRateOverride !== null ? ` · 方案基本回饋 ${Number(plan.baseRateOverride)||0}%` : '';
           return `<div class="editor-plan-row">
             <div class="editor-plan-info">
-              <strong>${escapeHtml(plan.name)}</strong>
-              <small>${escapeHtml(contextText)} · +${formatGuidePercent(bonus)}%${cap > 0 ? ` · 上限 NT$${cap.toLocaleString()}` : ' · 無上限'}${threshold > 0 ? ` · 單筆滿 NT$${threshold.toLocaleString()}` : ''}${plan.includeBaseReward !== false ? ' · 併基本回饋' : ' · 不併基本回饋'}${plan.foreignFeeApplies !== false ? ' · 收 1.5% 手續費' : ' · 免手續費'}${plan.noticeFlags ? ' · 需登錄／切換權益' : ''}${escapeHtml(cycleText)}${escapeHtml(merchantText)}</small>
+              <strong>${escapeHtml(contextText)}加碼</strong>
+              <small>+${formatGuidePercent(bonus)}%${cap > 0 ? ` · 上限 NT$${cap.toLocaleString()}` : ' · 無上限'}${threshold > 0 ? ` · 單筆滿 NT$${threshold.toLocaleString()}` : ''}${plan.includeBaseReward !== false ? ' · 併基本回饋' : ' · 不併基本回饋'}${baseInfo}${plan.foreignFeeApplies !== false ? ' · 收 1.5% 手續費' : ' · 免手續費'}${plan.noticeFlags ? ' · 需登錄／切換權益' : ''}${escapeHtml(cycleText)}${escapeHtml(merchantText)}</small>
             </div>
             <div class="editor-plan-actions">
               <button class="btn-small" type="button" data-card-edit-plan="${escapeHtml(card.id)}|${escapeHtml(plan.id)}">編輯</button>
@@ -3531,10 +3535,12 @@
       mountActivityForm(cardId);
       const form = activityForm;
       const set = (name, value) => { const field = form.elements.namedItem(name); if (field) field.value = value ?? ''; };
-      set('editingPlanId', plan.id); set('name', plan.name);
+      set('editingPlanId', plan.id);
       const contextRadio = form.querySelector(`input[name="context"][value="${plan.contexts?.[0] || 'general'}"]`);
       if (contextRadio) contextRadio.checked = true;
-      set('rate', plan.rewardParts?.[0]?.rate || 0); set('cap', plan.rewardParts?.[0]?.capAmount || ''); set('cycle', plan.rewardParts?.[0]?.cycle || plan.cycle || 'month');
+      set('rate', plan.rewardParts?.[0]?.rate || 0);
+      set('baseRate', plan.baseRateOverride ?? '');
+      set('cap', plan.rewardParts?.[0]?.capAmount || ''); set('cycle', plan.rewardParts?.[0]?.cycle || plan.cycle || 'month');
       set('statementDay', plan.statementDay || ''); set('threshold', plan.rewardParts?.[0]?.thresholdTwd || plan.thresholdTwd || 0);
       set('thresholdType', plan.rewardParts?.[0]?.thresholdType || plan.thresholdType || 'single');
       set('start', plan.rewardParts?.[0]?.start || ''); set('end', plan.rewardParts?.[0]?.end || '');
@@ -3561,12 +3567,13 @@
       form.reset();
       form.elements.namedItem('editingPlanId').value = '';
       form.elements.namedItem('cardId').value = '';
-      form.elements.namedItem('rate').value = '1';
-      form.elements.namedItem('includeBase').checked = true;
-      form.elements.namedItem('fee').checked = true;
-      form.elements.namedItem('cycle').value = 'month';
+      if (form.elements.namedItem('rate')) form.elements.namedItem('rate').value = '1';
+      if (form.elements.namedItem('baseRate')) form.elements.namedItem('baseRate').value = '';
+      if (form.elements.namedItem('includeBase')) form.elements.namedItem('includeBase').checked = true;
+      if (form.elements.namedItem('fee')) form.elements.namedItem('fee').checked = true;
+      if (form.elements.namedItem('cycle')) form.elements.namedItem('cycle').value = 'month';
       setActivityFormMode(false);
-      form.querySelector('#cancelPlanEdit').hidden = true;
+      if (form.querySelector('#cancelPlanEdit')) form.querySelector('#cancelPlanEdit').hidden = true;
       form.querySelectorAll('#planMerchantChoices .merchant-choice').forEach(button => button.classList.remove('active'));
       form.hidden = true;
       activityCardId = null;
@@ -3615,7 +3622,10 @@
       const statementDay=Number(values.get('statementDay'))||0;
       if(cycle==='billing'&&(statementDay<1||statementDay>31)){showToast('選擇帳單週期時，請輸入每月結帳日（1–31 日）');activityForm.elements.namedItem('statementDay')?.focus();return;}
       const thresholdType=String(values.get('thresholdType')||'single');
-      const nextPlan={id,name:String(values.get('name')||'加碼方案').trim(),contexts:[context],includeBaseReward:values.has('includeBase'),foreignFeeApplies:values.has('fee'),noticeFlags:values.has('notice'),merchants:context==='merchant'?merchants:[],locationNotice:context==='merchant',thresholdTwd:threshold,thresholdType,capAmount:cap,cycle,statementDay:cycle==='billing'?statementDay:null,cumulativeSpendTwd:Number(existingPlan?.cumulativeSpendTwd)||0,cumulativePeriodKey:existingPlan?.cumulativePeriodKey||null,sourceUrl:String(values.get('sourceUrl')||'').trim(),verifiedAt:String(values.get('verifiedAt')||''),enabled:true,fallbackBase:values.get('fallback')!=='none',rewardParts:[{id:firstOld?.id||`part-${id}`,name:firstOld?.name||'加碼回饋',rewardUnit:'cash',rate:Math.max(0,Number(values.get('rate'))||0),capAmount:cap,quotaGroupId:shareExtraCap?`quota-${id}`:null,usedReward:Number(firstOld?.usedReward)||0,periodKey:firstOld?.periodKey,cumulativeSpendTwd:Number(firstOld?.cumulativeSpendTwd)||0,cumulativePeriodKey:firstOld?.cumulativePeriodKey,cycle,thresholdTwd:threshold,thresholdType,start:String(values.get('start')||''),end:String(values.get('end')||'')}]};
+      const baseRateOverrideRaw = values.get('baseRate');
+      const baseRateOverride = (baseRateOverrideRaw === '' || baseRateOverrideRaw === null || baseRateOverrideRaw === undefined) ? undefined : Math.max(0, Number(baseRateOverrideRaw)||0);
+      const planName = String(values.get('name')||'').trim() || `${GUIDE_CONTEXT_LABELS[context] || context}加碼`;
+      const nextPlan={id,name:planName,contexts:[context],includeBaseReward:values.has('includeBase'),foreignFeeApplies:values.has('fee'),noticeFlags:values.has('notice'),merchants:context==='merchant'?merchants:[],locationNotice:context==='merchant',thresholdTwd:threshold,thresholdType,capAmount:cap,cycle,statementDay:cycle==='billing'?statementDay:null,cumulativeSpendTwd:Number(existingPlan?.cumulativeSpendTwd)||0,cumulativePeriodKey:existingPlan?.cumulativePeriodKey||null,sourceUrl:String(values.get('sourceUrl')||'').trim(),verifiedAt:String(values.get('verifiedAt')||''),enabled:true,fallbackBase:values.get('fallback')!=='none',baseRateOverride:baseRateOverride, rewardParts:[{id:firstOld?.id||`part-${id}`,name:firstOld?.name||'加碼回饋',rewardUnit:'cash',rate:Math.max(0,Number(values.get('rate'))||0),capAmount:cap,quotaGroupId:shareExtraCap?`quota-${id}`:null,usedReward:Number(firstOld?.usedReward)||0,periodKey:firstOld?.periodKey,cumulativeSpendTwd:Number(firstOld?.cumulativeSpendTwd)||0,cumulativePeriodKey:firstOld?.cumulativePeriodKey,cycle,thresholdTwd:threshold,thresholdType,start:String(values.get('start')||''),end:String(values.get('end')||'')}]};
       const extraRate=Math.max(0,Number(values.get('extraRate'))||0);
       if(extraRate>0){const extraCycle=String(values.get('extraCycle')||'campaign');const extraCap=shareExtraCap?cap:Math.max(0,Number(values.get('extraCap'))||0);nextPlan.rewardParts.push({id:extraOld?.id||`part-extra-${id}`,name:extraOld?.name||'同享活動加碼',rate:extraRate,capAmount:extraCap,quotaGroupId:shareExtraCap?`quota-${id}`:null,usedReward:Number(extraOld?.usedReward)||0,periodKey:extraOld?.periodKey,cumulativeSpendTwd:Number(extraOld?.cumulativeSpendTwd)||0,cumulativePeriodKey:extraOld?.cumulativePeriodKey,cycle:extraCycle,thresholdTwd:Math.max(0,Number(values.get('extraThreshold'))||0),thresholdType:String(values.get('extraThresholdType')||'single'),start:String(values.get('extraStart')||''),end:String(values.get('extraEnd')||'')});}
       else if(extraOld&&(Number(extraOld.usedReward)>0||Number(extraOld.cumulativeSpendTwd)>0||ledger.some(item=>item.v3Usage?.some(usage=>usage.partId===extraOld.id)))){nextPlan.rewardParts.push(extraOld);}
@@ -3784,7 +3794,8 @@
       const includeBase = plan.includeBaseReward !== false;
       const bonusEligibleSpend=matchedParts.reduce((sum,part)=>sum+(part.rate>0?part.reward/(part.rate/100):0),0);
       const fallbackSpend=Math.max(0,spendTwd-Math.min(spendTwd,bonusEligibleSpend));
-      const base = includeBase ? spendTwd * Math.max(0, Number(card.baseRate)||0) / 100 : plan.fallbackBase ? fallbackSpend * Math.max(0,Number(card.baseRate)||0)/100 : 0;
+      const planBaseRate = (plan.baseRateOverride !== undefined && plan.baseRateOverride !== null) ? Math.max(0, Number(plan.baseRateOverride)||0) : Math.max(0, Number(card.baseRate)||0);
+      const base = includeBase ? spendTwd * planBaseRate / 100 : plan.fallbackBase ? fallbackSpend * planBaseRate / 100 : 0;
       const feeApplies = plan.foreignFeeApplies !== undefined ? plan.foreignFeeApplies : card.baseFeeApplies;
       const fee = feeApplies ? spendTwd * 0.015 : 0;
       const bonus = matchedParts.reduce((sum, part) => sum + part.reward, 0);

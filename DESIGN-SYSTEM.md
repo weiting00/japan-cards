@@ -2,7 +2,7 @@
 
 > 狀態：**第 1 段（皮膚）＋ 1.5 段（手感）已完成**。
 > 皮膚層（第 1 段）只改 `<style>` 與 meta 顏色，JS 與 HTML 結構 0 改動；
-> 手感層（第 1.5 段）經使用者授權，只動 3 個行為，見第 5.5 節。
+> 手感層（第 1.5 段）經使用者授權，只動 3 個行為，見第 5.5 節；另加第 4 項「手機上一頁」（UX4）。
 > 用途：① 固定現在的視覺與手感契約 ② 第 3 段換 React + shadcn/ui 時的對照表。
 > 這份文件只描述「長什麼樣、有哪些元件」，不描述商業邏輯。
 
@@ -112,16 +112,21 @@
 | 分頁切換迷失 | 記住上次分頁（`japan_card_last_tab_v1`）、切換時回頂部 | `switchTab()` / `restoreLastTab()`，`init()` 尾端呼叫 |
 | 編輯器多層難返回 | Esc 由上往下逐層關閉（modal → 設定 → 活動表單 → 卡片編輯 → 新增卡）；新增加碼活動時就看得到「取消」；表單有輸入時先問「放棄編輯？」 | `keydown` 監聽 / `activityFormDirty()` / `startAddActivity()` |
 | 存檔沒回饋 | 卡片編輯與卡片設定「一改就存」後跳「已儲存 ✓」（1.5 秒內只跳一次）；新增卡片、儲存活動各自有專屬提示 | `notifySaved()` + `#cardEditorOverlay` / `#cardSettingsOverlay` 的 change 委派 |
+| 手機沒有 Esc | 瀏覽器／手勢「上一頁」與 Esc 共用 `closeTopLayer()`：先關最上層，沒有層就回上一個分頁。分頁切換會進歷史；開層時壓一個「守衛」歷史項，最後一層關掉時自動收走，避免上一頁要空按 | `closeTopLayer()` / `syncLayerHistory()` / `MutationObserver`（`LAYER_IDS`）/ `popstate` / `switchTab(tabId, replaceHistory)` |
 
-三個行為都有測試：`tests/ux.html`（23 項）。三個 commit 各自可獨立退回：
+四個行為都有測試：`tests/ux.html`（32 項）。四個 commit 各自可獨立退回：
 
 ```
+（UX4）   手機上一頁
 c89c5dc  UX3 存檔回饋
 a527654  UX2 多層返回
 cfe777a  UX1 分頁記住
 ```
 
-仍未處理（使用者決定延後）：**瀏覽器上一頁**要接 `history.pushState` / `popstate`，以及同步/匯率狀態的說明文字。
+設計取捨：不逐一改每個 `open*` / `close*` 函式，而是用 `MutationObserver` 監看 9 個層的 `hidden`/`style`，
+任何開關都會自動同步歷史守衛。`history` API 全部包在 try/catch，`file://` 直接開檔時會退回「沒有歷史」模式，功能不受影響。
+
+仍未處理（使用者決定延後）：同步/匯率狀態的說明文字。
 
 ---
 
@@ -130,10 +135,10 @@ cfe777a  UX1 分頁記住
 | 測試 | 內容 |
 |---|---|
 | `tests/skin.html` | 視覺契約：底色、霓虹青/洋紅、圓角階梯、發光存在、語意例外、結構未變 |
-| `tests/ux.html` | 手感契約：分頁記住、Esc 逐層返回、未儲存確認、存檔提示 |
+| `tests/ux.html` | 手感契約：分頁記住、Esc 逐層返回、未儲存確認、存檔提示、上一頁（含守衛回收） |
 | `tests/dscontract.html` | 元件契約：13 階青色 token、欄位/按鈕/開關一致性、高度契約 |
 | `tests/layout2.html` | 版面契約：主要區塊有可見外框、攻略卡淺框、危險區紅框 |
-| 全站 | `./tests/run.sh` → **446 passed, 0 failed** |
+| 全站 | `./tests/run.sh` → **455 passed, 0 failed** |
 
 ---
 

@@ -2820,6 +2820,9 @@
 
       // 資料都載入完成後，才回到上次停留的分頁（避免先畫出空資料）
       restoreLastTab();
+
+      // 「上一頁」的基準狀態：目前分頁就是歷史的起點
+      pushAppState({ jc: 'tab', tab: currentTabId }, true);
     }
 
     // 只採用臺銀官方頁面標示的「本行即期賣出」欄位。
@@ -3263,7 +3266,8 @@
     }
 
     // Tab 切換
-    function switchTab(tabId) {
+    let currentTabId = 'decision';
+    function switchTab(tabId, replaceHistory = false) {
       const tabs = ['decision', 'quotas', 'ledger', 'guide'];
       tabs.forEach(t => {
         const el = document.getElementById(`tab-${t}`);
@@ -3280,6 +3284,10 @@
       if (tabId === 'ledger') renderLedger();
       if (tabId === 'guide') { applyGuideView(getStoredGuideView()); renderGuideViews(); }
 
+      currentTabId = tabId;
+      // 分頁也記進瀏覽器歷史：手機的「上一頁」可以回到上一個分頁。
+      // 若目前壓著一層（或有守衛），就就地取代，避免歷史愈疊愈深。
+      pushAppState({ jc: 'tab', tab: tabId }, replaceHistory || closingForHistory || (history.state && history.state.jc === 'layer'));
       // 記住這次停留的分頁，下次打開直接回到原位
       try { localStorage.setItem(STORAGE_KEY.lastTab, tabId); } catch (e) { /* 隱私模式無法寫入，忽略 */ }
       // 切換分頁時回到頂部，避免停在上一個分頁的捲動位置
@@ -3290,7 +3298,7 @@
     function restoreLastTab() {
       let saved = '';
       try { saved = localStorage.getItem(STORAGE_KEY.lastTab) || ''; } catch (e) { /* 忽略 */ }
-      if (['decision', 'quotas', 'ledger', 'guide'].includes(saved)) switchTab(saved);
+      if (['decision', 'quotas', 'ledger', 'guide'].includes(saved)) switchTab(saved, true);
     }
 
     try { window.switchTab = switchTab; } catch(e){}
@@ -4633,18 +4641,56 @@
       window.visualViewport.addEventListener('scroll', syncVisualViewport);
     }
 
-    document.addEventListener('keydown', event => {
-      if (event.key !== 'Escape') return;
+    // ---- 手機「上一頁」：先關目前這一層；沒有層，就回上一個分頁 ----
+    // 做法：只要有任何一層打開，就在歷史裡壓一個「守衛」；最後一層關掉時把守衛收走。
+    // 這樣每個開關函式都不用改，瀏覽器上一頁（含 iOS 手勢、Android 返回鍵）自然可用。
+    let suppressPopstate = false;
+    let guardBackPending = false;
+    let suppressTimer = null;
+    let closingForHistory = false;   // 正在處理「上一頁」時，分頁切換用取代而不是新增
 
-      // 由上往下關閉：哪一層在最上面，就先關哪一層
-      if (appDialogResolver) { closeAppDialog(false); return; }
+    const LAYER_IDS = ['appDialogModal', 'planEditorOverlay', 'cardSettingsOverlay', 'rateModal',
+                       'syncModal', 'quotaResetModal', 'clearLedgerModal', 'cardEditorOverlay', 'addCardOverlay'];
 
-      const isOpen = id => {
-        const el = document.getElementById(id);
-        if (!el || el.hidden) return false;
-        const style = window.getComputedStyle(el);
-        return style.display !== 'none' && style.visibility !== 'hidden';
-      };
+    function isLayerOpen(id) {
+      const el = document.getElementById(id);
+      if (!el || el.hidden) return false;
+      const style = window.getComputedStyle(el);
+      return style.display !== 'none' && style.visibility !== 'hidden';
+    }
+
+    function anyLayerOpen() {
+      return LAYER_IDS.some(isLayerOpen);
+    }
+
+    // file:// 或沙箱環境可能不允許 pushState，失敗就退回「沒有歷史」的模式
+    function pushAppState(state, replace) {
+      try {
+        if (replace) history.replaceState(state, '');
+        else history.pushState(state, '');
+      } catch (e) { /* 忽略 */ }
+    }
+
+    function syncLayerHistory() {
+      if (guardBackPending) return;
+      if (anyLayerOpen()) {
+        if (!history.state || history.state.jc !== 'layer') pushAppState({ jc: 'layer' }, false);
+        return;
+      }
+      if (history.state && history.state.jc === 'layer') {
+        guardBackPending = true;
+        suppressPopstate = true;
+        // 保險：若這次 history.back() 沒有回報 popstate（被合併或無法再後退），
+        // 時間到就自己解開，避免之後真正的「上一頁」被吃掉。
+        clearTimeout(suppressTimer);
+        suppressTimer = setTimeout(() => { suppressPopstate = false; guardBackPending = false; }, 600);
+        try { history.back(); } catch (e) { guardBackPending = false; suppressPopstate = false; }
+      }
+    }
+
+    // 由上往下關閉：哪一層在最上面，就先關哪一層（Esc 與「上一頁」共用）
+    function closeTopLayer() {
+      if (appDialogResolver) { closeAppDialog(false); return true; }
 
       const upperLayers = [
         ['planEditorOverlay', closePlanEditor],
@@ -4655,11 +4701,11 @@
         ['clearLedgerModal', closeClearLedgerModal]
       ];
       for (const [id, close] of upperLayers) {
-        if (isOpen(id)) { close(); return; }
+        if (isLayerOpen(id)) { close(); return true; }
       }
 
       // 加碼活動表單掛在卡片編輯頁裡：先收表單，不要一次關掉整頁
-      if (isOpen('cardEditorOverlay')) {
+      if (isLayerOpen('cardEditorOverlay')) {
         if (activityCardId && activityForm && !activityForm.hidden) {
           if (activityFormDirty()) {
             showAppDialog({
@@ -4672,14 +4718,49 @@
           } else {
             cancelDynamicPlanEdit();
           }
-          return;
+          return true;
         }
         closeCardEditor();
-        return;
+        return true;
       }
 
-      if (isOpen('addCardOverlay')) { closeAddCard(); }
+      if (isLayerOpen('addCardOverlay')) { closeAddCard(); return true; }
+      return false;
+    }
+
+    document.addEventListener('keydown', event => {
+      if (event.key !== 'Escape') return;
+      if (closeTopLayer()) event.preventDefault();
     });
+
+    window.addEventListener('popstate', event => {
+      // 這是我們自己為了收守衛而按的上一頁，不要再關東西
+      if (suppressPopstate) {
+        suppressPopstate = false;
+        guardBackPending = false;
+        clearTimeout(suppressTimer);
+        return;
+      }
+      closingForHistory = true;
+      let closed = false;
+      try { closed = closeTopLayer(); } finally { closingForHistory = false; }
+      if (closed) {
+        syncLayerHistory();   // 還有層就補回守衛，讓下一層也吃得到返回
+        return;
+      }
+      const state = event.state;
+      if (state && state.jc === 'tab' && state.tab) switchTab(state.tab, true);
+    });
+
+    // 觀察這 9 層的開關，自動放/收歷史守衛
+    (function observeLayers() {
+      if (typeof MutationObserver !== 'function') return;
+      const observer = new MutationObserver(() => syncLayerHistory());
+      LAYER_IDS.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) observer.observe(el, { attributes: true, attributeFilter: ['hidden', 'style'] });
+      });
+    })();
 
     // 表單裡有使用者輸入，才算「有未儲存的內容」
     function activityFormDirty() {

@@ -2,7 +2,7 @@
 <style>html,body{margin:0;background:#111}iframe{width:390px;height:844px;border:0;display:block}</style>
 <iframe id="f" src="../index.html"></iframe>
 <script>
-setTimeout(function () {
+setTimeout(async function () {
   var out = []; var log = function (m) { out.push(m); }; var pass = 0, fail = 0;
   function check(n, c, e) { if (c) { pass++; log('PASS  ' + n + (e ? ' — ' + e : '')); } else { fail++; log('FAIL  ' + n + (e ? ' — ' + e : '')); } }
   var esc = function () {
@@ -111,6 +111,55 @@ setTimeout(function () {
     check('C3 卡片設定改了也會提示', /已儲存/.test(toast.textContent), toast.textContent);
     w.eval('closeAppDialog(false)');
     d.getElementById('appDialogModal').style.display = 'none';
+
+    // ================= D. 瀏覽器／手機上一頁 =================
+    log('=== D. 上一頁 ===');
+    var wait = function (ms) { return new Promise(function (r) { setTimeout(r, ms); }); };
+    var back = async function () { w.history.back(); await wait(250); };
+
+    // 收拾乾淨，並把目前這一筆當成基準
+    await wait(700);
+    w.eval('for (var i = 0; i < 6; i++) { if (!closeTopLayer()) break; }');
+    await wait(700);
+    w.switchTab('decision', true);
+    await wait(50);
+
+    // 編輯頁 → 加碼表單：上一頁先收表單，再上一頁才關頁
+    w.openCardEditor(cardId);
+    d.getElementById('cardEditorAddActivity').click();
+    await wait(80);
+    await back();
+    check('D1 上一頁先收起加碼活動表單', d.getElementById('addDynamicPlanForm').hidden === true);
+    check('D1b 卡片編輯頁還在（沒有一次關到底）', shown('cardEditorOverlay'));
+    await back();
+    check('D2 再按上一頁才關閉卡片編輯頁', !shown('cardEditorOverlay'));
+
+    // 分頁也進歷史：上一頁回到前一個分頁
+    w.switchTab('decision', true);
+    w.switchTab('ledger');
+    await wait(80);
+    check('D3 目前在記帳分頁', d.getElementById('tab-ledger').style.display === 'block');
+    await back();
+    check('D3b 上一頁回到上一個分頁', d.getElementById('tab-decision').style.display === 'block');
+
+    // 最外層的新增信用卡頁
+    w.openAddCard();
+    await wait(80);
+    await back();
+    check('D4 上一頁關閉新增信用卡頁', !shown('addCardOverlay'));
+
+    // 用畫面上的按鈕關閉時，歷史守衛要一起收掉，否則上一頁會「空按一次」
+    w.switchTab('decision', true);
+    w.openCardEditor(cardId);
+    await wait(80);
+    w.closeCardEditor();
+    await wait(250);
+    check('D5 用按鈕關閉後，歷史守衛已收走', w.history.state && w.history.state.jc === 'tab', JSON.stringify(w.history.state));
+    var stateBefore = JSON.stringify(w.history.state);
+    await back();
+    check('D5b 這時按上一頁不會卡在原地', !!d.getElementById('tab-decision'), stateBefore + ' → ' + JSON.stringify(w.history.state));
+
+    check('D6 App 還在（沒有被上一頁帶離頁面）', /index\.html$/.test(w.location.pathname), w.location.pathname);
 
     check('C4 無 JS 錯誤', errs.length === 0, errs.slice(0, 3).join('; '));
   } catch (e) { fail++; log('EXCEPTION: ' + e.message + ' | ' + (e.stack || '').split('\n')[1]); }

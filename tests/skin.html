@@ -48,6 +48,11 @@ setTimeout(function () {
     check('C3 標題青 + 洋紅雙色光暈', /rgba\(0, 240, 255/.test(titleShadow) && /rgba\(255, 0, 229/.test(titleShadow), titleShadow);
     check('C4 卡片邊框是霓虹青', /rgba\(0, 240, 255/.test(cs('.card', 'borderTopColor') || ''), cs('.card', 'borderTopColor'));
     check('C5 進度條有青光', /rgba\(0, 240, 255/.test(probe('progress-fill', 'boxShadow') || ''), probe('progress-fill', 'boxShadow').slice(0, 50));
+    var tabShadow = cs('.tab-btn.active', 'boxShadow') || '';
+    check('C6 選中分頁有洋紅底線', /rgba\(255, 0, 229/.test(tabShadow), tabShadow.slice(0, 80));
+    var ct = d.querySelector('.card-title > span:first-child');
+    var marker = ct ? w.getComputedStyle(ct, '::before').color : '';
+    check('C7 區塊標記是霓虹洋紅', /255, 0, 229/.test(marker), marker);
 
     // ===== D. 語意例外 =====
     log('=== D. 語意例外 ===');

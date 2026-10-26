@@ -32,7 +32,7 @@ for p in 8899 8900 8901 8902 8903 8904 8905 8906 8907 8908; do
 done
 [ -z "$PORT" ] && { echo "找不到可用的 port（8899-8908）。" >&2; exit 1; }
 
-( cd "$ROOT" && python3 -m http.server "$PORT" --bind 127.0.0.1 >/dev/null 2>&1 ) &
+( cd "$ROOT" && exec python3 -m http.server "$PORT" --bind 127.0.0.1 >/dev/null 2>&1 ) &
 SERVER_PID=$!
 trap 'kill $SERVER_PID 2>/dev/null' EXIT INT TERM
 sleep 1

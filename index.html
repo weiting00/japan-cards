@@ -1488,7 +1488,9 @@
     .tab-btn.active {
       color: var(--primary) !important;
       text-shadow: 0 0 12px var(--a45);
+      box-shadow: inset 0 0 0 1px var(--a35), inset 0 -2px 0 rgba(255, 0, 229, 0.75), 0 0 22px var(--a12);
     }
+    .card-title > span:first-child::before { color: var(--accent); text-shadow: 0 0 10px rgba(255, 0, 229, 0.55); }
     .tab-btn.active .nav-icon { filter: drop-shadow(0 0 10px var(--a60)) !important; }
     .rate-pill { box-shadow: 0 0 12px var(--a10); }
     select:focus, input:focus {

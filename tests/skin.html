@@ -1,0 +1,75 @@
+<!doctype html><meta charset="utf-8">
+<style>html,body{margin:0;background:#111}iframe{width:390px;height:844px;border:0;display:block}</style>
+<iframe id="f" src="../index.html"></iframe>
+<script>
+setTimeout(function () {
+  var out = []; var log = function (m) { out.push(m); }; var pass = 0, fail = 0;
+  function check(n, c, e) { if (c) { pass++; log('PASS  ' + n + (e ? ' — ' + e : '')); } else { fail++; log('FAIL  ' + n + (e ? ' — ' + e : '')); } }
+  try {
+    var w = document.getElementById('f').contentWindow, d = w.document;
+    var errs = []; w.addEventListener('error', function (e) { errs.push(e.message); });
+
+    var root = w.getComputedStyle(d.documentElement);
+    var tok = function (n) { return root.getPropertyValue(n).trim(); };
+    var cs = function (sel, prop) { var el = d.querySelector(sel); return el ? w.getComputedStyle(el)[prop] : null; };
+    // 量測不存在於當下畫面的元件：暫時插入、量完移除（不改 App 狀態）
+    var probe = function (cls, prop) {
+      var el = d.createElement('div'); el.className = cls; d.body.appendChild(el);
+      var v = w.getComputedStyle(el)[prop]; el.parentNode.removeChild(el); return v;
+    };
+
+    // ===== A. 色票 =====
+    log('=== A. 色票 ===');
+    check('A1 底色 token = #0A0B1A', tok('--bg').toUpperCase() === '#0A0B1A', tok('--bg'));
+    check('A2 主色 token = #00F0FF', tok('--primary').toLowerCase() === '#00f0ff', tok('--primary'));
+    check('A3 強調色 token = #FF00E5', tok('--accent').toUpperCase() === '#FF00E5', tok('--accent'));
+    check('A4 主要文字 token = #E0E0E8', tok('--text').toUpperCase() === '#E0E0E8', tok('--text'));
+    check('A5 body 實際底色 = rgb(10,11,26)', w.getComputedStyle(d.body).backgroundColor === 'rgb(10, 11, 26)', w.getComputedStyle(d.body).backgroundColor);
+
+    // ===== B. 圓角階梯 =====
+    log('=== B. 圓角 ===');
+    check('B1 --radius-lg = 16px', tok('--radius-lg') === '16px', tok('--radius-lg'));
+    check('B2 --radius-md = 12px', tok('--radius-md') === '12px', tok('--radius-md'));
+    check('B3 --radius-sm = 10px', tok('--radius-sm') === '10px', tok('--radius-sm'));
+    check('B4 卡片圓角 16px', cs('.card', 'borderRadius') === '16px', cs('.card', 'borderRadius'));
+    check('B5 輸入框圓角 10px', cs('input', 'borderRadius') === '10px', cs('input', 'borderRadius'));
+    check('B6 主按鈕圓角 12px', cs('.btn-main', 'borderRadius') === '12px', cs('.btn-main', 'borderRadius'));
+    check('B7 對話框圓角 16px', probe('modal-box', 'borderRadius') === '16px', probe('modal-box', 'borderRadius'));
+    check('B8 底部導覽維持直角', cs('.nav-tabs', 'borderRadius') === '0px', cs('.nav-tabs', 'borderRadius'));
+
+    // ===== C. 霓虹發光 =====
+    log('=== C. 霓虹發光 ===');
+    var cardShadow = cs('.card', 'boxShadow') || '';
+    var btnShadow = cs('.btn-main', 'boxShadow') || '';
+    var titleShadow = cs('.app-title h1', 'textShadow') || '';
+    var blur = parseFloat((btnShadow.match(/0px 0px (\d+(?:\.\d+)?)px/) || [0, 0])[1]);
+    check('C1 卡片有青色光暈', /rgba\(0, 240, 255/.test(cardShadow), cardShadow.slice(0, 60));
+    check('C2 主按鈕光暈 ≥ 12px', /rgba\(0, 240, 255/.test(btnShadow) && blur >= 12, btnShadow.slice(0, 60));
+    check('C3 標題青 + 洋紅雙色光暈', /rgba\(0, 240, 255/.test(titleShadow) && /rgba\(255, 0, 229/.test(titleShadow), titleShadow);
+    check('C4 卡片邊框是霓虹青', /rgba\(0, 240, 255/.test(cs('.card', 'borderTopColor') || ''), cs('.card', 'borderTopColor'));
+    check('C5 進度條有青光', /rgba\(0, 240, 255/.test(probe('progress-fill', 'boxShadow') || ''), probe('progress-fill', 'boxShadow').slice(0, 50));
+
+    // ===== D. 語意例外 =====
+    log('=== D. 語意例外 ===');
+    var gb = probe('guide-card', 'borderTopColor') || '';
+    check('D1 攻略卡維持淺色外框', /rgba?\(\s*25\d/.test(gb), gb);
+    var db = probe('card-editor-danger', 'borderTopColor') || '';
+    check('D2 危險區維持紅框', /255,\s*1\d\d,\s*1\d\d|255,\s*140,\s*150/.test(db), db);
+    var ob = probe('over-limit-alert', 'borderTopColor') || '';
+    check('D3 超額警示維持洋紅框', /255,\s*0,\s*229/.test(ob), ob);
+
+    // ===== E. 結構未變（皮膚不得動到行為） =====
+    log('=== E. 結構未變 ===');
+    check('E1 底部導覽仍是 4 個分頁', d.querySelectorAll('.tab-btn').length === 4, d.querySelectorAll('.tab-btn').length + ' 個');
+    var oc = d.querySelectorAll('[onclick]').length;
+    check('E2 行內事件數量不變', oc === 48, oc + ' 個（原始碼 49：第 49 個在明細樣板內）');
+    check('E3 四個頁面容器都在', ['tab-decision', 'tab-quotas', 'tab-ledger', 'tab-guide'].every(function (id) { return !!d.getElementById(id); }));
+    check('E4 兩個主要覆蓋層都在', !!d.getElementById('cardEditorOverlay') && !!d.getElementById('addCardOverlay'));
+    check('E5 無 JS 錯誤', errs.length === 0, errs.slice(0, 3).join('; '));
+
+    log('');
+    log('=== ' + pass + ' passed, ' + fail + ' failed ===');
+  } catch (e) { fail++; log('EXCEPTION: ' + e.message + ' | ' + (e.stack || '').split('\n')[1]); }
+  var pre = document.createElement('pre'); pre.id = 'AUDIT'; pre.textContent = out.join('\n'); document.body.appendChild(pre);
+}, 2600);
+</script>

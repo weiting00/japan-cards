@@ -3847,6 +3847,7 @@
       // 直接進入這張新卡的編輯頁，接著就能替它加碼活動
       closeAddCard();
       openCardEditor(newCard.id);
+      showToast(`已新增「${newCard.name}」，接著可以加碼活動`);
     });
     document.getElementById('addMerchantButton').addEventListener('click', () => {
       const input = document.getElementById('addMerchantInput');
@@ -3884,6 +3885,7 @@
       if(existingPlan)Object.assign(existingPlan,nextPlan);else card.plans.push(nextPlan);
       cancelDynamicPlanEdit();saveRulesV3();calculate();
       if(cardEditorCardId)renderCardEditor();
+      showToast(existingPlan ? '已儲存加碼活動 ✓' : '已新增加碼活動 ✓');
     });
 
     // ---- 單卡編輯頁的欄位與按鈕 ----
@@ -4701,6 +4703,25 @@
         toast.classList.remove('show');
       }, 2400);
     }
+
+    // 存檔回饋：卡片編輯 / 卡片設定是「一改就存」，這裡統一補一次提示
+    let lastSavedToastAt = 0;
+    function notifySaved(msg) {
+      const now = Date.now();
+      if (now - lastSavedToastAt < 1500) return; // 連續改多個欄位只提示一次
+      lastSavedToastAt = now;
+      showToast(msg || '已儲存 ✓');
+    }
+    ['cardEditorOverlay', 'cardSettingsOverlay'].forEach(id => {
+      const root = document.getElementById(id);
+      if (!root) return;
+      root.addEventListener('change', event => {
+        const target = event.target;
+        if (!target || !target.matches('input, select, textarea')) return;
+        if (target.closest('#addDynamicPlanForm')) return; // 活動表單要按「儲存」才算
+        notifySaved();
+      });
+    });
 
     function escapeHtml(str) {
       return (str || '').replace(/[&<>'"]/g,

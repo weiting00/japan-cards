@@ -22,7 +22,7 @@ ROOT="$(cd "$HERE/.." && pwd)"
 OUT="$HERE/.out"
 mkdir -p "$OUT"
 
-ALL="v3only ed2 ed6 verify layout2 final struct2 migrate carded mobile activityedit dscontract split skin"
+ALL="v3only ed2 ed6 verify layout2 final struct2 migrate carded mobile activityedit dscontract split skin ux"
 FILES="${*:-$ALL}"
 
 # 找一個空的 port 起靜態伺服器（伺服器根目錄＝專案根，測試頁以 /tests/xxx.html 取得）

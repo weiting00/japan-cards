@@ -1,0 +1,121 @@
+<!doctype html><meta charset="utf-8">
+<style>html,body{margin:0;background:#111}iframe{width:390px;height:844px;border:0;display:block}</style>
+<iframe id="f" src="../index.html"></iframe>
+<script>
+setTimeout(function () {
+  var out = []; var log = function (m) { out.push(m); }; var pass = 0, fail = 0;
+  function check(n, c, e) { if (c) { pass++; log('PASS  ' + n + (e ? ' — ' + e : '')); } else { fail++; log('FAIL  ' + n + (e ? ' — ' + e : '')); } }
+  var esc = function () {
+    var w = document.getElementById('f').contentWindow;
+    w.document.dispatchEvent(new w.KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+  };
+  try {
+    var w = document.getElementById('f').contentWindow, d = w.document;
+    var errs = []; w.addEventListener('error', function (e) { errs.push(e.message); });
+    var shown = function (id) { var el = d.getElementById(id); return !!el && el.hidden === false; };
+
+    // ================= A. 分頁記住 =================
+    log('=== A. 分頁記住 ===');
+    w.switchTab('ledger');
+    var saved = w.eval("localStorage.getItem('japan_card_last_tab_v1')");
+    check('A1 切換分頁會記住位置', saved === 'ledger', String(saved));
+
+    w.switchTab('decision');
+    w.scrollTo(0, 900);
+    var before = w.scrollY;
+    w.switchTab('guide');
+    check('A2 切換分頁會回到頂部', w.scrollY === 0, '切換前 y=' + before + ' → 切換後 y=' + w.scrollY);
+
+    w.switchTab('decision');
+    w.eval("localStorage.setItem('japan_card_last_tab_v1','ledger')");
+    var restored = w.eval("restoreLastTab(); document.getElementById('tab-ledger').style.display");
+    check('A3 重開會回到上次分頁', restored === 'block', 'tab-ledger display=' + restored);
+    check('A3b 其他分頁被收起', w.eval("document.getElementById('tab-guide').style.display") === 'none');
+
+    // ================= B. 多層返回 =================
+    log('=== B. 多層返回 ===');
+    var cardId = w.eval('rulesV3.cards.find(function(c){ return c.plans && c.plans.length; }).id');
+    w.openCardEditor(cardId);
+    d.getElementById('cardEditorAddActivity').click();
+    var cancelBtn = d.getElementById('cancelPlanEdit');
+    check('B1 新增加碼活動時就看得到「取消」', !!cancelBtn && cancelBtn.hidden === false);
+
+    esc();
+    check('B2 Esc 先收起加碼活動表單', d.getElementById('addDynamicPlanForm').hidden === true);
+    check('B2b 卡片編輯頁還留著（沒有一次關到底）', shown('cardEditorOverlay'));
+
+    esc();
+    check('B3 再按 Esc 才關閉卡片編輯頁', !shown('cardEditorOverlay'));
+
+    // 有輸入時，Esc 要先問，不要直接丟掉
+    w.openCardEditor(cardId);
+    d.getElementById('cardEditorAddActivity').click();
+    d.getElementById('addDynamicPlanForm').elements.namedItem('name').value = 'ZZ未儲存活動';
+    esc();
+    var dialogOpen = d.getElementById('appDialogModal').style.display === 'flex';
+    check('B4 有未儲存內容時 Esc 會先確認', dialogOpen, d.getElementById('appDialogModal').style.display);
+    w.eval('closeAppDialog(false)');
+    check('B4b 選「繼續編輯」會留在表單', d.getElementById('addDynamicPlanForm').hidden === false);
+
+    // 清掉輸入 → Esc 直接收起表單
+    d.getElementById('addDynamicPlanForm').elements.namedItem('name').value = '';
+    esc();
+    check('B5 沒有輸入時 Esc 直接收起表單', d.getElementById('addDynamicPlanForm').hidden === true);
+    esc();
+    check('B6 Esc 關閉卡片編輯頁', !shown('cardEditorOverlay'));
+
+    // 新增信用卡頁（最外層）也要能被 Esc 關掉
+    w.openAddCard();
+    esc();
+    check('B7 Esc 關閉新增信用卡頁', !shown('addCardOverlay'));
+
+    // 上層 modal 優先於下層
+    w.openCardEditor(cardId);
+    d.getElementById('cardEditorOpenCardSettings').click();
+    check('B8 卡片設定是疊在編輯頁上的另一層', shown('cardSettingsOverlay'));
+    esc();
+    check('B8b Esc 先關設定層', !shown('cardSettingsOverlay'));
+    check('B8c 編輯頁還在', shown('cardEditorOverlay'));
+    w.closeCardEditor();
+
+    // ================= C. 存檔回饋 =================
+    log('=== C. 存檔回饋 ===');
+    w.eval('lastSavedToastAt = 0');
+    w.openCardEditor(cardId);
+    var rate = d.getElementById('cardEditorBaseRate');
+    rate.value = '2.25';
+    rate.dispatchEvent(new w.Event('change', { bubbles: true }));
+    var toast = d.getElementById('toast');
+    check('C1 改卡片欄位會提示已儲存', /已儲存/.test(toast.textContent), toast.textContent);
+    check('C1b 提示有跳出來', toast.classList.contains('show'));
+    check('C1c 值真的存進去了', w.eval('String(rulesV3.cards.find(function(c){return c.id==="' + cardId + '";}).baseRate)') === '2.25');
+
+    // 加碼活動送出要有回饋
+    w.eval('lastSavedToastAt = 0');
+    d.getElementById('cardEditorAddActivity').click();
+    var form = d.getElementById('addDynamicPlanForm');
+    form.elements.namedItem('name').value = 'ZZ有回饋的活動';
+    form.elements.namedItem('rate').value = '3';
+    form.dispatchEvent(new w.Event('submit', { cancelable: true, bubbles: true }));
+    check('C2 儲存加碼活動會提示', /加碼活動/.test(toast.textContent), toast.textContent);
+    check('C2b 活動真的存進去', w.eval('rulesV3.cards.find(function(c){return c.id==="' + cardId + '";}).plans.some(function(p){return p.name==="ZZ有回饋的活動";})') === true);
+    w.closeCardEditor();
+
+    // 卡片設定也是一改就存
+    w.eval('lastSavedToastAt = 0');
+    w.openCardEditor(cardId);
+    d.getElementById('cardEditorOpenCardSettings').click();
+    var srate = d.getElementById('cardSettingsBaseRate');
+    srate.value = '2.5';
+    srate.dispatchEvent(new w.Event('change', { bubbles: true }));
+    check('C3 卡片設定改了也會提示', /已儲存/.test(toast.textContent), toast.textContent);
+    w.eval('closeAppDialog(false)');
+    d.getElementById('appDialogModal').style.display = 'none';
+
+    check('C4 無 JS 錯誤', errs.length === 0, errs.slice(0, 3).join('; '));
+  } catch (e) { fail++; log('EXCEPTION: ' + e.message + ' | ' + (e.stack || '').split('\n')[1]); }
+  log('');
+  log('=== ' + pass + ' passed, ' + fail + ' failed ===');
+  var pre = document.createElement('pre'); pre.id = 'AUDIT'; pre.textContent = out.join('\n'); document.body.appendChild(pre);
+}, 2600);
+</script>

@@ -1458,6 +1458,8 @@
       background: rgba(13, 16, 32, 0.97) !important;
       box-shadow: 0 0 40px var(--a16) !important;
     }
+    /* 關閉鈕加上返回箭頭，讓「怎麼出去」一眼看得懂 */
+    .editor-header > .btn-small::before { content: "← "; }
 
     /* 控制項：統一圓角（不改尺寸，維持既有高度契約） */
     .btn-main, .btn-secondary, .btn-small, .quick-tag, .shortcut-btn,
@@ -3446,6 +3448,9 @@
       if (activityForm.elements.namedItem('includeBase')) activityForm.elements.namedItem('includeBase').checked = true;
       if (activityForm.elements.namedItem('fee')) activityForm.elements.namedItem('fee').checked = true;
       setActivityFormMode(false);
+      // 新增時也要看得到「取消」，否則只能把整頁關掉（多層返回的痛點）
+      const cancelBtn = activityForm.querySelector('#cancelPlanEdit');
+      if (cancelBtn) cancelBtn.hidden = false;
       syncActivityContextUI();
       syncActivityCycleUI();
       revealActivityForm();
@@ -4628,10 +4633,62 @@
 
     document.addEventListener('keydown', event => {
       if (event.key !== 'Escape') return;
+
+      // 由上往下關閉：哪一層在最上面，就先關哪一層
       if (appDialogResolver) { closeAppDialog(false); return; }
-      const overlay = document.getElementById('addCardOverlay');
-      if (overlay && !overlay.hidden) closeAddCard();
+
+      const isOpen = id => {
+        const el = document.getElementById(id);
+        if (!el || el.hidden) return false;
+        const style = window.getComputedStyle(el);
+        return style.display !== 'none' && style.visibility !== 'hidden';
+      };
+
+      const upperLayers = [
+        ['planEditorOverlay', closePlanEditor],
+        ['cardSettingsOverlay', closeCardSettings],
+        ['rateModal', closeRateModal],
+        ['syncModal', closeSyncModal],
+        ['quotaResetModal', closeQuotaResetModal],
+        ['clearLedgerModal', closeClearLedgerModal]
+      ];
+      for (const [id, close] of upperLayers) {
+        if (isOpen(id)) { close(); return; }
+      }
+
+      // 加碼活動表單掛在卡片編輯頁裡：先收表單，不要一次關掉整頁
+      if (isOpen('cardEditorOverlay')) {
+        if (activityCardId && activityForm && !activityForm.hidden) {
+          if (activityFormDirty()) {
+            showAppDialog({
+              title: '放棄編輯？',
+              message: '這個加碼活動還沒儲存，離開後輸入的內容會消失。',
+              confirmText: '放棄'
+            }).then(ok => {
+              if (ok) { cancelDynamicPlanEdit(); showToast('已取消，未儲存的內容已丟棄'); }
+            });
+          } else {
+            cancelDynamicPlanEdit();
+          }
+          return;
+        }
+        closeCardEditor();
+        return;
+      }
+
+      if (isOpen('addCardOverlay')) { closeAddCard(); }
     });
+
+    // 表單裡有使用者輸入，才算「有未儲存的內容」
+    function activityFormDirty() {
+      if (!activityForm || activityForm.hidden) return false;
+      if (activityForm.elements.namedItem('editingPlanId')?.value) return true;
+      const name = activityForm.elements.namedItem('name');
+      if (name && String(name.value || '').trim()) return true;
+      const rate = activityForm.elements.namedItem('rate');
+      if (rate && String(rate.value || '') !== '1') return true;
+      return false;
+    }
 
     // Toast 提示
     let toastTimeout;

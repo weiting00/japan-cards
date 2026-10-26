@@ -2221,6 +2221,7 @@
       rateRequestAt:'japan_card_rate_request_at_v1',
       rateSourceTimestamp:'japan_card_rate_source_timestamp_v1',
       room:    'japan_card_room',
+      lastTab: 'japan_card_last_tab_v1',
       migrated:'japan_card_migrated_v2',  // 旗標，確保只搬一次
       // 以下僅供一次性資料搬移使用（讀完即棄）
       legacyLimits: 'japan_card_limits_v2',
@@ -2814,6 +2815,9 @@
           pullFromCloud(true);
         }
       }, 60000);
+
+      // 資料都載入完成後，才回到上次停留的分頁（避免先畫出空資料）
+      restoreLastTab();
     }
 
     // 只採用臺銀官方頁面標示的「本行即期賣出」欄位。
@@ -3273,6 +3277,18 @@
       if (tabId === 'quotas') renderQuotaCards();
       if (tabId === 'ledger') renderLedger();
       if (tabId === 'guide') { applyGuideView(getStoredGuideView()); renderGuideViews(); }
+
+      // 記住這次停留的分頁，下次打開直接回到原位
+      try { localStorage.setItem(STORAGE_KEY.lastTab, tabId); } catch (e) { /* 隱私模式無法寫入，忽略 */ }
+      // 切換分頁時回到頂部，避免停在上一個分頁的捲動位置
+      window.scrollTo(0, 0);
+    }
+
+    // 還原上次停留的分頁（在 init 的資料載入完成後呼叫）
+    function restoreLastTab() {
+      let saved = '';
+      try { saved = localStorage.getItem(STORAGE_KEY.lastTab) || ''; } catch (e) { /* 忽略 */ }
+      if (['decision', 'quotas', 'ledger', 'guide'].includes(saved)) switchTab(saved);
     }
 
     try { window.switchTab = switchTab; } catch(e){}

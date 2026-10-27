@@ -35,7 +35,7 @@ setTimeout(async function () {
     check('新增信用卡畫面沒有被開啟', d.getElementById('addCardOverlay').hidden === true);
     check('編輯頁標題是該卡名稱', d.getElementById('cardEditorName').textContent.trim() === firstCard.name, d.getElementById('cardEditorName').textContent.trim());
     check('編輯頁帶該卡的基本回饋率', Number(d.getElementById('cardEditorBaseRate').value) === Number(firstCard.baseRate), d.getElementById('cardEditorBaseRate').value);
-    check('編輯頁帶該卡的持有狀態', d.getElementById('cardEditorOwned').checked === (firstCard.owned !== false));
+    check('編輯頁不再有「我持有」開關（新增即持有）', !d.getElementById('cardEditorOwned'));
     check('編輯頁帶該卡的加碼活動清單', d.querySelectorAll('#cardEditorPlans [data-card-edit-plan]').length === (firstCard.plans || []).length, d.querySelectorAll('#cardEditorPlans [data-card-edit-plan]').length + ' 筆');
 
     // ---------- 3. 編輯基本欄位 → rulesV3 同步 ----------
@@ -49,11 +49,6 @@ setTimeout(async function () {
     await sleep(120);
     check('改卡片名稱 → rulesV3 同步', R().cards[0].name === '測試改名卡', R().cards[0].name);
     check('改名後頁面標題同步', d.getElementById('cardEditorName').textContent.trim() === '測試改名卡', d.getElementById('cardEditorName').textContent.trim());
-
-    d.getElementById('cardEditorOwned').checked = false;
-    d.getElementById('cardEditorOwned').dispatchEvent(new w.Event('change'));
-    await sleep(120);
-    check('改持有狀態 → rulesV3 同步', R().cards[0].owned === false, String(R().cards[0].owned));
 
     // ---------- 4. 在單卡編輯頁新增加碼活動 ----------
     var beforePlans = R().cards[0].plans.length;
@@ -131,6 +126,8 @@ setTimeout(async function () {
     check('表格模式每張卡有編輯按鈕', tableEdits.length === R().cards.length, tableEdits.length + ' 個 / ' + R().cards.length + ' 張卡');
     var tableIds = Array.prototype.map.call(tableEdits, function(b){ return b.dataset.guideEdit; });
     check('表格模式編輯按鈕不重複', new Set(tableIds).size === tableIds.length, tableIds.join(','));
+    check('表格模式每張卡也有「加碼活動」按鈕', d.querySelectorAll('#guideV3Rows [data-guide-card-add-plan]').length >= R().cards.length, d.querySelectorAll('#guideV3Rows [data-guide-card-add-plan]').length + ' 個');
+    check('表格模式每個方案有齒輪設定', d.querySelectorAll('#guideV3Rows [data-guide-plan-settings]').length === R().cards.reduce(function(n,c){return n + (c.plans||[]).length;},0), d.querySelectorAll('#guideV3Rows [data-guide-plan-settings]').length + ' 個');
     tableEdits[0].click();
     await sleep(120);
     check('表格模式的編輯按鈕也能開啟單卡編輯頁', cardEditor().hidden === false);
@@ -139,6 +136,8 @@ setTimeout(async function () {
     await sleep(150);
 
     // ---------- 10. 單卡編輯頁版面（觸控目標 / 溢出） ----------
+    check('卡片模式每張卡只有一顆編輯（不重複連到同一頁）', d.querySelectorAll('#guideCardList [data-guide-edit]').length === R().cards.length, d.querySelectorAll('#guideCardList [data-guide-edit]').length + ' 個 / ' + R().cards.length + ' 張');
+    check('卡片模式不再有「持有中」徽章', d.getElementById('guideCardView').textContent.indexOf('持有中') < 0);
     var otherBtn2 = d.querySelector('#guideCardList [data-guide-edit]');
     otherBtn2.click();
     await sleep(150);

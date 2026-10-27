@@ -261,10 +261,12 @@
     .guide-view[hidden] { display:none !important; }
     .guide-card-list { display:flex; flex-direction:column; gap:5px; }
     .guide-card { padding:7px 11px; border-radius:12px; background:rgba(11,14,24,.46); }
-    .guide-card-head { display:flex; align-items:flex-start; justify-content:space-between; gap:8px; }
+    .guide-card-head { display:flex; align-items:flex-start; justify-content:space-between; gap:8px; flex-wrap:wrap; }
     .guide-card-name { font-size:var(--fs-title); }
     .guide-card-meta { margin-top:1px; color:var(--text-secondary); font-size:.74rem; line-height:1.25; }
-    .guide-card-actions { display:flex; align-items:center; gap:6px; flex:0 0 auto; flex-wrap:wrap; }
+    .guide-card-tools { display:flex; align-items:center; gap:6px; flex:0 0 auto; margin-left:auto; flex-wrap:wrap; }
+    .btn-small.guide-action-btn { display:inline-flex; align-items:center; gap:5px; min-height:34px; padding:0 9px; font-size:.72rem; white-space:nowrap; }
+    .guide-action-btn .ui-icon { width:1em; height:1em; }
     .guide-card-title-group { min-width:0; }
     .guide-card-name-row { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
     .guide-icon-btn-group { display:inline-flex; align-items:center; gap:6px; }
@@ -984,6 +986,8 @@
       background: var(--card-sub-bg);
       font-weight: 700;
     }
+    .guide-table-actions { display:flex; align-items:center; gap:4px; margin-top:5px; }
+    .guide-table-actions .icon-btn { margin:0; }
 
     /* Neo-Tokyo visual layer: presentation only; existing decision logic stays intact. */
     :root {
@@ -1535,6 +1539,7 @@
     <symbol id="icon-close" viewBox="0 0 24 24"><path d="m18 6-12 12M6 6l12 12"/></symbol>
     <symbol id="icon-settings" viewBox="0 0 24 24"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></symbol>
     <symbol id="icon-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+    <symbol id="icon-edit" viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4z"/></symbol>
   </svg>
 
   <!-- Header -->
@@ -1892,7 +1897,6 @@
             <label>卡片名稱<input type="text" id="cardEditorNameInput"></label>
             <label>基本回饋率（%）<input type="number" id="cardEditorBaseRate" min="0" step="0.01"></label>
             <label class="toggle toggle-row toggle-wide"><span class="toggle-text">收海外手續費 1.5%</span><input type="checkbox" id="cardEditorBaseFee"><span class="toggle-track"></span></label>
-            <label class="toggle toggle-row toggle-wide"><span class="toggle-text">我持有這張卡</span><input type="checkbox" id="cardEditorOwned"><span class="toggle-track"></span></label>
           </div>
         </section>
 
@@ -2339,7 +2343,7 @@
     function normalizeV3Rules(value) {
       if (!value || !Array.isArray(value.cards)) return createDefaultRulesV3();
       value.cards = value.cards.map(card => ({
-        ...card, owned: card.owned !== false, baseRate: Math.max(0, Number(card.baseRate) || 0),
+        ...card, owned: true, baseRate: Math.max(0, Number(card.baseRate) || 0),
         plans: (Array.isArray(card.plans) ? card.plans : []).map(plan => ({
           ...plan, contexts: (Array.isArray(plan.contexts) ? plan.contexts : [plan.context || 'general']).map(context=>context==='direct'?'general':context), cycle:normalizeV3Cycle(plan.cycle),
           includeBaseReward: plan.includeBaseReward !== false, foreignFeeApplies: plan.foreignFeeApplies !== false,
@@ -2459,7 +2463,7 @@
     // 列出所有需要追蹤上限的加碼項目（共用額度以群組為一筆）。
     function getV3QuotaEntries() {
       const entries = [];
-      for (const card of rulesV3.cards.filter(item => item.owned !== false)) {
+      for (const card of rulesV3.cards) {
         for (const plan of card.plans || []) {
           if (plan.enabled === false) continue;
           const seen = new Set();
@@ -2586,12 +2590,12 @@
       const transitText = bestTransit
         ? `目前交通儲值最佳規則：${bestTransit.card.name}／${bestTransit.plan.name}，${getGuidePlanThreshold(bestTransit.plan) ? `單筆門檻 NT$${getGuidePlanThreshold(bestTransit.plan).toLocaleString()}` : '無門檻'}，淨回饋 ${formatGuidePercent(bestTransit.net)}%。`
         : '尚未設定交通儲值規則；可於「編輯規則」新增交通卡情境的加碼方案。';
-      const ownedCount = (rulesV3?.cards || []).filter(card => card.owned !== false).length;
+      const cardCount = (rulesV3?.cards || []).length;
       const planCount = (rulesV3?.cards || []).reduce((sum, card) => sum + (card.plans || []).length, 0);
       const paragraphs = [
         '這個頁面的規則與刷卡決策頁共用同一份資料：符合情境的加碼規則都會參與排序；同一張實體卡的多條權益會依各自剩餘額度依序安排。',
         transitText,
-        `目前共 ${ownedCount} 張持有卡片、${planCount} 個加碼方案。活動資格、登錄狀態及銀行最終入帳請自行確認。`
+        `目前共 ${cardCount} 張卡片、${planCount} 個加碼方案。活動資格、登錄狀態及銀行最終入帳請自行確認。`
       ];
       root.replaceChildren(...paragraphs.map(text => {
         const paragraph = document.createElement('p');
@@ -3583,20 +3587,16 @@
             <div class="guide-card-title-group">
               <div class="guide-card-name-row">
                 <span class="guide-card-name">${escapeHtml(card.name)}</span>
-                <div class="guide-icon-btn-group">
-                  <button class="icon-btn" type="button" data-guide-card-settings="${escapeHtml(card.id)}" aria-label="設定 ${escapeHtml(card.name)}" title="卡片設定">
-                    <span class="ui-icon" aria-hidden="true"><svg><use href="#icon-settings"/></svg></span>
-                  </button>
-                  <button class="icon-btn" type="button" data-guide-card-add-plan="${escapeHtml(card.id)}" aria-label="替 ${escapeHtml(card.name)} 新增加碼活動" title="新增加碼活動">
-                    <span class="ui-icon" aria-hidden="true"><svg><use href="#icon-plus"/></svg></span>
-                  </button>
-                </div>
               </div>
               <div class="guide-card-meta">最高淨回饋 ${formatGuidePercent(bestNet)}%</div>
             </div>
-            <div class="guide-card-actions">
-              <span class="guide-badge${card.owned === false ? ' off' : ''}">${card.owned === false ? '未持有' : '持有中'}</span>
-              <button class="btn-small guide-edit-btn" type="button" data-guide-edit="${escapeHtml(card.id)}" aria-label="編輯 ${escapeHtml(card.name)}">編輯</button>
+            <div class="guide-card-tools">
+              <button class="btn-small guide-action-btn" type="button" data-guide-edit="${escapeHtml(card.id)}" aria-label="編輯 ${escapeHtml(card.name)}">
+                <span class="ui-icon" aria-hidden="true"><svg><use href="#icon-edit"/></svg></span> 編輯
+              </button>
+              <button class="btn-small guide-action-btn" type="button" data-guide-card-add-plan="${escapeHtml(card.id)}" aria-label="替 ${escapeHtml(card.name)} 新增加碼活動">
+                <span class="ui-icon" aria-hidden="true"><svg><use href="#icon-plus"/></svg></span> 加碼活動
+              </button>
             </div>
           </div>
           <div class="guide-base-row">
@@ -3607,16 +3607,10 @@
         </article>`;
       };
 
-      const owned = cards.filter(card => card.owned !== false);
-      const others = cards.filter(card => card.owned === false);
-      root.innerHTML = (owned.length
-        ? owned.map(renderCard).join('')
-        : '<div class="guide-empty">你目前沒有勾選「我持有」的卡片，刷卡決策只會以基本回饋試算。</div>')
-        + (others.length ? `<h4 style="margin:20px 0 8px; font-size:.85rem; color:var(--text-secondary);">未持有的卡片</h4>${others.map(renderCard).join('')}` : '');
+      root.innerHTML = cards.length
+        ? cards.map(renderCard).join('')
+        : '<div class="guide-empty">還沒有任何卡片。按右上角「新增信用卡」，或先套用範本卡片。</div>';
 
-      root.querySelectorAll('[data-guide-card-settings]').forEach(button => {
-        button.onclick = () => openCardEditor(button.dataset.guideCardSettings);
-      });
       root.querySelectorAll('[data-guide-card-add-plan]').forEach(button => {
         button.onclick = () => openPlanEditor(button.dataset.guideCardAddPlan, null);
       });
@@ -3636,11 +3630,14 @@
       let cardGroupIndex = 0;
       for (const card of rulesV3.cards || []) {
         const plans = (card.plans || []).filter(plan => plan.enabled !== false);
-        const cardCell = `${escapeHtml(card.name)}${card.owned === false ? '<br><span class="guide-kv">未持有</span>' : ''}`;
-        const editButton = `<button class="btn-small guide-edit-btn" type="button" data-guide-edit="${escapeHtml(card.id)}" aria-label=\"編輯 ${escapeHtml(card.name)}\">編輯</button>`;
+        const cardCell = escapeHtml(card.name);
+        const cardEditBtn = `<button class="icon-btn icon-btn-sm" type="button" data-guide-edit="${escapeHtml(card.id)}" aria-label="編輯 ${escapeHtml(card.name)}" title="編輯卡片"><span class="ui-icon" aria-hidden="true"><svg><use href="#icon-edit"/></svg></span></button>`;
+        const cardAddPlanBtn = `<button class="icon-btn icon-btn-sm" type="button" data-guide-card-add-plan="${escapeHtml(card.id)}" aria-label="替 ${escapeHtml(card.name)} 新增加碼活動" title="新增加碼活動"><span class="ui-icon" aria-hidden="true"><svg><use href="#icon-plus"/></svg></span></button>`;
+        const planGear = (plan) => `<button class="icon-btn icon-btn-sm" type="button" data-guide-plan-settings="${escapeHtml(card.id)}|${escapeHtml(plan.id)}" aria-label="設定 ${escapeHtml(plan.name || '加碼活動')}" title="設定加碼活動"><span class="ui-icon" aria-hidden="true"><svg><use href="#icon-settings"/></svg></span></button>`;
+        const cardActions = (plan) => `<div class="guide-table-actions">${cardEditBtn}${cardAddPlanBtn}${plan ? planGear(plan) : ''}</div>`;
         if (!plans.length) {
           const net = Math.round(((Number(card.baseRate) || 0) - getGuidePlanFee(card, null)) * 100) / 100;
-          rows.push(`<tr class=\"guide-table-card-group guide-table-card-group-${cardGroupIndex % 2}\"><td class=\"guide-table-card-cell\">${cardCell}<br>${editButton}</td><td>實體店面消費</td><td>${Number(card.baseRate) || 0}%</td><td>+0%</td><td>${card.baseFeeApplies ? '-1.5%' : '0%（免收）'}</td><td><b>${formatGuidePercent(net)}%</b></td><td>無門檻</td><td>—</td><td>無上限</td></tr>`);
+          rows.push(`<tr class=\"guide-table-card-group guide-table-card-group-${cardGroupIndex % 2}\"><td class=\"guide-table-card-cell\">${cardCell}<br>${cardActions()}</td><td>實體店面消費</td><td>${Number(card.baseRate) || 0}%</td><td>+0%</td><td>${card.baseFeeApplies ? '-1.5%' : '0%（免收）'}</td><td><b>${formatGuidePercent(net)}%</b></td><td>無門檻</td><td>—</td><td>無上限</td></tr>`);
           cardGroupIndex++;
           continue;
         }
@@ -3656,15 +3653,22 @@
           const baseCellText = plan.includeBaseReward !== false ? `${Number(card.baseRate) || 0}%` : '不併計（僅此加碼）';
           const feeCellText = plan.foreignFeeApplies !== false ? '-1.5%' : '0%（免收）';
           if (isFirstRowOfCard) {
-            rows.push(`<tr class="guide-table-card-group guide-table-card-group-${cardGroupIndex % 2}"><td class="guide-table-card-cell">${cardCell}<br>${editButton}</td><td>${escapeHtml(GUIDE_CONTEXT_LABELS[context] || context)}</td><td>${escapeHtml(baseCellText)}</td><td>+${formatGuidePercent(getGuidePlanBonus(plan))}%</td><td>${feeCellText}</td><td><b>${formatGuidePercent(getGuidePlanNet(card, plan))}%</b></td><td>${threshold ? `單筆滿 NT${threshold.toLocaleString()}` : '無門檻'}</td><td>${escapeHtml(cycleText)}</td><td>${escapeHtml(capText)}</td></tr>`);
+            rows.push(`<tr class="guide-table-card-group guide-table-card-group-${cardGroupIndex % 2}"><td class="guide-table-card-cell">${cardCell}<br>${cardActions(plan)}</td><td>${escapeHtml(GUIDE_CONTEXT_LABELS[context] || context)}</td><td>${escapeHtml(baseCellText)}</td><td>+${formatGuidePercent(getGuidePlanBonus(plan))}%</td><td>${feeCellText}</td><td><b>${formatGuidePercent(getGuidePlanNet(card, plan))}%</b></td><td>${threshold ? `單筆滿 NT${threshold.toLocaleString()}` : '無門檻'}</td><td>${escapeHtml(cycleText)}</td><td>${escapeHtml(capText)}</td></tr>`);
             isFirstRowOfCard = false;
           } else {
-            rows.push(`<tr class="guide-table-card-group guide-table-card-group-${cardGroupIndex % 2}"><td class="guide-table-card-cell guide-table-card-cell-group"></td><td>${escapeHtml(GUIDE_CONTEXT_LABELS[context] || context)}</td><td>${escapeHtml(baseCellText)}</td><td>+${formatGuidePercent(getGuidePlanBonus(plan))}%</td><td>${feeCellText}</td><td><b>${formatGuidePercent(getGuidePlanNet(card, plan))}%</b></td><td>${threshold ? `單筆滿 NT${threshold.toLocaleString()}` : '無門檻'}</td><td>${escapeHtml(cycleText)}</td><td>${escapeHtml(capText)}</td></tr>`);
+            rows.push(`<tr class="guide-table-card-group guide-table-card-group-${cardGroupIndex % 2}"><td class="guide-table-card-cell guide-table-card-cell-group">${planGear(plan)}</td><td>${escapeHtml(GUIDE_CONTEXT_LABELS[context] || context)}</td><td>${escapeHtml(baseCellText)}</td><td>+${formatGuidePercent(getGuidePlanBonus(plan))}%</td><td>${feeCellText}</td><td><b>${formatGuidePercent(getGuidePlanNet(card, plan))}%</b></td><td>${threshold ? `單筆滿 NT${threshold.toLocaleString()}` : '無門檻'}</td><td>${escapeHtml(cycleText)}</td><td>${escapeHtml(capText)}</td></tr>`);
           }
         });
       }
-      root.innerHTML = rows.join('') || '<tr><td colspan=\"9\" class=\"guide-empty\">還沒有任何規則，先按「編輯規則」新增卡片。</td></tr>';
+      root.innerHTML = rows.join('') || '<tr><td colspan=\"9\" class=\"guide-empty\">還沒有任何卡片，先按「新增信用卡」。</td></tr>';
       root.querySelectorAll('[data-guide-edit]').forEach(button => button.onclick = () => openCardEditor(button.dataset.guideEdit));
+      root.querySelectorAll('[data-guide-card-add-plan]').forEach(button => button.onclick = () => openPlanEditor(button.dataset.guideCardAddPlan, null));
+      root.querySelectorAll('[data-guide-plan-settings]').forEach(button => {
+        button.onclick = () => {
+          const [cardId, planId] = button.dataset.guidePlanSettings.split('|');
+          openPlanEditor(cardId, planId);
+        };
+      });
     }
 
     function renderGuideViews() {
@@ -3751,7 +3755,6 @@
       setValue('cardEditorNameInput', card.name);
       setValue('cardEditorBaseRate', Number(card.baseRate) || 0);
       setChecked('cardEditorBaseFee', card.baseFeeApplies);
-      setChecked('cardEditorOwned', card.owned !== false);
 
       const plans = card.plans || [];
       const root = document.getElementById('cardEditorPlans');
@@ -3915,9 +3918,6 @@
     });
     document.getElementById('cardEditorBaseFee')?.addEventListener('change', (e)=>{
       const card=getCardEditorCard(); if(!card)return; card.baseFeeApplies=e.target.checked; saveRulesV3();calculate();renderCardEditor();
-    });
-    document.getElementById('cardEditorOwned')?.addEventListener('change', (e)=>{
-      const card=getCardEditorCard(); if(!card)return; card.owned=e.target.checked; saveRulesV3();calculate();renderCardEditor();
     });
     document.getElementById('cardSettingsNameInput')?.addEventListener('change', (e)=>{
       const card=getCardEditorCard(); if(!card)return; card.name=e.target.value.trim()||card.name; saveRulesV3();calculate();renderCardEditor();
@@ -4113,7 +4113,7 @@
         return;
       }
       let offers=[];
-      for (const card of rulesV3.cards.filter(item=>item.owned)) {
+      for (const card of rulesV3.cards) {
         const plans=card.plans.filter(plan=>plan.enabled!==false && ((plan.contexts||[]).includes(context) || context==='merchant' && (plan.contexts||[]).includes('general')));
         for (const plan of plans) {
           if (context==='merchant' && plan.merchants?.length && merchant && !plan.merchants.includes(merchant)) continue;

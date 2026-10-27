@@ -149,7 +149,7 @@ setTimeout(async function () {
     check('表格模式有 v3 資料列', d.querySelectorAll('#guideV3Rows tr').length > 0, d.querySelectorAll('#guideV3Rows tr').length + ' 列');
     w.setGuideView('cards');
     check('卡片模式可切換', d.getElementById('guideCardView').hidden === false && d.getElementById('guideTableView').hidden === true);
-    check('攻略總覽有文字', d.getElementById('ruleGuideSummary').textContent.indexOf('持有卡片') >= 0, d.getElementById('ruleGuideSummary').textContent.slice(0,50));
+    check('攻略總覽有文字', d.getElementById('ruleGuideSummary').textContent.indexOf('張卡片') >= 0, d.getElementById('ruleGuideSummary').textContent.slice(0,50));
     check('新增的卡也出現在攻略頁', d.getElementById('guideCardView').textContent.indexOf('ZZ門檻測試卡') >= 0);
 
     // ---------- 12. 新卡自動套用通用規則 ----------

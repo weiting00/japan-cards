@@ -70,8 +70,8 @@ setTimeout(function () {
     // --- 單卡編輯頁（卡片 → 加碼活動兩層）---
     w.openCardEditor(w.eval('rulesV3.cards[0].id'));
     check('單卡編輯頁可開啟', d.getElementById('cardEditorOverlay').hidden === false);
-    check('單卡編輯頁有卡片設定欄位', !!d.getElementById('cardEditorNameInput') && !!d.getElementById('cardEditorBaseRate') && !!d.getElementById('cardEditorOwned'));
-    check('單卡編輯頁的手續費/持有改用開關', (function(){ var b = d.getElementById('cardEditorBaseFee'), o = d.getElementById('cardEditorOwned'); return !!b.closest('.toggle') && !!o.closest('.toggle') && !!b.closest('.toggle').querySelector('.toggle-track'); })());
+    check('單卡編輯頁有卡片設定欄位', !!d.getElementById('cardEditorNameInput') && !!d.getElementById('cardEditorBaseRate'));
+    check('單卡編輯頁的手續費改用開關', (function(){ var b = d.getElementById('cardEditorBaseFee'); return !!b.closest('.toggle') && !!b.closest('.toggle').querySelector('.toggle-track'); })());
     check('加碼活動表單改用開關', d.querySelectorAll('#addDynamicPlanForm .activity-toggles .toggle').length === 2);
     check('單卡編輯頁有加碼活動清單與新增鈕', !!d.getElementById('cardEditorPlans') && !!d.getElementById('cardEditorAddActivity'));
     check('加碼活動表單在單卡編輯頁內', !!d.querySelector('#cardEditorActivityHost #addDynamicPlanForm'));

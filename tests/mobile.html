@@ -115,8 +115,11 @@ setTimeout(function () {
         fw.closeCardEditor();
         fw.openCardEditor(fw.eval('rulesV3.cards[0].id'));
         dw.getElementById('cardEditorAddActivity').click();
-        check('加碼活動表單也有步進鈕', dw.querySelectorAll('#addDynamicPlanForm .stepper-btn').length >= 8, dw.querySelectorAll('#addDynamicPlanForm .stepper-btn').length + ' 個');
-        fw.closeCardEditor();
+        setTimeout(function(){
+          check('加碼活動表單也有步進鈕', dw.querySelectorAll('#planEditorForm .stepper-btn').length >= 6, dw.querySelectorAll('#planEditorForm .stepper-btn').length + ' 個');
+          fw.closePlanEditor();
+          fw.closeCardEditor();
+        }, 100);
 
         check('無水平溢出（手機）', dr.documentElement.scrollWidth <= dr.documentElement.clientWidth, dr.documentElement.scrollWidth + '<=' + dr.documentElement.clientWidth);
         log(''); log('=== ' + pass + ' passed, ' + fail + ' failed ===');

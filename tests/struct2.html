@@ -46,7 +46,7 @@ setTimeout(function () {
     // 加一個有上限的加碼活動 → 額度看板應該出現
     w.openCardEditor(newCardId);
     d.getElementById('cardEditorAddActivity').click();
-    var af = d.getElementById('addDynamicPlanForm');
+    var af = d.getElementById('planEditorForm');
     af.elements.namedItem('name').value = 'ZZ有上限加碼';
     af.elements.namedItem('rate').value = '5';
     af.elements.namedItem('cap').value = '3000';

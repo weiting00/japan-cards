@@ -81,12 +81,13 @@ setTimeout(async function () {
     await sleep(150);
     var delPlanBtn = d.querySelector('#cardEditorPlans [data-card-delete-plan]');
     if (delPlanBtn) {
+      var planCountBeforeDelete = d.querySelectorAll('#cardEditorPlans [data-card-delete-plan]').length;
       delPlanBtn.click();
       await sleep(150);
       check('刪除加碼活動 → 跳出確認對話框', d.getElementById('appDialogModal').style.display === 'flex', d.getElementById('appDialogModal').style.display);
       confirmDialog();
-      await sleep(200);
-      check('確認後加碼活動從清單移除', d.querySelectorAll('#cardEditorPlans [data-card-delete-plan]').length === (firstCard.plans || []).length - 1, d.querySelectorAll('#cardEditorPlans [data-card-delete-plan]').length + ' 個');
+      await sleep(250);
+      check('確認後加碼活動從清單移除', d.querySelectorAll('#cardEditorPlans [data-card-delete-plan]').length === planCountBeforeDelete - 1, d.querySelectorAll('#cardEditorPlans [data-card-delete-plan]').length + ' 個');
     } else {
       check('刪除加碼活動 → 跳出確認對話框', true);
       check('確認後加碼活動從清單移除', true);

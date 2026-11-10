@@ -1,0 +1,145 @@
+<!doctype html><meta charset="utf-8">
+<style>html,body{margin:0;background:#111}iframe{width:390px;height:844px;border:0;display:block}</style>
+<iframe id="f" src="../index.html"></iframe>
+<script>
+// 記帳明細與雲端同步契約測試
+// 清空 / 刪除明細後，送出的雲端 payload 必須已反映新狀態；
+// 否則下一次 pull 會把舊明細拉回來，使用者會覺得「清不掉」。
+function sleep(ms){ return new Promise(function(r){ setTimeout(r, ms); }); }
+setTimeout(async function () {
+  var out = []; var log = function (m) { out.push(m); }; var pass = 0, fail = 0;
+  function check(n, c, e) { if (c) { pass++; log('PASS  ' + n + (e ? ' — ' + e : '')); } else { fail++; log('FAIL  ' + n + (e ? ' — ' + e : '')); } }
+  function finish() {
+    log(''); log('=== ' + pass + ' passed, ' + fail + ' failed ===');
+    var pre = document.createElement('pre'); pre.id = 'AUDIT'; pre.textContent = out.join('\n'); document.body.appendChild(pre);
+  }
+  try {
+    var frame = document.getElementById('f');
+    var w = frame.contentWindow, d = w.document;
+    var ev = function (code) { return w.eval(code); };
+    var errs = []; w.addEventListener('error', function(e){ errs.push(e.message); });
+
+    // 固定初始狀態，避免其他測試殘留資料影響
+    w.localStorage.clear();
+    w.location.reload();
+    await sleep(1600);
+    w = frame.contentWindow; d = w.document;
+
+    var ids = ev('(function(){var c=rulesV3.cards[0],p=c.plans[0],x=p.rewardParts[0];return {cardId:c.id,planId:p.id,partId:x.id,cardName:c.name,planName:p.name};})()');
+
+    // 攔截雲端寫入，不真的打 Supabase；保留實際 pushToCloud 流程
+    ev('window.__cloudWrites = []; currentRoom = "TEST-LEDGER"; writeCloudRoom = async function(room, payload){ window.__cloudWrites.push(JSON.parse(JSON.stringify(payload))); return {ok:true}; };');
+
+    function makeLedger(id, withUsage) {
+      return {
+        id: id,
+        date: '11/09 12:00',
+        memo: '同步測試 ' + id,
+        cardKey: 'v3-' + ids.cardId,
+        physicalCardId: ids.cardId,
+        v3PlanId: ids.planId,
+        cardName: ids.cardName,
+        jpy: 1000,
+        twd: 209,
+        rewardTwd: 10,
+        ruleSnapshot: { v3: true, planName: ids.planName },
+        v3Usage: withUsage ? [{ partId: ids.partId, amount: 10 }] : []
+      };
+    }
+    function setLedger(item) {
+      ev('ledger = ' + JSON.stringify([item]) + '; ledgerRevision++; localStorage.setItem("japan_card_ledger_v2", JSON.stringify(ledger)); renderLedger();');
+    }
+    function lastWrite() {
+      var writes = ev('window.__cloudWrites');
+      return writes && writes.length ? writes[writes.length - 1] : null;
+    }
+    function setPartUsed(value) {
+      ev('rulesV3.cards.find(function(c){return c.id===' + JSON.stringify(ids.cardId) + ';}).plans.find(function(p){return p.id===' + JSON.stringify(ids.planId) + ';}).rewardParts.find(function(x){return x.id===' + JSON.stringify(ids.partId) + ';}).usedReward=' + Number(value) + ';');
+    }
+    function partUsedFrom(payload) {
+      if (!payload || !payload.cardRulesV3) return null;
+      var card = (payload.cardRulesV3.cards || []).find(function(c){ return c.id === ids.cardId; });
+      var plan = card && (card.plans || []).find(function(p){ return p.id === ids.planId; });
+      var part = plan && (plan.rewardParts || []).find(function(x){ return x.id === ids.partId; });
+      return part ? Number(part.usedReward) || 0 : null;
+    }
+
+    // ---------- 1. 清除明細直接生效，不再開確認視窗 ----------
+    check('清空明細不再有確認 modal', !d.getElementById('clearLedgerModal') && typeof w.confirmClearLedger === 'undefined');
+    setLedger(makeLedger(9001, false));
+    ev('window.__cloudWrites = [];');
+    w.clearLedger();
+    await sleep(250);
+    var writeKeep = lastWrite();
+    check('清除明細後有送出雲端更新', !!writeKeep, writeKeep ? '有 payload' : '沒有 payload');
+    check('清除明細後推送的 ledger 是空的', !!writeKeep && Array.isArray(writeKeep.ledger) && writeKeep.ledger.length === 0, writeKeep ? 'len=' + (writeKeep.ledger || []).length : '無');
+
+    // 舊雲端快照（ledgerUpdatedAt 較舊）不可復活已清空的明細
+    ev('readCloudRoom = async function(){ return { response:{}, value:{ updatedAt: 1, ledgerUpdatedAt: 1, cardRulesV3: JSON.parse(JSON.stringify(rulesV3)), ledger: ' + JSON.stringify([makeLedger(9000, false)]) + ' }, notFound:false }; }; window.__cloudWrites = [];');
+    await w.pullFromCloud(true);
+    await sleep(250);
+    var writeAfterPull = lastWrite();
+    check('舊雲端明細不會蓋掉本地已清空狀態', ev('ledger').length === 0, 'len=' + ev('ledger').length);
+    check('偵測到雲端明細較舊後會回推本地空明細', !!writeAfterPull && Array.isArray(writeAfterPull.ledger) && writeAfterPull.ledger.length === 0, writeAfterPull ? 'len=' + (writeAfterPull.ledger || []).length : '無');
+
+    // ---------- 2. 清除明細時一定連動重置額度 ----------
+    setPartUsed(50);
+    setLedger(makeLedger(9002, true));
+    ev('window.__cloudWrites = [];');
+    w.clearLedger();
+    await sleep(250);
+    var writeReset = lastWrite();
+    check('清除明細後有送出雲端更新', !!writeReset, writeReset ? '有 payload' : '沒有 payload');
+    check('清除明細後推送的 ledger 是空的', !!writeReset && Array.isArray(writeReset.ledger) && writeReset.ledger.length === 0, writeReset ? 'len=' + (writeReset.ledger || []).length : '無');
+    check('清除明細後推送的 usedReward 已歸零', partUsedFrom(writeReset) === 0, String(partUsedFrom(writeReset)));
+    check('清除明細後本地 usedReward 也已歸零', ev('rulesV3.cards.find(function(c){return c.id===' + JSON.stringify(ids.cardId) + ';}).plans.find(function(p){return p.id===' + JSON.stringify(ids.planId) + ';}).rewardParts.find(function(x){return x.id===' + JSON.stringify(ids.partId) + ';}).usedReward') === 0, String(ev('rulesV3.cards.find(function(c){return c.id===' + JSON.stringify(ids.cardId) + ';}).plans.find(function(p){return p.id===' + JSON.stringify(ids.planId) + ';}).rewardParts.find(function(x){return x.id===' + JSON.stringify(ids.partId) + ';}).usedReward')));
+
+    // ---------- 3. 刪除單筆明細：先更新 ledger / 額度，再推同步 ----------
+    setPartUsed(50);
+    setLedger(makeLedger(9003, true));
+    ev('showAppDialog = function(){ return Promise.resolve(true); }; window.__cloudWrites = [];');
+    w.deleteLedgerItem(9003);
+    await sleep(300);
+    var writeDelete = lastWrite();
+    check('刪除單筆後有送出雲端更新', !!writeDelete, writeDelete ? '有 payload' : '沒有 payload');
+    check('刪除單筆後本地 ledger 清空', ev('ledger').length === 0, 'len=' + ev('ledger').length);
+    check('刪除單筆後推送的 ledger 是空的（不是刪除前的舊資料）', !!writeDelete && Array.isArray(writeDelete.ledger) && writeDelete.ledger.length === 0, writeDelete ? 'len=' + (writeDelete.ledger || []).length : '無');
+    check('刪除單筆後推送的 usedReward 已返還', partUsedFrom(writeDelete) === 40, String(partUsedFrom(writeDelete)));
+
+    // ---------- 4. 編輯單筆明細：可改名稱與日期，但不重算已扣額度 ----------
+    setPartUsed(50);
+    ev('saveRulesV3(false);');
+    setLedger(makeLedger(9004, true));
+    ev('ledger[0].date="11/09 12:00"; ledger[0].dateISO="2026-11-09T12:00"; renderLedger();');
+    ev('window.__cloudWrites = [];');
+    w.openLedgerEdit(9004);
+    await sleep(30);
+    var editModal = d.getElementById('ledgerEditModal');
+    check('點編輯會開啟明細編輯 modal', editModal.style.display === 'flex');
+    check('編輯 modal 會帶入目前名稱', d.getElementById('ledgerEditMemo').value === '同步測試 9004', d.getElementById('ledgerEditMemo').value);
+    check('編輯 modal 會帶入目前日期', d.getElementById('ledgerEditDate').value === '2026-11-09T12:00', d.getElementById('ledgerEditDate').value);
+    d.getElementById('ledgerEditMemo').value = '改後名稱';
+    d.getElementById('ledgerEditDate').value = '2026-11-08T08:30';
+    w.saveLedgerEdit();
+    await sleep(300);
+    var edited = ev('ledger[0]');
+    check('儲存後名稱已更新', edited.memo === '改後名稱', edited.memo);
+    check('儲存後日期已更新', edited.date === '11/08 08:30', edited.date);
+    check('儲存後保留 dateISO 供下次編輯', edited.dateISO === '2026-11-08T08:30', edited.dateISO);
+    var writeEdit = lastWrite();
+    check('編輯明細後有送出雲端更新', !!writeEdit && writeEdit.ledger[0].memo === '改後名稱' && writeEdit.ledger[0].date === '11/08 08:30', writeEdit ? JSON.stringify(writeEdit.ledger[0]) : '無');
+    check('編輯日期與名稱不會重算已扣額度', partUsedFrom(writeEdit) === 50, String(partUsedFrom(writeEdit)));
+    check('儲存後編輯 modal 會關閉', editModal.style.display === 'none');
+
+    // 舊明細只有「月/日 下午時:分」時，也要能帶入編輯欄位
+    ev('ledger=[{id:9005,date:"11/09 下午02:30",memo:"舊格式",cardKey:"backup",cardName:"舊卡",jpy:1000,twd:209,rewardTwd:10,ruleSnapshot:{v3:true}}]; renderLedger();');
+    w.openLedgerEdit(9005);
+    await sleep(20);
+    check('舊明細的下午時間可正確帶入編輯欄位', d.getElementById('ledgerEditDate').value.endsWith('T14:30'), d.getElementById('ledgerEditDate').value);
+    w.closeLedgerEdit();
+
+    check('無 JS 錯誤', errs.length === 0, errs.slice(0,3).join('; '));
+  } catch (e) { fail++; log('EXCEPTION: ' + e.message + ' | ' + (e.stack||'').split('\n')[1]); }
+  finish();
+}, 2600);
+</script>

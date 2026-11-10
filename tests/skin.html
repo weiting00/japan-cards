@@ -31,7 +31,7 @@ setTimeout(function () {
     check('B1 --radius-lg = 16px', tok('--radius-lg') === '16px', tok('--radius-lg'));
     check('B2 --radius-md = 12px', tok('--radius-md') === '12px', tok('--radius-md'));
     check('B3 --radius-sm = 10px', tok('--radius-sm') === '10px', tok('--radius-sm'));
-    check('B4 卡片圓角 16px', cs('.card', 'borderRadius') === '16px', cs('.card', 'borderRadius'));
+    check('B4 頁面最外層不畫框（無圓角、無邊框）', cs('.card.page-shell', 'borderRadius') === '0px' && cs('.card.page-shell', 'borderTopWidth') === '0px' && cs('.card.page-shell', 'boxShadow') === 'none', cs('.card.page-shell', 'borderRadius') + ' / ' + cs('.card.page-shell', 'borderTopWidth') + ' / ' + cs('.card.page-shell', 'boxShadow'));
     check('B5 輸入框圓角 10px', cs('input', 'borderRadius') === '10px', cs('input', 'borderRadius'));
     check('B6 主按鈕圓角 12px', cs('.btn-main', 'borderRadius') === '12px', cs('.btn-main', 'borderRadius'));
     check('B7 對話框圓角 16px', probe('modal-box', 'borderRadius') === '16px', probe('modal-box', 'borderRadius'));
@@ -39,14 +39,14 @@ setTimeout(function () {
 
     // ===== C. 霓虹發光 =====
     log('=== C. 霓虹發光 ===');
-    var cardShadow = cs('.card', 'boxShadow') || '';
+    var resultShadow = cs('.result-box', 'boxShadow') || '';
     var btnShadow = cs('.btn-main', 'boxShadow') || '';
     var titleShadow = cs('.app-title h1', 'textShadow') || '';
     var blur = parseFloat((btnShadow.match(/0px 0px (\d+(?:\.\d+)?)px/) || [0, 0])[1]);
-    check('C1 卡片有青色光暈', /rgba\(0, 240, 255/.test(cardShadow), cardShadow.slice(0, 60));
+    check('C1 推薦結果保留青色光暈', /rgba\(0, 240, 255/.test(resultShadow), resultShadow.slice(0, 60));
     check('C2 主按鈕光暈 ≥ 12px', /rgba\(0, 240, 255/.test(btnShadow) && blur >= 12, btnShadow.slice(0, 60));
     check('C3 標題青 + 洋紅雙色光暈', /rgba\(0, 240, 255/.test(titleShadow) && /rgba\(255, 0, 229/.test(titleShadow), titleShadow);
-    check('C4 卡片邊框是霓虹青', /rgba\(0, 240, 255/.test(cs('.card', 'borderTopColor') || ''), cs('.card', 'borderTopColor'));
+    check('C4 推薦結果維持霓虹青邊框', /rgba\(0, 240, 255/.test(cs('.result-box', 'borderTopColor') || ''), cs('.result-box', 'borderTopColor'));
     check('C5 進度條有青光', /rgba\(0, 240, 255/.test(probe('progress-fill', 'boxShadow') || ''), probe('progress-fill', 'boxShadow').slice(0, 50));
     var tabShadow = cs('.tab-btn.active', 'boxShadow') || '';
     check('C6 選中分頁有洋紅底線', /rgba\(255, 0, 229/.test(tabShadow), tabShadow.slice(0, 80));
@@ -56,8 +56,9 @@ setTimeout(function () {
 
     // ===== D. 語意例外 =====
     log('=== D. 語意例外 ===');
-    var gb = probe('guide-card', 'borderTopColor') || '';
-    check('D1 攻略卡維持淺色外框', /rgba?\(\s*25\d/.test(gb), gb);
+    var gbBorder = probe('guide-card', 'borderTopWidth') || '';
+    var gbBg = probe('guide-card', 'backgroundColor') || '';
+    check('D1 攻略卡改用背景分層，不畫外框', parseFloat(gbBorder) === 0 && !/transparent|rgba\(\s*0,\s*0,\s*0,\s*0\s*\)/.test(gbBg), gbBorder + ' / ' + gbBg);
     var db = probe('card-editor-danger', 'borderTopColor') || '';
     check('D2 危險區維持紅框', /255,\s*1\d\d,\s*1\d\d|255,\s*140,\s*150/.test(db), db);
     var ob = probe('over-limit-alert', 'borderTopColor') || '';
@@ -67,7 +68,7 @@ setTimeout(function () {
     log('=== E. 結構未變 ===');
     check('E1 底部導覽仍是 4 個分頁', d.querySelectorAll('.tab-btn').length === 4, d.querySelectorAll('.tab-btn').length + ' 個');
     var oc = d.querySelectorAll('[onclick]').length;
-    check('E2 行內事件數量不變', oc === 48, oc + ' 個（原始碼 49：第 49 個在明細樣板內）');
+    check('E2 行內事件數量符合目前結構', oc === 49, oc + ' 個');
     check('E3 四個頁面容器都在', ['tab-decision', 'tab-quotas', 'tab-ledger', 'tab-guide'].every(function (id) { return !!d.getElementById(id); }));
     check('E4 兩個主要覆蓋層都在', !!d.getElementById('cardEditorOverlay') && !!d.getElementById('addCardOverlay'));
     check('E5 無 JS 錯誤', errs.length === 0, errs.slice(0, 3).join('; '));

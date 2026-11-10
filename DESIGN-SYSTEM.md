@@ -1,6 +1,7 @@
 # 設計系統 — Cyber Neon Tokyo v1
 
-> 狀態：**第 1 段（皮膚）＋ 1.5 段（手感）已完成**。
+> 狀態：**第 1 段（皮膚）＋ 1.5 段（手感）已完成；第 2 段（計算純函式化）進行中**。
+> 第 2 段的進度與切片見 [`STAGE-2-PLAN.md`](STAGE-2-PLAN.md)；完成後才進入第 3 段 React + shadcn/ui。
 > 皮膚層（第 1 段）只改 `<style>` 與 meta 顏色，JS 與 HTML 結構 0 改動；
 > 手感層（第 1.5 段）經使用者授權，只動 3 個行為，見第 5.5 節；另加第 4 項「手機上一頁」（UX4）。
 > 用途：① 固定現在的視覺與手感契約 ② 第 3 段換 React + shadcn/ui 時的對照表。
@@ -64,7 +65,7 @@
 | # | 元件 | 現有 class | 變體 | shadcn/ui 對應 |
 |---|---|---|---|---|
 | 1 | Button | `.btn-main` `.btn-secondary` `.btn-small` | `default` `secondary` `sm` | `Button`（`variant` / `size`） |
-| 2 | Card | `.card` `.card-title` | 一般 / 結果框 `result-box` | `Card` + `CardHeader` `CardTitle` `CardContent` |
+| 2 | Page / Card | `.card.page-shell` `.card-title` | 頁面容器（無外框，只有標題下方 bar 線） / 結果框 `result-box` | `Card` + `CardHeader` `CardTitle` `CardContent`；頁面層用無框容器 |
 | 3 | Input | `input` `select` | 文字 / 數字 / 下拉 | `Input` `Select` |
 | 4 | Field | `label` + `.stepper-btn` | 純文字 / 數字（＋－） | `Form` `FormField` `Label` + `Button size="icon"` |
 | 5 | Switch | `.toggle` `.toggle-track` | 開 / 關 | `Switch` |
@@ -78,17 +79,27 @@
 
 ---
 
-## 4. 語意例外（皮膚不可吃掉）
+## 4. 表面分層與語意例外
 
-這三種框有「意義」，測試會擋：
+**一般內容區塊不畫框**：攻略卡、編輯區塊、額度活動框與記帳列都用 `--surface-raised` 背景與間距分層。頁面最外層 `.card.page-shell`、編輯頁 `.editor-panel`、`.editor-section`、`.rule-form` 都不得有外框；編輯頁只保留標題 bar 與頁尾 bar 的水平分隔線。
+
+框只留給有語意的例外，測試會擋：
 
 | 元素 | 邊框 | 理由 |
 |---|---|---|
-| `.guide-card` | `rgba(255,255,255,.16)` 淺色 | 攻略卡要和資料卡區隔（`layout2` D 項） |
-| `.card-editor-danger` | `rgba(255,140,150,.55)` 紅 | 刪卡、危險操作 |
+| `.card-editor-danger` | `rgba(255,140,150,.45)` 紅 | 刪卡、危險操作 |
 | `.over-limit-alert` / `.split-plan-box` | `rgba(255,0,229,.42)` 洋紅 | 超額、分期警示 |
+| `.result-box` / `.modal-box` | 霓虹青 `--a35` | 推薦結果與對話框 |
+| `.alert-box` | `rgba(255,149,0,.35)` 橘 | 門檻/機會提示 |
 
 底部導覽 `.nav-tabs` 維持 **直角**（滿版 bar，圓角會破版）。
+
+本輪新增的四個結構也用同一套分層規則：
+
+- **額度看板**：`.quota-card-group` 是卡片分類標題（透明、只有標題列分隔線）→ `.quota-plan-block`（加碼活動，唯一的背景框）→ `.quota-item`（活動框內的進度列，透明、用分隔線區隔）。同一個活動的多筆進度列只出現在同一個 `.quota-plan-block`；不同活動各自一個框。重置鈕維持 `.btn-small`。
+- **決策頁商店查詢**：`.result-merchant-panel` 是 `.result-box` 底下的內嵌 `<details>`，不是 dialog；summary 沿用 `.result-merchant-trigger`，展開內容用 `.result-merchant-body` 背景分層。
+- **決策頁推薦卡原文**：原文不是獨立區塊，而是掛在每個推薦方案底下：單卡用 `.result-plan-line`，拆刷用 `.split-card-plan`；內層 `.result-plan-merchant` 是 `<details>`，摘要 `.result-plan-merchant-summary` 顯示一行 `.result-plan-merchant-preview`，展開後完整原文用 `.result-plan-merchant-text` 以 `pre-wrap` 呈現。預設收合；未限制店家時用 `.result-plan-merchant.is-empty` 直接顯示「實體一般消費」。跨卡搜尋仍保留在下方 `.result-merchant-panel`。
+- **攻略頁特約店家**：`.guide-bonus-merchants` 掛在 `.guide-bonus-item` 底下，店家原文用 `.guide-bonus-merchant-text` 以 `pre-wrap` 呈現；不拆成 chip、不建立商店索引，也不再有全站商店總覽的獨立區塊。
 
 ---
 
@@ -137,8 +148,8 @@ cfe777a  UX1 分頁記住
 | `tests/skin.html` | 視覺契約：底色、霓虹青/洋紅、圓角階梯、發光存在、語意例外、結構未變 |
 | `tests/ux.html` | 手感契約：分頁記住、Esc 逐層返回、未儲存確認、存檔提示、上一頁（含守衛回收） |
 | `tests/dscontract.html` | 元件契約：13 階青色 token、欄位/按鈕/開關一致性、高度契約 |
-| `tests/layout2.html` | 版面契約：主要區塊有可見外框、攻略卡淺框、危險區紅框 |
-| 全站 | `./tests/run.sh` → **455 passed, 0 failed** |
+| `tests/layout2.html` | 版面契約：一般區塊靠背景分層不畫框、編輯頁 panel/section/form 無框、危險區紅框 |
+| 全站 | `./tests/run.sh` → **610 passed, 0 failed** |
 
 ---
 

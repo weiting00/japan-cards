@@ -33,6 +33,13 @@ setTimeout(async function () {
   var cardId = w.eval('rulesV3.cards.find(c=>c.plans.length).id');
   w.openCardEditor(cardId);
   await sleep(150);
+  // 先量卡片編輯頁的實際尺寸；開啟加碼活動頁後卡片頁會隱藏，尺寸會變 0
+  var cardInp = d.querySelector('#cardEditorOverlay .editor-card-fields input[type=number]');
+  var cardStepper = d.querySelector('#cardEditorOverlay .editor-card-fields .stepper-btn');
+  var cardToggle = d.querySelector('#cardEditorOverlay .editor-card-fields .toggle-track');
+  var cardInpR = cardInp.getBoundingClientRect();
+  var cardStepperR = cardStepper.getBoundingClientRect();
+  var cardToggleR = cardToggle.getBoundingClientRect();
   d.getElementById('cardEditorAddActivity').click();
   await sleep(200);
 
@@ -60,7 +67,7 @@ setTimeout(async function () {
   log('');
   log('=== B. 元件契約（跨頁面一致性）===');
 
-  var FIELDS = ['#addDynamicCardForm .field', '#cardEditorOverlay .editor-card-fields label', '#addDynamicPlanForm .rule-form-grid label'];
+  var FIELDS = ['#addDynamicCardForm .field', '#cardEditorOverlay .editor-card-fields label', '#planEditorForm .rule-form-grid label'];
   var FIELD_PROPS = ['fontSize','fontWeight','color','gap','textAlign','alignItems','justifyContent','flexDirection','letterSpacing'];
   var fieldEls = FIELDS.map(function (s) { return d.querySelector(s); }).filter(Boolean);
   var fieldSigs = fieldEls.map(function (e) { return sig(e, FIELD_PROPS); });
@@ -72,39 +79,39 @@ setTimeout(async function () {
   check('B4 欄位標籤靠左對齊', w.getComputedStyle(fieldEls[0]).textAlign === 'left');
 
   var INPUTS = ['#addDynamicCardForm input[type=number]', '#cardEditorOverlay .editor-card-fields input[type=number]',
-                '#addDynamicPlanForm input[type=number]', '#addDynamicPlanForm select'];
+                '#planEditorForm input[type=number]', '#planEditorForm select'];
   var IN_PROPS = ['fontSize','color','paddingTop','paddingRight','paddingBottom','paddingLeft','minHeight','borderRadius','borderTopWidth','borderTopColor','backgroundColor'];
   var inSigs = INPUTS.map(function (s) { return sig(d.querySelector(s), IN_PROPS); });
   check('B5 輸入框 / 下拉樣式完全一致', new Set(inSigs).size === 1, new Set(inSigs).size + ' 種樣式');
   var inp = d.querySelector('#cardEditorOverlay .editor-card-fields input[type=number]');
   check('B6 輸入框高度 = --control-h', w.getComputedStyle(inp).minHeight === tokenPx('--control-h','min-height'),
         w.getComputedStyle(inp).minHeight + ' vs ' + tokenPx('--control-h','min-height'));
-  check('B7 輸入框實際高度 = --control-h', Math.round(inp.getBoundingClientRect().height) === Math.round(px(tokenPx('--control-h','min-height'))),
-        Math.round(inp.getBoundingClientRect().height) + 'px');
+  check('B7 輸入框實際高度 = --control-h', Math.round(cardInpR.height) === Math.round(px(tokenPx('--control-h','min-height'))),
+        Math.round(cardInpR.height) + 'px');
 
-  var STEPPERS = ['#addDynamicCardForm .stepper-btn', '#cardEditorOverlay .editor-card-fields .stepper-btn', '#addDynamicPlanForm .stepper-btn'];
+  var STEPPERS = ['#addDynamicCardForm .stepper-btn', '#cardEditorOverlay .editor-card-fields .stepper-btn', '#planEditorForm .stepper-btn'];
   var ST_PROPS = ['width','minHeight','fontSize','fontWeight','color','borderTopWidth','borderTopColor','backgroundColor','borderRadius','paddingTop'];
   var stSigs = STEPPERS.map(function (s) { return sig(d.querySelector(s), ST_PROPS); });
   check('B8 步進鈕樣式完全一致', new Set(stSigs).size === 1, new Set(stSigs).size + ' 種樣式');
   var st = d.querySelector('#cardEditorOverlay .editor-card-fields .stepper-btn');
-  var stR = st.getBoundingClientRect();
+  var stR = cardStepperR;
   check('B9 步進鈕尺寸 = --stepper-w × --control-h', Math.round(stR.width) === Math.round(px(tokenPx('--stepper-w','width'))) && Math.round(stR.height) === Math.round(px(tokenPx('--control-h','min-height'))),
         Math.round(stR.width) + '×' + Math.round(stR.height));
   check('B10 步進鈕觸控目標 ≥ 44px', stR.width >= 44 && stR.height >= 44, Math.round(stR.width) + '×' + Math.round(stR.height));
 
-  var TOGGLES = ['#addDynamicCardForm .toggle-track', '#cardEditorOverlay .editor-card-fields .toggle-track', '#addDynamicPlanForm .toggle-track'];
+  var TOGGLES = ['#addDynamicCardForm .toggle-track', '#cardEditorOverlay .editor-card-fields .toggle-track', '#planEditorForm .toggle-track'];
   var TG_PROPS = ['width','height','borderRadius','borderTopWidth','borderTopColor','backgroundColor'];
   var tgSigs = TOGGLES.map(function (s) { return sig(d.querySelector(s), TG_PROPS); });
   check('B11 開關軌道樣式完全一致', new Set(tgSigs).size === 1, new Set(tgSigs).size + ' 種樣式');
   var tg = d.querySelector('#cardEditorOverlay .editor-card-fields .toggle-track');
-  var tgR = tg.getBoundingClientRect();
+  var tgR = cardToggleR;
   check('B12 開關軌道尺寸 = --toggle-w × --toggle-h', Math.round(tgR.width) === Math.round(px(tokenPx('--toggle-w','width'))) && Math.round(tgR.height) === Math.round(px(tokenPx('--toggle-h','height'))),
         Math.round(tgR.width) + '×' + Math.round(tgR.height));
-  var TG_TEXT = ['#addDynamicCardForm .toggle-text', '#cardEditorOverlay .editor-card-fields .toggle-text', '#addDynamicPlanForm .toggle-text'];
+  var TG_TEXT = ['#addDynamicCardForm .toggle-text', '#cardEditorOverlay .editor-card-fields .toggle-text', '#planEditorForm .toggle-text'];
   var tgTextSigs = TG_TEXT.map(function (s) { return sig(d.querySelector(s), ['fontSize','color','lineHeight','textAlign']); });
   check('B13 開關文字排版一致', new Set(tgTextSigs).size === 1, new Set(tgTextSigs).size + ' 種');
 
-  var BTNS = ['#cardEditorOverlay .btn-small', '#addDynamicPlanForm .btn-small', '#addDynamicPlanForm button[type=submit]', '#cardEditorAddActivity'];
+  var BTNS = ['#cardEditorOverlay .btn-small', '#planEditorForm .btn-small', '#cardEditorAddActivity'];
   var BT_PROPS = ['fontSize','fontWeight','color','paddingTop','paddingRight','paddingBottom','paddingLeft','minHeight','borderRadius','borderTopWidth','borderTopColor','backgroundColor','letterSpacing'];
   var btSigs = BTNS.map(function (s) { return sig(d.querySelector(s), BT_PROPS); });
   check('B14 小按鈕樣式完全一致', new Set(btSigs).size === 1, new Set(btSigs).size + ' 種樣式');
@@ -124,22 +131,23 @@ setTimeout(async function () {
   var titleSigs = TITLES.map(function (s) { return sig(d.querySelector(s), ['fontSize','fontWeight','color','lineHeight','letterSpacing']); });
   check('C1 區塊標題一致', new Set(titleSigs).size === 1, new Set(titleSigs).size + ' 種');
   check('C2 區塊標題 = --fs-title', fs(TITLES[0]) === tokenPx('--fs-title','font-size'), fs(TITLES[0]) + ' vs ' + tokenPx('--fs-title','font-size'));
-  check('C3 表單標題 = --fs-form-title', fs('#addDynamicPlanForm .activity-form-title') === tokenPx('--fs-form-title','font-size'),
-        fs('#addDynamicPlanForm .activity-form-title') + ' vs ' + tokenPx('--fs-form-title','font-size'));
+  var formTitlePx = px(tokenPx('--fs-form-title','font-size'));
+  check('C3 表單標題 token 小於區塊標題', formTitlePx > 0 && formTitlePx < px(fs(TITLES[0])),
+        formTitlePx + 'px vs 區塊 ' + fs(TITLES[0]));
   var PAGE_TITLES = ['#addCardOverlay .add-card-head h2', '#cardEditorOverlay .editor-header h2'];
   var ptSigs = PAGE_TITLES.map(function (s) { return sig(d.querySelector(s), ['fontSize','fontWeight']); });
   check('C4 頁面標題一致', new Set(ptSigs).size === 1, new Set(ptSigs).size + ' 種');
   check('C5 頁面標題 = --fs-page-title', fs(PAGE_TITLES[0]) === tokenPx('--fs-page-title','font-size'), fs(PAGE_TITLES[0]) + ' vs ' + tokenPx('--fs-page-title','font-size'));
   check('C6 字級階梯遞減（頁面 > 區塊 > 表單 > 欄位）',
-        px(fs(PAGE_TITLES[0])) > px(fs(TITLES[0])) && px(fs(TITLES[0])) > px(fs('#addDynamicPlanForm .activity-form-title')) && px(fs('#addDynamicPlanForm .activity-form-title')) > px(fs('#addDynamicCardForm .field')),
-        [fs(PAGE_TITLES[0]), fs(TITLES[0]), fs('#addDynamicPlanForm .activity-form-title'), fs('#addDynamicCardForm .field')].join(' > '));
+        px(fs(PAGE_TITLES[0])) > px(fs(TITLES[0])) && px(fs(TITLES[0])) > formTitlePx && formTitlePx > px(fs('#addDynamicCardForm .field')),
+        [fs(PAGE_TITLES[0]), fs(TITLES[0]), formTitlePx + 'px', fs('#addDynamicCardForm .field')].join(' > '));
 
   // ================= D. 結構性規則 =================
   log('');
   log('=== D. 結構規則 ===');
   var allCheckbox = d.querySelectorAll('input[type=checkbox]');
-  var bare = Array.prototype.filter.call(allCheckbox, function (c) { return !c.closest('.toggle'); });
-  check('D1 沒有裸露的 checkbox（全部都是滑動開關）', bare.length === 0, allCheckbox.length + ' 個 checkbox，裸露 ' + bare.length + ' 個');
+  var bare = Array.prototype.filter.call(allCheckbox, function (c) { return !c.closest('.toggle') && !c.closest('.context-switch'); });
+  check('D1 沒有裸露的 checkbox（開關或情境分段鈕）', bare.length === 0, allCheckbox.length + ' 個 checkbox，裸露 ' + bare.length + ' 個');
 
   // 設計系統表單內的數字欄位一律有步進鈕；
   // 例外：計算器主金額（#jpyAmount）、匯率輸入（#customRateInput, step=0.000001）
@@ -151,7 +159,7 @@ setTimeout(async function () {
   });
   check('D2 表單內每個數字欄位都有 ＋/－ 步進鈕', noStepper.length === 0, allNumber.length + ' 個數字欄位，缺步進鈕 ' + noStepper.length + ' 個（例外：計算器主金額、匯率輸入）');
 
-  var allLabels = d.querySelectorAll('#addDynamicCardForm label, #cardEditorOverlay label, #addDynamicPlanForm label');
+  var allLabels = d.querySelectorAll('#addDynamicCardForm label, #cardEditorOverlay label, #planEditorForm label');
   var badLabel = Array.prototype.filter.call(allLabels, function (l) {
     if (l.closest('.context-switch')) return false;
     var cs = w.getComputedStyle(l);

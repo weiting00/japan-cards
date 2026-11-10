@@ -27,7 +27,8 @@ setTimeout(async function () {
 
     // 固定匯率，讓斷言與線上即期匯率無關
     function run(scenarioKey, jpy) {
-      d.querySelector('[data-scenario="' + scenarioKey + '"]').click();
+      // 決策情境為單選；拆刷測試直接設定單一情境，避免受前一個測試殘留影響
+      w.setDecisionContexts([scenarioKey]);
       d.getElementById('jpyAmount').value = String(jpy);
       d.getElementById('jpyAmount').dispatchEvent(new w.Event('input', { bubbles: true }));
       return ev('jpyRate = 0.2088; calculate(); currentDecision;');
@@ -43,17 +44,28 @@ setTimeout(async function () {
     check('第 1 段是富邦 J 卡 (交通卡 AP 儲值)', a0 && a0.plan.id === 'plan-jcard-transit', a0 && a0.plan.name);
     check('第 1 段金額 = 加碼上限可支應的消費額 NT$2,857', a0 && a0.amount === 2857, a0 && String(a0.amount));
     check('第 2 段是玉山熊本熊卡', a1 && a1.plan.id === 'plan-kuma', a1 && a1.plan.name);
+    var splitTitle = d.getElementById('bestCard').textContent;
+    check('拆刷標題直接列出參與卡片的名稱', /富邦 J 卡/.test(splitTitle) && /玉山熊本熊卡/.test(splitTitle), splitTitle);
+    check('拆刷標題不再使用沒有資訊的「最佳拆刷順序」', splitTitle.indexOf('最佳拆刷順序') < 0, splitTitle);
     check('第 2 段金額 = 剩餘金額', a1 && a1.amount === twd - 2857, a1 && String(a1.amount));
     check('J 卡交通卡段淨回饋 ≈ NT$243（上限 NT$200 已用盡）', a0 && Math.abs(a0.reward - 242.845) < 0.5, a0 && String(a0.reward));
     // 匯率固定 0.2088 → ¥50,000 = NT$10,440；玉山段 7,583 × 7% = 530.8
     check('總淨回饋 ≈ NT$774', Math.abs(dec.rewardTwd - 774) <= 2, 'NT$' + dec.rewardTwd);
     check('淨回饋率 ≈ 7.4%', Math.abs(dec.ratePercent - 7.41) < 0.15, dec.ratePercent.toFixed(2) + '%');
 
-    // ---------- 2. 排序清單依淨回饋率，交通卡 J 卡要排第一 ----------
-    var ranked = ev('Array.prototype.map.call(document.querySelectorAll("#cardDesc .dynamic-plan"), function(n){ return n.textContent; });');
-    check('排序清單第 1 名是交通卡 J 卡', ranked.length > 0 && /交通卡 AP 儲值/.test(ranked[0]), ranked[0] || '(空)');
-    check('排序清單第 1 名標示淨率 8.50%', ranked.length > 0 && /8\.50%/.test(ranked[0]), ranked[0] || '(空)');
-    check('排序清單含同一張實體卡的兩個方案', ranked.length > 0 && ranked.some(function(t){ return /日韓實體一般消費/.test(t); }), ranked.join(' ／ '));
+    // ---------- 2. 拆刷結果依卡片分組；總回饋放在配置清單最後 ----------
+    var cardDesc = d.getElementById('cardDesc');
+    var totalReward = d.getElementById('bestReward');
+    var splitGroups = cardDesc.querySelectorAll('.split-card-group');
+    check('不再顯示難以理解的候選排序清單', !cardDesc.querySelector('details') && !/情境加碼排序/.test(cardDesc.textContent), cardDesc.textContent);
+    check('拆刷說明指出規則是自動分配、不是固定卡片順序', /不是固定卡片順序/.test(d.getElementById('splitModeHint').textContent), d.getElementById('splitModeHint').textContent);
+    check('拆刷結果依卡片分組', splitGroups.length === 2, splitGroups.length + ' 組');
+    check('第一組標題是富邦 J 卡', /富邦 J 卡/.test(splitGroups[0].querySelector('.split-card-name').textContent), splitGroups[0].textContent);
+    check('第一組內容含方案、金額與該卡回饋', /交通卡 AP 儲值/.test(splitGroups[0].textContent) && /NT\$2,857/.test(splitGroups[0].textContent) && /NT\$243/.test(splitGroups[0].textContent), splitGroups[0].textContent);
+    check('第二組標題是玉山熊本熊卡', /玉山熊本熊卡/.test(splitGroups[1].querySelector('.split-card-name').textContent), splitGroups[1].textContent);
+    check('「推薦拆刷方案」標籤可見', d.getElementById('resultPlanLabel').hidden === false && /推薦拆刷方案/.test(d.getElementById('resultPlanLabel').textContent));
+    check('預估淨回饋放在拆刷配置清單之後', (cardDesc.compareDocumentPosition(totalReward) & 4) === 4, totalReward.textContent);
+    check('預估淨回饋顯示整筆總額', /NT\$774/.test(totalReward.textContent), totalReward.textContent);
 
     // ---------- 3. 交通卡 ¥100,000：同一張實體卡的兩個方案都要能拆進來 ----------
     var dec2 = run('transit', 100000);
@@ -61,6 +73,8 @@ setTimeout(async function () {
     check('交通卡 ¥100,000 → 拆成 3 段', dec2.v3Allocations.length === 3, dec2.v3Allocations.length + ' 段');
     check('第 1 段仍是交通卡 J 卡（淨率最高）', planIds[0] === 'plan-jcard-transit', planIds.join(', '));
     check('同一張富邦 J 卡的交通卡方案與一般消費方案都保留', planIds.indexOf('plan-jcard-transit') >= 0 && planIds.indexOf('plan-jcard-general') >= 0, planIds.join(', '));
+    var splitTitle2 = d.getElementById('bestCard').textContent;
+    check('同一張實體卡的多個方案不會在標題重複列名', (splitTitle2.match(/富邦 J 卡/g) || []).length === 1 && /玉山熊本熊卡/.test(splitTitle2), splitTitle2);
     // 匯率固定 0.2088 → ¥100,000 = NT$20,880；2,857 @8.5% + 8,333 @7% + 9,690 @4.5%
     check('總淨回饋 ≈ NT$1,262', Math.abs(dec2.rewardTwd - 1262) <= 3, 'NT$' + dec2.rewardTwd);
 
@@ -72,19 +86,47 @@ setTimeout(async function () {
     // ---------- 5. 一般消費情境不受拆刷影響 ----------
     var dec4 = run('general', 50000);
     check('一般消費 ¥50,000 → 單卡富邦 J 卡（不拆刷）', dec4.v3Allocations.length === 1 && dec4.v3Allocations[0].plan.id === 'plan-jcard-general', dec4.v3Allocations.map(function(a){ return a.plan.id; }).join(', '));
+    check('單卡模式標題只顯示該卡名稱', d.getElementById('bestCard').textContent === dec4.v3Allocations[0].card.name, d.getElementById('bestCard').textContent);
+    check('單卡模式不顯示「推薦拆刷方案」標籤', d.getElementById('resultPlanLabel').hidden === true, d.getElementById('resultPlanLabel').textContent);
+    check('單卡模式不產生拆刷卡片分組', d.querySelectorAll('#cardDesc .split-card-group').length === 0, d.getElementById('cardDesc').innerHTML);
     check('一般消費 ¥50,000 → 淨回饋 ≈ NT$468', Math.abs(dec4.rewardTwd - 468) <= 2, 'NT$' + dec4.rewardTwd);
 
     // ---------- 6. 強制整筆刷時不拆 ----------
     run('transit', 50000);
-    d.getElementById('splitMode').value = 'single';
-    d.getElementById('splitMode').dispatchEvent(new w.Event('change', { bubbles: true }));
+    d.getElementById('splitModeSingle').click();
     var dec5 = ev('jpyRate = 0.2088; calculate(); currentDecision;');
     check('強制整筆刷 → 單卡', dec5.v3Allocations.length === 1, dec5.v3Allocations.length + ' 段');
     check('強制整筆刷 → 選玉山（整筆淨回饋最高）', dec5.v3Allocations[0].plan.id === 'plan-kuma', dec5.v3Allocations[0].plan.name);
     check('強制整筆刷 → 淨回饋 ≈ NT$604', Math.abs(dec5.rewardTwd - 604) <= 2, 'NT$' + dec5.rewardTwd);
     check('強制整筆刷的淨回饋低於拆刷', dec5.rewardTwd < dec.rewardTwd, 'NT$' + dec5.rewardTwd + ' < NT$' + dec.rewardTwd);
-    d.getElementById('splitMode').value = 'auto';
-    d.getElementById('splitMode').dispatchEvent(new w.Event('change', { bubbles: true }));
+    check('強制整筆刷 tab 與 hidden 模式值同步', d.getElementById('splitModeSingle').getAttribute('aria-selected') === 'true' && d.getElementById('splitMode').value === 'single');
+    check('整筆刷模式說明會提示可比較拆刷差異', /單卡計算/.test(d.getElementById('splitModeHint').textContent) && /拆分最佳化/.test(d.getElementById('splitModeHint').textContent), d.getElementById('splitModeHint').textContent);
+    d.getElementById('splitModeAuto').click();
+    check('切回拆分最佳化 tab 與 hidden 模式值同步', d.getElementById('splitModeAuto').getAttribute('aria-selected') === 'true' && d.getElementById('splitMode').value === 'auto');
+    check('拆分最佳化模式說明會顯示比整筆刷多省多少', /多省 NT\$/.test(d.getElementById('splitModeHint').textContent), d.getElementById('splitModeHint').textContent);
+
+    // ---------- 7. 不是寫死種子卡片：換成合成卡片，仍依加碼額度與淨回饋率分配 ----------
+    var syntheticRules = { updatedAt: Date.now(), cards: [
+      { id: 'synthetic-a', name: '合成卡甲', issuer: '測試', network: 'Visa', baseRate: 1, baseFeeApplies: false, plans: [
+        { id: 'synthetic-a-plan', legacyKey: 'synthetic_a', name: '甲方案', contexts: ['general'], enabled: true, includeBaseReward: true, rewardParts: [
+          { id: 'sa', name: '甲加碼', rate: 10, capAmount: 100, usedReward: 0 }
+        ] }
+      ] },
+      { id: 'synthetic-b', name: '合成卡乙', issuer: '測試', network: 'Visa', baseRate: 2, baseFeeApplies: false, plans: [
+        { id: 'synthetic-b-plan', legacyKey: 'synthetic_b', name: '乙方案', contexts: ['general'], enabled: true, includeBaseReward: true, rewardParts: [
+          { id: 'sb', name: '乙加碼', rate: 5, capAmount: 1000, usedReward: 0 }
+        ] }
+      ] }
+    ] };
+    w.setDecisionContexts(['general']);
+    var dec6 = ev('rulesV3 = ' + JSON.stringify(syntheticRules) + '; jpyRate = 1; document.getElementById("jpyAmount").value = "5000"; document.getElementById("splitMode").value = "auto"; calculate(); currentDecision;');
+    var synthA = dec6.v3Allocations[0], synthB = dec6.v3Allocations[1];
+    check('合成卡片也能拆刷（不是寫死種子卡片）', dec6.v3Allocations.length === 2, dec6.v3Allocations.length + ' 段');
+    check('合成卡甲依規則先吃滿加碼額度', synthA && synthA.card.id === 'synthetic-a' && synthA.amount === 1000, synthA && (synthA.card.name + ' NT$' + synthA.amount));
+    check('合成卡乙接續剩餘金額', synthB && synthB.card.id === 'synthetic-b' && synthB.amount === 4000, synthB && (synthB.card.name + ' NT$' + synthB.amount));
+    check('合成卡片拆刷總回饋 ≈ NT$390', Math.abs(dec6.rewardTwd - 390) <= 1, 'NT$' + dec6.rewardTwd);
+    check('合成卡片標題列出兩張卡名', /合成卡甲/.test(d.getElementById('bestCard').textContent) && /合成卡乙/.test(d.getElementById('bestCard').textContent), d.getElementById('bestCard').textContent);
+    check('合成卡片拆刷結果也分成兩組', d.querySelectorAll('#cardDesc .split-card-group').length === 2, d.querySelectorAll('#cardDesc .split-card-group').length + ' 組');
 
     check('無 JS 錯誤', errs.length === 0, errs.slice(0,3).join('; '));
   } catch (e) { fail++; log('EXCEPTION: ' + e.message + ' | ' + (e.stack||'').split('\n')[1]); }

@@ -56,28 +56,33 @@ setTimeout(function () {
     check('新增信用卡畫面無水平溢出', d.documentElement.scrollWidth <= d.documentElement.clientWidth, d.documentElement.scrollWidth + '<=' + d.documentElement.clientWidth);
     w.closeAddCard();
 
-    // ---------- 框線可辨識（淺色小外框）----------
-    // 用探測元素讀各類框的計算樣式，不受該類是否已渲染影響
-    function borderOfClass(cls) {
+    // ---------- 表面分層：一般區塊靠背景與間距，不靠外框 ----------
+    // 用探測元素讀各類區塊的計算樣式，不受該類是否已渲染影響
+    function styleOfClass(cls) {
       var probe = d.createElement('div');
       probe.className = cls;
       probe.style.display = 'none';
       d.body.appendChild(probe);
       var cs = w.getComputedStyle(probe);
-      var r = { w: cs.borderTopWidth, c: cs.borderTopColor };
+      var r = { border: parseFloat(cs.borderTopWidth) || 0, bg: cs.backgroundColor, bgImage: cs.backgroundImage };
       d.body.removeChild(probe);
       return r;
     }
-    var boxes = ['card', 'guide-card', 'guide-part', 'editor-section', 'rule-form', 'quota-item', 'quota-status-box', 'config-card-box', 'ledger-item', 'alert-box', 'guide-table-wrap'];
-    var invisible = [];
-    boxes.forEach(function (cls) {
-      var b = borderOfClass(cls);
-      var transparent = /transparent|rgba\(\s*0,\s*0,\s*0,\s*0\s*\)/.test(b.c);
-      if (transparent || parseFloat(b.w) < 1) invisible.push('.' + cls + ' w=' + b.w + ' c=' + b.c);
+    var plainSurfaces = ['guide-card', 'guide-part', 'editor-section', 'quota-plan-block', 'quota-status-box', 'config-card-box', 'ledger-item'];
+    var framed = [];
+    var untinted = [];
+    plainSurfaces.forEach(function (cls) {
+      var s = styleOfClass(cls);
+      if (s.border > 0) framed.push('.' + cls + ' border=' + s.border + 'px');
+      var transparentBg = /transparent|rgba\(\s*0,\s*0,\s*0,\s*0\s*\)/.test(s.bg) && (!s.bgImage || s.bgImage === 'none');
+      if (transparentBg) untinted.push('.' + cls + ' bg=' + s.bg);
     });
-    check('主要區塊都有淺色外框（不再是透明）', invisible.length === 0, invisible.join(' | '));
-    var gb = borderOfClass('guide-card');
-    check('攻略卡片外框是淺色', /rgba?\(\s*25\d/.test(gb.c), gb.c + ' w=' + gb.w);
+    check('一般內容區塊不畫框，靠背景分層', framed.length === 0, framed.join(' | '));
+    check('一般內容區塊有可辨識背景', untinted.length === 0, untinted.join(' | '));
+    var quotaItemStyle = styleOfClass('quota-item');
+    check('額度進度列不再另外框成卡片，改用活動框內的列', quotaItemStyle.border === 0 && /transparent|rgba\(\s*0,\s*0,\s*0,\s*0\s*\)/.test(quotaItemStyle.bg), 'border=' + quotaItemStyle.border + ' bg=' + quotaItemStyle.bg);
+    check('編輯頁不再框框套框框（panel / section / form 都無框）', ['editor-panel', 'editor-section', 'rule-form'].every(function (cls) { return styleOfClass(cls).border === 0; }), ['editor-panel', 'editor-section', 'rule-form'].map(function (cls) { return cls + '=' + styleOfClass(cls).border; }).join(' '));
+    check('攻略卡改用背景分層，不再加外框', styleOfClass('guide-card').border === 0);
 
     // 危險區維持紅框
     w.openCardEditor(w.eval('rulesV3.cards[0].id'));
@@ -92,11 +97,12 @@ setTimeout(function () {
     w.openCardEditor(w.eval('rulesV3.cards[0].id'));
     check('單卡編輯頁已開啟', d.getElementById('cardEditorOverlay').hidden === false);
     d.getElementById('cardEditorAddActivity').click();
-    var form = d.getElementById('addDynamicPlanForm');
-    var host = d.getElementById('cardEditorActivityHost');
-    check('加碼活動表單在單卡編輯頁內', host.contains(form));
-    var hf = host.getBoundingClientRect(), ff = form.getBoundingClientRect();
-    check('表單水平範圍在 host 內', ff.left >= hf.left - 1 && ff.right <= hf.right + 1, Math.round(ff.left) + '~' + Math.round(ff.right) + ' vs ' + Math.round(hf.left) + '~' + Math.round(hf.right));
+    var form = d.getElementById('planEditorForm');
+    check('加碼活動表單在獨立加碼活動頁', d.getElementById('planEditorOverlay').contains(form));
+    var panel = d.querySelector('#planEditorOverlay .editor-panel');
+    var hf = panel.getBoundingClientRect(), ff = form.getBoundingClientRect();
+    check('表單水平範圍在面板內', ff.left >= hf.left - 1 && ff.right <= hf.right + 1, Math.round(ff.left) + '~' + Math.round(ff.right) + ' vs ' + Math.round(hf.left) + '~' + Math.round(hf.right));
+    w.closePlanEditor({ force: true });
 
     var small2 = [];
     Array.prototype.forEach.call(d.querySelectorAll('#cardEditorOverlay button, #cardEditorOverlay input, #cardEditorOverlay select, #cardEditorOverlay summary'), function(el){

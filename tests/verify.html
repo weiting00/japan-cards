@@ -47,7 +47,9 @@ setTimeout(function () {
     check('最下面有固定「新增」鈕', (function(){ var b = d.querySelector('#addCardOverlay .add-card-foot button[type="submit"]'); if (!b) return false; var r = b.getBoundingClientRect(); return r.height >= 40 && r.bottom >= 820 && b.getAttribute('form') === 'addDynamicCardForm'; })());
     check('開啟時底部 tab 隱藏（取代 tab）', w.getComputedStyle(d.querySelector('.nav-tabs')).display === 'none');
     check('舊版規則表已移除', !d.getElementById('ruleGuideRows') && !d.getElementById('toggleRuleEdit') && !d.getElementById('ruleEditActions') && !d.getElementById('ruleChangeModal'));
-    check('保留既有 DOM id', ['addDynamicCardForm','addDynamicPlanForm','addMerchantForm','planMerchantLabel','planMerchantChoices','cancelPlanEdit','ruleGuideSummary','kumaGuideTitle','kumaTransitNet','merchantChoiceList','merchantChoice'].every(function (id) { return !!d.getElementById(id); }));
+    check('保留既有 DOM id', ['addDynamicCardForm','planEditorForm','planEditorMerchantLabel','planEditorMerchants','merchantChoice','cancelPlanEdit','guideCardList','guideV3Rows','resultMerchantTrigger','resultMerchantSearch','resultMerchantList','resultMerchantMemo','resultMerchantFeedback','resultStoreNote'].every(function (id) { return !!d.getElementById(id); }));
+    check('已移除沒有通用性的熊本熊/場景守則區塊', !d.getElementById('kumaGuideCard') && !d.getElementById('ruleGuideSummary'));
+    check('已移除攻略頁商店總覽', !d.getElementById('guideMerchantOverview') && !d.getElementById('guideMerchantList'));
 
     // --- iOS 開關（取代 checkbox）---
     var tg = d.querySelector('#addCardOverlay .toggle');
@@ -55,7 +57,7 @@ setTimeout(function () {
     check('開關的 checkbox 是透明的真 input', (function(){ var i = tg && tg.querySelector('input[type=checkbox]'); return !!i && w.getComputedStyle(i).opacity === '0'; })());
     check('點開關會切換 checked', (function(){ var i = tg.querySelector('input[type=checkbox]'); var before = i.checked; tg.querySelector('.toggle-track').click(); return i.checked !== before; })());
     check('全 App 沒有殘留的 checkbox 方框樣式', d.querySelectorAll('.check-inline, .check-label').length === 0);
-    check('全 App 的 checkbox 都包在開關元件內', Array.prototype.every.call(d.querySelectorAll('input[type=checkbox]'), function (cb) { return !!cb.closest('.toggle'); }));
+    check('checkbox 都包在開關元件內（情境分段鈕除外）', Array.prototype.every.call(d.querySelectorAll('input[type=checkbox]'), function (cb) { return !!cb.closest('.toggle') || !!cb.closest('.context-switch'); }));
 
     // 右上角叉叉可關閉
     d.querySelector('#addCardOverlay .add-card-close').click();
@@ -72,11 +74,11 @@ setTimeout(function () {
     check('單卡編輯頁可開啟', d.getElementById('cardEditorOverlay').hidden === false);
     check('單卡編輯頁有卡片設定欄位', !!d.getElementById('cardEditorNameInput') && !!d.getElementById('cardEditorBaseRate'));
     check('單卡編輯頁的手續費改用開關', (function(){ var b = d.getElementById('cardEditorBaseFee'); return !!b.closest('.toggle') && !!b.closest('.toggle').querySelector('.toggle-track'); })());
-    check('加碼活動表單改用開關', d.querySelectorAll('#addDynamicPlanForm .activity-toggles .toggle').length === 2);
+    check('加碼活動表單改用開關', d.querySelectorAll('#planEditorForm .activity-toggles .toggle').length === 2);
     check('單卡編輯頁有加碼活動清單與新增鈕', !!d.getElementById('cardEditorPlans') && !!d.getElementById('cardEditorAddActivity'));
-    check('加碼活動表單在單卡編輯頁內', !!d.querySelector('#cardEditorActivityHost #addDynamicPlanForm'));
-    check('加碼活動表單改為單一表單', d.querySelectorAll('#addDynamicPlanForm details.rule-step').length === 0);
-    check('適用情境分段按鈕含交通卡/特約商店', d.querySelectorAll('#addDynamicPlanForm .context-switch input[value="transit"]').length === 1 && d.querySelectorAll('#addDynamicPlanForm .context-switch input[value="merchant"]').length === 1);
+    check('加碼活動表單在獨立加碼活動頁', !!d.querySelector('#planEditorOverlay #planEditorForm'));
+    check('加碼活動表單改為單一表單', d.querySelectorAll('#planEditorForm details.rule-step').length === 0);
+    check('適用情境分段按鈕含交通卡/特約商店', d.querySelectorAll('#planEditorForm .context-switch input[value="transit"]').length === 1 && d.querySelectorAll('#planEditorForm .context-switch input[value="merchant"]').length === 1);
     w.closeCardEditor();
 
     // --- responsive ---

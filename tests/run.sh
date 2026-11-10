@@ -22,7 +22,7 @@ ROOT="$(cd "$HERE/.." && pwd)"
 OUT="$HERE/.out"
 mkdir -p "$OUT"
 
-ALL="v3only ed2 ed6 verify layout2 final struct2 migrate carded mobile activityedit dscontract split skin ux"
+ALL="engine v3only ed2 ed6 verify layout2 final struct2 migrate carded mobile activityedit dscontract split ledger skin ux"
 FILES="${*:-$ALL}"
 
 # 找一個空的 port 起靜態伺服器（伺服器根目錄＝專案根，測試頁以 /tests/xxx.html 取得）
@@ -34,7 +34,12 @@ done
 
 ( cd "$ROOT" && exec python3 -m http.server "$PORT" --bind 127.0.0.1 >/dev/null 2>&1 ) &
 SERVER_PID=$!
-trap 'kill $SERVER_PID 2>/dev/null' EXIT INT TERM
+PROFILE="$OUT/chrome-profile-$$"
+RESET="$HERE/_reset.html"
+cat > "$RESET" <<'HTML'
+<!doctype html><meta charset="utf-8"><script>localStorage.clear();localStorage.setItem('japan_card_billing_prompt_dismissed_v1','1');document.title='ready';</script>
+HTML
+trap 'kill $SERVER_PID 2>/dev/null; rm -rf "$PROFILE"; rm -f "$RESET"' EXIT INT TERM
 sleep 1
 
 TOTAL_PASS=0
@@ -43,7 +48,13 @@ FAILED_FILES=""
 
 for f in $FILES; do
   [ -f "$HERE/$f.html" ] || { echo "找不到測試檔：$f.html"; continue; }
+  # 每個測試都從乾淨的 localStorage 開始，避免前一個測試留下的 overlay/編輯狀態影響結果。
   "$CHROME" --headless=new --disable-gpu --no-sandbox \
+            --user-data-dir="$PROFILE" --no-first-run --no-default-browser-check \
+            --virtual-time-budget=2000 --window-size=800,900 \
+            --dump-dom "http://127.0.0.1:$PORT/tests/_reset.html" >/dev/null 2>&1
+  "$CHROME" --headless=new --disable-gpu --no-sandbox \
+            --user-data-dir="$PROFILE" --no-first-run --no-default-browser-check \
             --virtual-time-budget=25000 --window-size=800,900 \
             --dump-dom "http://127.0.0.1:$PORT/tests/$f.html" 2>/dev/null > "$OUT/$f.html"
 

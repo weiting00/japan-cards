@@ -48,18 +48,18 @@
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
       background-color: var(--bg);
       color: var(--text);
-      padding: 12px 14px 90px;
+      padding: 0 var(--page-gutter) 100px;
       margin: 0;
       line-height: 1.45;
       font-size: 15px;
     }
 
     /* Header */
-    .app-header {
+    .app-header-inner {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 8px 4px 14px;
+      gap: 12px;
     }
     .app-title h1 {
       margin: 0;
@@ -217,13 +217,12 @@
       color: #fff;
       border-color: var(--primary);
     }
-    .scenario-grid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:12px; margin:12px 0 24px; }
-    .scenario-option { display:flex; min-height:104px; flex-direction:column; align-items:flex-start; justify-content:center; gap:7px; padding:14px; text-align:left; background:var(--card-sub-bg); color:var(--text); border:1px solid transparent; border-radius:16px; cursor:pointer; }
-    .scenario-option .ui-icon { color:var(--accent); font-size:1.2rem; }
-    .scenario-option span:not(.ui-icon) { font-weight:700; }
-    .scenario-option small { color:var(--text-secondary); font-size:.72rem; line-height:1.35; }
+    .scenario-grid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:10px; margin:12px 0 22px; }
+    .scenario-option { display:flex; min-height:68px; flex-direction:column; align-items:flex-start; justify-content:center; gap:4px; padding:9px 11px; text-align:left; background:var(--card-sub-bg); color:var(--text); border:1px solid transparent; border-radius:14px; cursor:pointer; }
+    .scenario-option .ui-icon { color:var(--accent); font-size:1.05rem; }
+    .scenario-option span:not(.ui-icon) { font-weight:700; font-size:.9rem; }
     .scenario-option.active { background:var(--a07); border-color:var(--a52); box-shadow:0 0 18px var(--a12); }
-    @media(max-width:620px) { .scenario-grid { grid-template-columns:repeat(2,minmax(0,1fr)); gap:9px; } .scenario-option { min-height:90px; padding:12px; } }
+    @media(max-width:620px) { .scenario-grid { grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; } .scenario-option { min-height:62px; padding:8px 10px; } }
     .rules-disclaimer { color:var(--text-secondary); font-size:.79rem; line-height:1.55; }
     .rule-form { background:rgba(11,14,24,.48); border-radius:14px; padding:14px; margin:14px 0; }
     .rule-form-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; margin:12px 0; }
@@ -239,8 +238,6 @@
       gap:var(--field-gap); color:var(--text-secondary); font-size:var(--fs-label);
       text-align:left; min-width:0;
     }
-    .dynamic-plan { padding:10px 0; border-bottom:1px solid var(--a12); }
-    .dynamic-plan:last-child { border-bottom:0; }
     .scenario-risk-note { margin-top:12px; padding:11px 13px; color:var(--text-secondary); background:rgba(255,74,141,.07); border-radius:12px; font-size:.8rem; line-height:1.5; }
     .merchant-choice-list { display:flex; flex-wrap:wrap; gap:8px; margin-top:8px; }
     .merchant-choice { padding:8px 12px; border:1px solid transparent; border-radius:999px; color:var(--text); background:var(--card-sub-bg); cursor:pointer; }
@@ -258,9 +255,274 @@
     #tab-guide .card { padding: 10px 12px; margin-bottom: 8px; }
     #tab-guide .card-title { margin-bottom: 8px; }
     .guide-intro { margin:0 0 8px; color:var(--text-secondary); font-size:.75rem; line-height:1.45; }
+
+    /* 特約商店對照：決策頁與攻略頁共用同一份資料 */
+    .merchant-overview {
+      margin: 14px 0 22px;
+      border: 1px solid var(--a20) !important;
+      border-radius: 14px;
+      background: rgba(11, 14, 24, 0.58);
+      overflow: hidden;
+    }
+    .merchant-overview[hidden] { display: none !important; }
+    .merchant-overview > summary {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 12px 14px;
+      color: var(--text);
+      font-size: 0.84rem;
+      font-weight: 700;
+      cursor: pointer;
+      list-style: none;
+    }
+    .merchant-overview > summary::-webkit-details-marker { display: none; }
+    .merchant-overview > summary::after {
+      content: '＋';
+      color: var(--primary);
+      font-family: "Space Mono", ui-monospace, monospace;
+      font-size: 0.9rem;
+    }
+    .merchant-overview[open] > summary::after { content: '－'; }
+    .merchant-overview-count {
+      margin-left: auto;
+      color: var(--text-secondary);
+      font-family: "Space Mono", ui-monospace, monospace;
+      font-size: 0.7rem;
+      font-weight: 400;
+    }
+    .merchant-overview-body { padding: 0 14px 14px; }
+    .merchant-search {
+      width: 100%;
+      min-height: 42px;
+      padding: 10px 12px;
+      border: 1px solid var(--a20) !important;
+      border-radius: 10px;
+      background: rgba(11, 14, 24, 0.86);
+      color: var(--text);
+      font-size: 0.86rem;
+    }
+    .merchant-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      max-height: 420px;
+      margin-top: 10px;
+      overflow-y: auto;
+    }
+    .merchant-row {
+      padding: 11px 12px;
+      border: 1px solid var(--a12) !important;
+      border-radius: 10px;
+      background: rgba(11, 14, 24, 0.5);
+    }
+    .merchant-row-head {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 7px;
+    }
+    .merchant-name { font-size: 0.86rem; font-weight: 800; overflow-wrap: anywhere; }
+    .merchant-count { flex: 0 0 auto; color: var(--text-secondary); font-size: 0.68rem; }
+    .merchant-cards { display: flex; flex-wrap: wrap; gap: 6px; }
+    .merchant-card-chip {
+      display: inline-flex;
+      flex-direction: column;
+      gap: 2px;
+      max-width: 100%;
+      padding: 7px 10px;
+      border: 1px solid var(--a12) !important;
+      border-radius: 9px;
+      background: rgba(255, 255, 255, 0.03);
+      color: var(--text-secondary);
+      font-size: 0.72rem;
+      line-height: 1.3;
+    }
+    .merchant-card-chip b { color: var(--text); font-size: 0.78rem; overflow-wrap: anywhere; }
+    .merchant-card-chip small { color: var(--text-secondary); font-size: 0.66rem; }
+    .merchant-card-chip.is-best {
+      border-color: var(--a52) !important;
+      background: var(--a10);
+      box-shadow: 0 0 12px var(--a10);
+    }
+    .merchant-card-chip.is-best b { color: var(--primary); }
+    .merchant-empty {
+      padding: 14px;
+      border: 1px dashed var(--a20) !important;
+      border-radius: 10px;
+      color: var(--text-secondary);
+      font-size: 0.76rem;
+      line-height: 1.55;
+    }
+
+    /* 推薦卡片底下的特約商店查詢入口 */
+    .result-merchant-trigger {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      width: 100%;
+      min-height: 44px;
+      margin-top: 12px;
+      padding: 11px 12px;
+      border: 1px solid var(--a35) !important;
+      border-radius: 12px;
+      background: var(--a07);
+      color: var(--text);
+      text-align: left;
+      cursor: pointer;
+      transition: transform 0.1s, background-color 0.15s;
+    }
+    .result-merchant-trigger:active { transform: translateY(1px); background: var(--a10); }
+    .result-merchant-trigger[hidden] { display: none !important; }
+    .result-merchant-trigger-label { display: flex; align-items: center; gap: 8px; font-size: 0.84rem; font-weight: 800; }
+    .result-merchant-trigger-meta { flex: 0 1 auto; max-width: 45%; overflow: hidden; color: var(--text-secondary); font-size: 0.7rem; text-overflow: ellipsis; white-space: nowrap; }
+    .result-store-note {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 10px;
+      margin-top: 10px;
+      padding: 10px 12px;
+      border-radius: 10px;
+      background: var(--a10);
+      color: var(--text-secondary);
+      font-size: 0.76rem;
+      line-height: 1.5;
+    }
+    .result-store-note[hidden] { display: none !important; }
+    .result-store-note b { color: var(--text); }
+
+    /* 推薦方案底下的特約原文：預設收合，summary 先給一行預覽。 */
+    .result-plan-line { margin-top: 8px; }
+    .result-plan-line:first-child { margin-top: 0; }
+    .result-plan-merchant {
+      margin-top: 6px;
+      border: 1px solid var(--a12);
+      border-radius: 9px;
+      background: rgba(255, 255, 255, 0.025);
+      overflow: hidden;
+    }
+    .result-plan-merchant-summary {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-height: 44px;
+      padding: 7px 10px;
+      cursor: pointer;
+      list-style: none;
+    }
+    .result-plan-merchant-summary::-webkit-details-marker { display: none; }
+    .result-plan-merchant-label {
+      flex: 0 0 auto;
+      color: var(--primary);
+      font-size: 0.68rem;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+    }
+    .result-plan-merchant-preview {
+      min-width: 0;
+      flex: 1 1 auto;
+      overflow: hidden;
+      color: var(--text-secondary);
+      font-size: 0.72rem;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .result-plan-merchant-summary::after {
+      content: '＋';
+      flex: 0 0 auto;
+      color: var(--primary);
+      font-family: "Space Mono", ui-monospace, monospace;
+      font-size: 0.85rem;
+    }
+    .result-plan-merchant[open] .result-plan-merchant-summary::after { content: '－'; }
+    .result-plan-merchant-text {
+      padding: 0 10px 10px;
+      color: var(--text);
+      font-size: 0.72rem;
+      line-height: 1.55;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+    }
+    .result-plan-merchant.is-empty {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-height: 36px;
+      padding: 6px 0;
+      border-color: transparent;
+      background: transparent;
+    }
+    .split-card-plan > .result-plan-merchant { grid-column: 1 / -1; }
+
+    /* 特約商店查詢彈窗 */
+    .merchant-lookup-modal { max-width: 560px; }
+    .merchant-lookup-recommend {
+      margin-bottom: 12px;
+      padding: 11px 12px;
+      border-radius: 12px;
+      background: var(--surface-raised-strong, rgba(11, 14, 24, 0.62));
+      font-size: 0.8rem;
+      line-height: 1.5;
+    }
+    .merchant-lookup-recommend b { color: var(--text); }
+    .merchant-lookup-recommend small { display: block; margin-top: 3px; color: var(--text-secondary); font-size: 0.72rem; }
+    .merchant-lookup-section-label { margin: 0 0 7px; color: var(--text-secondary); font-size: 0.7rem; font-weight: 700; letter-spacing: 0.04em; }
+    .merchant-lookup-memo { margin-bottom: 12px; }
+    .merchant-lookup-memo[hidden] { display: none !important; }
+    .merchant-memo-text {
+      padding: 8px 10px;
+      border-radius: 9px;
+      background: rgba(255, 255, 255, 0.035);
+      color: var(--text);
+      font-size: 0.76rem;
+      line-height: 1.55;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+    }
+    .merchant-lookup-hint { margin: 7px 0 0; color: var(--text-secondary); font-size: 0.68rem; line-height: 1.45; }
+    .merchant-lookup-list { max-height: 46vh; }
+    .merchant-lookup-warning {
+      margin-top: 10px;
+      padding: 10px 12px;
+      border-radius: 10px;
+      background: rgba(255, 149, 0, 0.12);
+      color: var(--text);
+      font-size: 0.76rem;
+      line-height: 1.5;
+    }
+    .merchant-lookup-warning.is-ok { background: var(--green-light); }
+    .merchant-card-button { cursor: pointer; text-align: left; font-family: inherit; }
+    .merchant-card-button:disabled { cursor: default; opacity: 0.86; }
+    .merchant-lookup-row-actions { display: flex; justify-content: flex-end; margin-top: 8px; }
+    .merchant-card-button.is-current,
+    .merchant-card-button.is-preferred {
+      border-color: var(--a52) !important;
+      background: var(--a12);
+      box-shadow: 0 0 12px var(--a10);
+    }
+    .merchant-card-button.is-preferred b { color: var(--primary); }
+    .merchant-store-apply { flex: 0 0 auto; }
+    .merchant-lookup-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-top: 12px;
+    }
+    .decision-disclaimer {
+      margin: 18px 0 0;
+      color: var(--text-secondary);
+      font-size: 0.7rem;
+      line-height: 1.6;
+    }
+
     .guide-view[hidden] { display:none !important; }
-    .guide-card-list { display:flex; flex-direction:column; gap:5px; }
-    .guide-card { padding:7px 11px; border-radius:12px; background:rgba(11,14,24,.46); }
+    .guide-card-list { display:flex; flex-direction:column; gap:8px; }
+    .guide-card { padding:11px 14px; border-radius:12px; background:rgba(11,14,24,.46); }
     .guide-card-head { display:flex; align-items:flex-start; justify-content:space-between; gap:8px; flex-wrap:wrap; }
     .guide-card-name { font-size:var(--fs-title); }
     .guide-card-meta { margin-top:1px; color:var(--text-secondary); font-size:.74rem; line-height:1.25; }
@@ -303,7 +565,7 @@
     .guide-plan-name { min-width:0; overflow-wrap:anywhere; }
     .guide-plan-net { flex:0 0 auto; font-family:"Space Mono", ui-monospace, monospace; font-size:.76rem; color:var(--green); }
     .guide-plan-body { display:flex; flex-direction:column; gap:8px; padding:6px 0 2px; }
-    .guide-part { padding:9px 11px; border-radius:10px; background:rgba(11,14,24,.5); font-size:.78rem; line-height:1.55; }
+    .guide-part { padding:12px 14px; border-radius:10px; background:rgba(11,14,24,.5); font-size:.78rem; line-height:1.55; }
     .guide-part-head { display:flex; align-items:baseline; justify-content:space-between; gap:8px; }
     .guide-facts { display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); gap:8px; }
     .guide-fact { padding:8px 10px; border-radius:10px; background:rgba(11,14,24,.5); font-size:.76rem; line-height:1.45; overflow-wrap:anywhere; }
@@ -412,6 +674,7 @@
     .activity-form { margin:14px 0 0; padding:14px 0 0; border-radius:0; background:transparent; border:0; border-top:1px solid var(--a16) !important; }
     .activity-form-title { margin:0 0 12px; font-size:var(--fs-form-title); color:var(--primary); }
     .activity-field { margin-bottom:12px; }
+    #planEditorMerchantLabel[hidden], #planEditorForm label[hidden] { display:none !important; }
     .field-label { display:block; margin-bottom:var(--field-gap); color:var(--text-secondary); font-size:var(--fs-label); }
     .context-switch { display:flex; flex-wrap:wrap; gap:6px; }
     .context-switch label { position:relative; }
@@ -468,6 +731,87 @@
     select:focus, input:focus {
       border-color: var(--primary);
     }
+
+    /* 拆刷模式：兩個模式用 tab 切換，結果框會跟著顯示不同配置 */
+    .split-mode-heading {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      color: var(--text-secondary);
+      font-size: 0.82rem;
+      font-weight: 600;
+    }
+    .split-mode-heading-note {
+      font-size: 0.72rem;
+      font-weight: 400;
+      color: var(--text-secondary);
+    }
+    .split-mode-tabs {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 0;
+      padding: 0;
+      border: 0;
+      border-bottom: 1px solid var(--a20);
+      border-radius: 0;
+      background: transparent;
+    }
+    .split-mode-tab {
+      min-height: 44px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 1px;
+      padding: 8px 10px 10px;
+      border: 0;
+      border-bottom: 2px solid transparent;
+      border-radius: 0;
+      background: transparent;
+      color: var(--text-secondary);
+      font-family: inherit;
+      cursor: pointer;
+      -webkit-appearance: none;
+      appearance: none;
+      transition: background 0.2s, color 0.2s, border-color 0.2s;
+    }
+    .split-mode-tab + .split-mode-tab {
+      border-left: 1px solid var(--a12);
+    }
+    .split-mode-tab.active {
+      color: var(--primary);
+      border-bottom-color: var(--primary);
+      background: linear-gradient(180deg, transparent, var(--a07));
+      box-shadow: none;
+    }
+    .split-mode-tab.active .split-mode-tab-label {
+      text-shadow: 0 0 12px var(--a45);
+    }
+    .split-mode-tab:focus-visible {
+      outline: 2px solid var(--primary);
+      outline-offset: 2px;
+    }
+    .split-mode-tab-label {
+      font-size: 0.86rem;
+      font-weight: 800;
+      line-height: 1.25;
+    }
+    .split-mode-tab-sub {
+      font-size: 0.68rem;
+      font-weight: 500;
+      opacity: 0.8;
+    }
+    .split-mode-hint {
+      padding: 10px 12px;
+      border: 1px solid var(--a16);
+      border-radius: 12px;
+      background: rgba(11, 14, 24, 0.4);
+      color: var(--text-secondary);
+      font-size: 0.76rem;
+      line-height: 1.55;
+    }
+    .split-mode-hint b { color: var(--text); }
 
     .amount-input-wrap {
       position: relative;
@@ -565,6 +909,7 @@
       gap: 6px;
       flex-wrap: wrap;
     }
+    .result-card-name #bestCard { min-width: 0; overflow-wrap: anywhere; }
     .rate-badge {
       display: inline-block;
       padding: 3px 8px;
@@ -575,12 +920,105 @@
       background: var(--primary);
       white-space: nowrap;
     }
-    .result-reward {
-      font-size: 0.88rem;
-      font-weight: 700;
+    .result-plan-label {
+      margin-top: 12px;
+      color: var(--primary);
+      font-size: 0.74rem;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+    }
+    .result-plan-label[hidden] { display: none; }
+    .split-card-group {
+      margin-top: 10px;
+      border: 1px solid var(--a16);
+      border-radius: 12px;
+      background: rgba(11, 14, 24, 0.42);
+      overflow: hidden;
+    }
+    .split-card-heading {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 12px 14px;
+      background: var(--a07);
+      border-bottom: 1px solid var(--a20) !important;
+    }
+    .split-card-heading-main {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-width: 0;
+    }
+    .split-card-index {
+      flex: 0 0 auto;
+      width: 20px;
+      height: 20px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 6px;
+      background: var(--a12);
+      color: var(--primary);
+      font-size: 0.7rem;
+      font-weight: 800;
+    }
+    .split-card-name {
+      color: var(--text);
+      font-size: 0.95rem;
+      font-weight: 800;
+      overflow-wrap: anywhere;
+    }
+    .split-card-total {
+      flex: 0 0 auto;
       color: var(--green);
-      margin-top: 4px;
+      font-size: 0.78rem;
+      font-weight: 800;
+      font-variant-numeric: tabular-nums;
+    }
+    .split-card-plan {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 5px 10px;
+      padding: 10px 0;
+      font-size: 0.78rem;
+      color: var(--text-secondary);
+    }
+    .split-card-plan + .split-card-plan { border-top: 1px dashed var(--a12) !important; }
+    .split-card-plan-name {
+      grid-column: 1 / -1;
+      min-width: 0;
+      color: var(--text);
+      font-weight: 600;
+      overflow-wrap: anywhere;
+    }
+    .split-card-plan-amount,
+    .split-card-plan-reward {
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+    }
+    .split-card-plan-reward {
+      color: var(--green);
+      font-weight: 700;
+      text-align: right;
+    }
+    .result-total:empty { display: none; }
+    .result-total {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 12px;
+      margin-top: 10px;
+      padding-top: 10px;
+      border-top: 1px solid var(--a16);
+      color: var(--text-secondary);
+      font-size: 0.78rem;
       letter-spacing: normal;
+    }
+    .result-total b {
+      color: var(--green);
+      font-size: 1.02rem;
+      font-weight: 800;
       font-variant-numeric: tabular-nums;
     }
 
@@ -866,6 +1304,11 @@
       border-radius: var(--radius-md);
       padding: 10px 12px;
     }
+    @keyframes ledgerNewPulse {
+      0%, 100% { border-color: var(--border); box-shadow: 0 0 0 0 transparent; }
+      35% { border-color: var(--primary); box-shadow: 0 0 0 3px var(--a16); }
+    }
+    .ledger-item-new { animation: ledgerNewPulse 1.1s ease-out 2; }
     .ledger-info { min-width: 0; }
     .ledger-info h4 {
       margin: 0;
@@ -904,20 +1347,18 @@
       color: var(--text-secondary);
       flex: 0 0 auto;
     }
-    .ledger-del {
-      display: block;
-      width: auto;
-      min-height: 30px;
-      margin: 5px 0 0 auto;
-      padding: 4px 0 0 10px;
+    .ledger-actions { display: flex; justify-content: flex-end; gap: 12px; margin-top: 2px; }
+    .ledger-action {
+      min-height: 44px;
+      padding: 0 2px;
       background: transparent;
       border: 0;
-      color: var(--accent);
+      color: var(--primary);
       cursor: pointer;
       font-size: 0.78rem;
-      text-align: right;
     }
-    .ledger-actions { display: flex; justify-content: flex-end; }
+    .ledger-action:active { opacity: 0.65; }
+    .ledger-del { color: var(--accent); }
     iconify-icon.library-icon { display: inline-flex; flex: 0 0 auto; width: 1.15em; height: 1.15em; vertical-align: -0.16em; color: currentColor; pointer-events: none; }
 
     /* Modal */
@@ -1074,6 +1515,10 @@
       --green-light: rgba(0, 229, 168, 0.12);
       --purple: #dbb8ff;
       --shadow: 0 0 24px var(--a10), 0 18px 40px rgba(0, 0, 0, 0.35);
+      --surface-raised: rgba(11, 14, 24, 0.46);
+      --surface-raised-strong: rgba(11, 14, 24, 0.62);
+      --surface-header: rgba(16, 19, 29, 0.90);
+      --divider: var(--a16);
       --radius-lg: 16px;
       --radius-md: 12px;
       --radius-sm: 10px;
@@ -1104,16 +1549,32 @@
       background: linear-gradient(180deg, transparent 0%, rgba(7, 10, 20, 0.28) 100%);
     }
 
-    .app-header, .nav-tabs, main, section[id^="tab-"] { width: min(100%, var(--page-width)); margin-left: auto; margin-right: auto; }
+    .nav-tabs, main, section[id^="tab-"] { width: min(100%, var(--page-width)); margin-left: auto; margin-right: auto; }
     .app-header {
       position: sticky;
       top: 0;
       z-index: 20;
-      padding: 10px 4px 12px;
-      margin-bottom: 12px;
-      border-bottom: 1px solid var(--a20);
+      width: calc(100% + var(--page-gutter) * 2);
+      margin: 0 calc(-1 * var(--page-gutter)) 20px;
+      padding: 0;
+      border-bottom: 0;
       background: rgba(16, 19, 29, 0.9);
       backdrop-filter: blur(16px);
+    }
+    .app-header::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      height: 1px;
+      background: var(--a20);
+      pointer-events: none;
+    }
+    .app-header-inner {
+      width: min(calc(100% - var(--page-gutter) * 2), var(--page-width));
+      margin: 0 auto;
+      padding: 10px 0 12px;
     }
     .app-title h1 { color: var(--text); font-size: 1.3rem; letter-spacing: 0.02em; text-shadow: 0 0 14px var(--a24); }
     .app-title p { color: var(--text-secondary); font-family: "Space Mono", ui-monospace, monospace; font-size: 0.68rem; letter-spacing: 0.1em; }
@@ -1166,7 +1627,7 @@
 
     .card {
       position: relative;
-      padding: 18px;
+      padding: 20px;
       margin-bottom: 16px;
       border: 1px solid var(--a20);
       border-radius: var(--radius-md);
@@ -1176,8 +1637,8 @@
     }
     .card-title {
       gap: 10px;
-      padding-bottom: 10px;
-      margin-bottom: 14px;
+      padding-bottom: 12px;
+      margin-bottom: 16px;
       border-bottom: 1px solid var(--a16);
       color: var(--text);
       font-size: 1.04rem;
@@ -1220,9 +1681,8 @@
       color: #FFD9FA;
       box-shadow: 0 0 16px rgba(255, 0, 229, 0.08);
     }
-    #transitAlert, #jcardAlert { border-color: var(--a35); background: var(--a07); color: #c8faff; }
     .result-box {
-      padding: 16px;
+      padding: 20px;
       border: 1px solid var(--a45);
       border-left-width: 1px;
       border-radius: var(--radius-md);
@@ -1232,7 +1692,7 @@
     }
     .result-box.kuma, .result-box.jcard_transit, .result-box.jcard, .result-box.costco, .result-box.paypay, .result-box.backup { border-color: var(--a45); background: linear-gradient(145deg, var(--a10), rgba(11, 14, 24, 0.96) 70%); }
     .result-card-name { color: var(--text); font-size: 1.18rem; }
-    .result-reward { color: var(--green); font-family: inherit; }
+    .result-total b { color: var(--green); font-family: inherit; }
     .rate-badge { padding: 5px 9px; border: 1px solid rgba(255, 0, 229, 0.45); border-radius: var(--radius-md); background: rgba(255, 0, 229, 0.16); color: #FFD9FA; box-shadow: 0 0 12px rgba(255, 0, 229, 0.15); font-family: "Space Mono", ui-monospace, monospace; }
     .quota-status-box { border: 1px solid var(--a16); border-radius: var(--radius-md); background: rgba(11, 14, 24, 0.9); box-shadow: none; }
     .quota-status-row, .quota-numbers, .reward-cap-line { font-size: 0.78rem; }
@@ -1271,15 +1731,15 @@
     .btn-secondary, .btn-small { min-height: var(--control-h); border: 1px solid var(--a35); background: rgba(11, 14, 24, 0.9); color: var(--primary); }
     .btn-small { min-height: var(--btn-sm-h); padding: 5px 9px; }
 
-    .quota-item { padding: 14px 12px; margin: 8px 0; border: 1px solid var(--a16); background: rgba(11, 14, 24, 0.58); }
+    .quota-item { padding: 16px 14px; margin: 10px 0; border: 1px solid var(--a16); background: rgba(11, 14, 24, 0.58); }
     .quota-item:last-child { border-bottom: 1px solid var(--a16); }
     .cycle-tag, .threshold-tag { border-radius: var(--radius-md); font-family: "Space Mono", ui-monospace, monospace; }
     .threshold-tag { border-color: rgba(255, 0, 229, 0.38); background: rgba(255, 0, 229, 0.1); color: #FF9AEE; }
     .progress-bar { height: 7px; border: 0; border-radius: var(--radius-md); background: rgba(255, 255, 255, 0.08); }
     .progress-fill { border-radius: var(--radius-md); background: linear-gradient(90deg, #00C8D8, #FF00E5); box-shadow: 0 0 12px var(--a45); }
     .config-card-box, .ledger-item { border: 1px solid var(--a16); border-radius: var(--radius-md); background: rgba(11, 14, 24, 0.72); }
-    .ledger-list { gap: 7px; }
-    .ledger-item { padding: 12px; }
+    .ledger-list { gap: 10px; }
+    .ledger-item { padding: 14px; }
     .ledger-jpy { color: var(--text); font-family: "Space Mono", ui-monospace, monospace; }
     .ledger-twd { color: var(--green); }
     .ledger-del { color: var(--accent); }
@@ -1287,7 +1747,7 @@
 
     .guide-table-wrap { border: 1px solid var(--a16); }
     .guide-table { min-width: 880px; color: var(--text); font-family: "Space Mono", ui-monospace, monospace; font-size: 0.72rem; }
-    .guide-table th, .guide-table td { border-color: var(--a12); padding: 8px; }
+    .guide-table th, .guide-table td { border-color: var(--a12); padding: 10px 12px; }
     .guide-table th { background: #0b0e18; color: var(--primary); }
     .modal-backdrop { background: rgba(3, 6, 14, 0.78); backdrop-filter: blur(8px); }
     .modal-box { max-height: calc(100dvh - 32px); overflow-y: auto; border: 1px solid var(--a35); border-radius: var(--radius-md); background: #121722; box-shadow: 0 0 28px var(--a12); clip-path: polygon(0 0, calc(100% - 14px) 0, 100% 14px, 100% 100%, 14px 100%, 0 calc(100% - 14px)); }
@@ -1295,46 +1755,46 @@
     .toast { bottom: calc(78px + env(safe-area-inset-bottom)); border: 1px solid var(--a35); border-radius: var(--radius-md); background: rgba(11, 14, 24, 0.96); color: var(--primary); font-family: "Space Mono", ui-monospace, monospace; }
 
     @media (min-width: 760px) {
-      :root { --page-gutter: 24px; }
-      body { padding: 18px 24px 112px; }
-      .app-header { padding-top: 14px; }
+      :root { --page-gutter: 32px; }
+      body { padding: 0 var(--page-gutter) 120px; }
+      .app-header-inner { padding-top: 18px; padding-bottom: 16px; }
       .nav-tabs { bottom: 16px; width: min(calc(100% - 48px), 720px); border: 1px solid var(--a28); padding: 8px; }
-      .card { padding: 22px; margin-bottom: 20px; }
+      .card { padding: 28px; margin-bottom: 22px; }
+      .result-box { padding: 24px; }
     }
     @media (max-width: 480px) {
-      :root { --page-gutter: 10px; }
-      body { padding: 0 10px calc(86px + env(safe-area-inset-bottom)); }
-      .app-header { padding: calc(9px + env(safe-area-inset-top)) 2px 10px; }
+      :root { --page-gutter: 16px; }
+      body { padding: 0 var(--page-gutter) calc(100px + env(safe-area-inset-bottom)); }
+      .app-header-inner { padding: calc(11px + env(safe-area-inset-top)) 0 12px; }
       .app-title h1 { font-size: 1.08rem; }
       .app-title p { max-width: 210px; font-size: 0.59rem; }
       .header-pills { gap: 4px; }
       .rate-pill, .sync-pill { min-height: 34px; padding: 5px 7px; font-size: 0.64rem; }
-      .card { padding: 14px; }
+      .card { padding: 18px; }
       .card-title { font-size: 0.95rem; }
       .tab-btn { font-size: 0.65rem; }
       .nav-tabs { padding-left: 6px; padding-right: 6px; }
       .result-header { align-items: flex-start; }
       .result-card-name { font-size: 1rem; }
       .rate-badge { align-self: flex-start; }
+      .result-box { padding: 18px; }
     }
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; scroll-behavior: auto !important; transition-duration: 0.01ms !important; }
     }
 
-    /* Quiet surfaces: 表單輸入與表格格線不畫框，其餘區塊補一圈淺色細外框，讓邊界一眼看得出來 */
+    /* Quiet surfaces: 表單輸入與表格格線不畫框；框只留給有語意的區塊 */
     body *:not(button) { border-color: transparent !important; }
-    .card, .guide-card, .guide-part, .editor-section, .rule-form, .quota-item,
-    .quota-status-box, .config-card-box, .ledger-item, .alert-box, .guide-table-wrap {
-      border: 1px solid rgba(255, 255, 255, 0.13) !important;
-    }
+    .split-card-group { border: 1px solid rgba(255, 255, 255, 0.13) !important; }
+    .alert-box { border: 1px solid rgba(255, 149, 0, 0.35) !important; }
     /* 有語意的框維持自己的配色 */
-    .editor-panel, .modal-box, .result-box { border-color: var(--a35) !important; }
+    .modal-box, .result-box { border-color: var(--a35) !important; }
     .over-limit-alert, .split-plan-box { border-color: rgba(255, 0, 229, 0.42) !important; }
-    .card-editor-danger { border-color: rgba(255, 140, 150, 0.45) !important; }
+    .card-editor-danger { border: 1px solid rgba(255, 140, 150, 0.45) !important; }
     /* 區塊之間的分隔線 */
     .editor-header { border-bottom-color: rgba(255, 255, 255, 0.12) !important; }
     .guide-plan, .guide-details, .editor-plans, .result-sub-advice, .split-plan-option { border-top-color: rgba(255, 255, 255, 0.12) !important; }
-    .editor-plan-row, .dynamic-plan { border-bottom-color: rgba(255, 255, 255, 0.1) !important; }
+    .editor-plan-row { border-bottom-color: rgba(255, 255, 255, 0.1) !important; }
     .app-header { border-bottom: 0; }
     .nav-tabs { border-top: 0; }
     .card, .result-box, .modal-box { clip-path: none; }
@@ -1343,8 +1803,8 @@
     .card:has(.guide-table) { box-shadow: none; }
     .result-box { box-shadow: 0 0 22px var(--a10); }
     .card-title { padding-bottom: 0; border-bottom: 0; }
-    .form-group { gap: 10px; margin-bottom: 22px; }
-    .form-group + .form-group { margin-top: 6px; }
+    .form-group { gap: 12px; margin-bottom: 26px; }
+    .form-group + .form-group { margin-top: 8px; }
     .quick-tags { gap: 9px; margin-bottom: 20px; }
     .card > label + .quick-tags { margin-top: 10px; }
     .quota-item { border: 0; background: rgba(11, 14, 24, 0.46); }
@@ -1520,6 +1980,177 @@
       box-shadow: inset 0 -2px var(--primary), 0 0 18px var(--a24) !important;
     }
     .progress-fill { box-shadow: 0 0 14px var(--a60) !important; }
+
+    /* ============================================================
+       SURFACE HIERARCHY v1
+       標題 bar → 內容區 → 內容區塊。
+       一般內容區塊只用背景色與間距分層，不套框；
+       框只留給結果、警示、拆分群組與危險操作。
+       ============================================================ */
+    .card, .guide-card, .guide-part, .editor-section, .rule-form, .activity-form,
+    .quota-item, .quota-status-box, .config-card-box, .ledger-item, .ledger-summary,
+    .guide-table-wrap, .merchant-overview, .merchant-row, .merchant-empty {
+      border: 0 !important;
+    }
+    .guide-card, .guide-part, .editor-section, .quota-item, .config-card-box, .ledger-item {
+      background: var(--surface-raised) !important;
+    }
+    .quota-status-box, .merchant-overview {
+      background: var(--surface-raised-strong) !important;
+    }
+    .merchant-row, .merchant-empty {
+      background: var(--surface-raised) !important;
+    }
+    .editor-panel {
+      border: 0 !important;
+      background: rgba(13, 16, 32, 0.97) !important;
+      box-shadow: 0 0 40px var(--a16), 0 24px 60px rgba(0, 0, 0, 0.45) !important;
+    }
+    /* 標題 bar / 頁尾 bar 只用一條水平分隔線 */
+    .editor-header { border-bottom: 1px solid var(--divider) !important; }
+    .editor-foot { border-top: 1px solid var(--divider) !important; }
+    /* 危險操作是語意例外：保留紅框，但不再多包一層一般區塊框 */
+    .card-editor-danger {
+      border: 1px solid rgba(255, 140, 150, 0.45) !important;
+      background: rgba(60, 12, 20, 0.32) !important;
+    }
+
+    /* 分頁最外層是版面，不畫卡片框；只有頁面標題下方留一條 bar 線。 */
+    .card.page-shell {
+      border: 0 !important;
+      border-radius: 0 !important;
+      background: transparent !important;
+      box-shadow: none !important;
+      clip-path: none !important;
+      padding: 0 !important;
+      margin-bottom: 0 !important;
+    }
+    .card.page-shell > .card-title {
+      padding-bottom: 12px !important;
+      border-bottom: 1px solid var(--a20) !important;
+      margin-bottom: 18px;
+    }
+
+    /* 額度看板：卡片是分類標題；每個加碼活動自己一個框，框內才是進度列。 */
+    .quota-card-group {
+      margin: 0 0 22px;
+      padding: 0;
+      border: 0 !important;
+      border-radius: 0;
+      background: transparent;
+    }
+    .quota-card-head {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 2px 2px 8px;
+      margin-bottom: 10px;
+      border-bottom: 1px solid var(--a20);
+    }
+    .quota-card-name { min-width: 0; font-size: 0.95rem; overflow-wrap: anywhere; }
+    .quota-card-count { flex: 0 0 auto; color: var(--text-secondary); font-size: 0.68rem; }
+    .quota-plan-block {
+      padding: 12px;
+      border-radius: 14px;
+      background: rgba(11, 14, 24, 0.58);
+    }
+    .quota-plan-block + .quota-plan-block { margin-top: 10px; }
+    .quota-plan-head {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      flex-wrap: wrap;
+      min-width: 0;
+    }
+    .quota-plan-title { min-width: 0; font-size: 0.84rem; overflow-wrap: anywhere; }
+    .quota-plan-tags { display: flex; flex-wrap: wrap; gap: 5px; min-width: 0; }
+    .quota-plan-head > .btn-small { margin-left: auto; }
+    .quota-plan-block > .quota-item { margin-top: 10px; }
+    .quota-item {
+      margin: 10px 0 0;
+      padding: 0;
+      border: 0 !important;
+      border-radius: 0;
+      background: transparent !important;
+    }
+    .quota-item + .quota-item {
+      margin-top: 10px;
+      padding-top: 10px;
+      border-top: 1px solid var(--a12) !important;
+    }
+    .quota-item:last-child { border-bottom: 0 !important; }
+    .quota-entry-head {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      flex-wrap: wrap;
+      margin-bottom: 7px;
+    }
+    .quota-entry-label { min-width: 0; color: var(--text); font-size: 0.76rem; font-weight: 700; overflow-wrap: anywhere; }
+    .quota-entry-head > .btn-small { margin-left: auto; }
+    .quota-card-group .cycle-tag,
+    .quota-card-group .threshold-tag { white-space: normal; overflow-wrap: anywhere; }
+
+    /* 攻略卡：特約店家歸屬在加碼活動底下 */
+    .guide-bonus-merchants { margin-top: 6px; }
+    .guide-bonus-merchants > summary {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      min-height: 30px;
+      padding: 4px 9px;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.035);
+      color: var(--text-secondary);
+      font-size: 0.7rem;
+      font-weight: 700;
+      cursor: pointer;
+      list-style: none;
+    }
+    .guide-bonus-merchants > summary::-webkit-details-marker { display: none; }
+    .guide-bonus-merchants > summary::after { content: '＋'; color: var(--primary); font-size: 0.8rem; }
+    .guide-bonus-merchants[open] > summary::after { content: '－'; }
+    .guide-bonus-merchant-count { color: var(--text-secondary); font-weight: 400; }
+    .guide-bonus-merchant-text {
+      padding: 8px 0 2px;
+      color: var(--text);
+      font-size: 0.72rem;
+      line-height: 1.55;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+    }
+
+    /* 推薦卡底下的特約商店：內嵌收合面板 */
+    .result-merchant-panel { margin-top: 12px; }
+    .result-merchant-panel[hidden] { display: none !important; }
+    .result-merchant-panel > summary {
+      margin-top: 0;
+      list-style: none;
+      -webkit-appearance: none;
+    }
+    .result-merchant-panel > summary::-webkit-details-marker { display: none; }
+    .result-merchant-panel > summary::after {
+      content: '＋';
+      flex: 0 0 auto;
+      color: var(--primary);
+      font-family: "Space Mono", ui-monospace, monospace;
+      font-size: 0.9rem;
+    }
+    .result-merchant-panel[open] > summary::after { content: '－'; }
+    .result-merchant-panel[open] > summary {
+      border-bottom-left-radius: 0 !important;
+      border-bottom-right-radius: 0 !important;
+    }
+    .result-merchant-body {
+      padding: 12px;
+      border-radius: 0 0 12px 12px;
+      background: rgba(255, 255, 255, 0.022);
+    }
+    #resultMerchantFeedback > .merchant-lookup-hint { margin: 8px 0 0; }
+    #resultMerchantFeedback > .merchant-lookup-warning { margin-top: 9px; }
+    .result-merchant-body .merchant-lookup-list { max-height: 52vh; }
+    .result-merchant-body .merchant-lookup-footer { margin-top: 10px; }
   </style>
   <!-- Firebase App & Firestore Compat SDK -->
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
@@ -1561,19 +2192,21 @@
 
   <!-- Header -->
   <header class="app-header">
-    <div class="app-title">
-      <h1><span class="ui-icon" aria-hidden="true"><svg><use href="#icon-card"/></svg></span> 日本刷卡決策</h1>
-    </div>
-    <div class="header-pills">
-      <div class="sync-pill" id="syncStatusPill" onclick="openSyncModal()" title="點擊設定旅程房間碼與雲端同步">
-        <span class="sync-dot" id="syncDot"></span>
-        <span id="syncLabel">本地</span>
+    <div class="app-header-inner">
+      <div class="app-title">
+        <h1><span class="ui-icon" aria-hidden="true"><svg><use href="#icon-card"/></svg></span> 日本刷卡決策</h1>
       </div>
-      <div class="rate-pill" id="ratePill" onclick="openRateModal()" title="點擊檢視/更新臺銀日圓即期賣出匯率">
-        <span class="rate-dot" id="rateLiveDot"></span>
-        <span class="ui-icon" aria-hidden="true"><svg><use href="#icon-yen"/></svg></span>
-        <span id="rateDisplay">0.208800</span>
-        <span id="rateModeBadge" style="font-size:0.68rem; color:var(--warning); font-weight:700;">快取</span>
+      <div class="header-pills">
+        <div class="sync-pill" id="syncStatusPill" onclick="openSyncModal()" title="點擊設定旅程房間碼與雲端同步">
+          <span class="sync-dot" id="syncDot"></span>
+          <span id="syncLabel">本地</span>
+        </div>
+        <div class="rate-pill" id="ratePill" onclick="openRateModal()" title="點擊檢視/更新臺銀日圓即期賣出匯率">
+          <span class="rate-dot" id="rateLiveDot"></span>
+          <span class="ui-icon" aria-hidden="true"><svg><use href="#icon-yen"/></svg></span>
+          <span id="rateDisplay">0.208800</span>
+          <span id="rateModeBadge" style="font-size:0.68rem; color:var(--warning); font-weight:700;">快取</span>
+        </div>
       </div>
     </div>
   </header>
@@ -1590,18 +2223,18 @@
 
   <!-- TAB 1: 決策計算器 -->
   <main id="tab-decision">
-    <div class="card">
+    <div class="card page-shell">
       <div class="card-title">
         <span><span class="ui-icon" aria-hidden="true"><svg><use href="#icon-card"/></svg></span> 刷卡決策</span>
         <span style="font-size:0.75rem; font-weight:normal; color:var(--text-secondary);">扣手續費後淨回饋比對</span>
       </div>
 
-      <label>先選消費情境</label>
+      <label>先選消費情境 <small style="font-weight:400;opacity:.75;">（一次選一個）</small></label>
       <div class="scenario-grid" role="group" aria-label="消費情境">
-        <button type="button" class="scenario-option active" data-scenario="general" onclick="selectDecisionScenario('general', this)"><span class="ui-icon" aria-hidden="true"><svg><use href="#icon-card"/></svg></span><span>實體店面消費</span><small>日本實體刷卡</small></button>
-        <button type="button" class="scenario-option" data-scenario="merchant" onclick="selectDecisionScenario('merchant', this)"><span class="ui-icon" aria-hidden="true"><svg><use href="#icon-store"/></svg></span><span>特約商店</span><small>自行確認適用店家</small></button>
-        <button type="button" class="scenario-option" data-scenario="paypay" onclick="selectDecisionScenario('paypay', this)"><span class="ui-icon" aria-hidden="true"><svg><use href="#icon-phone"/></svg></span><span>PayPay</span><small>掃碼付款</small></button>
-        <button type="button" class="scenario-option" data-scenario="transit" onclick="selectDecisionScenario('transit', this)"><span class="ui-icon" aria-hidden="true"><svg><use href="#icon-train"/></svg></span><span>交通卡</span><small>Suica／PASMO／ICOCA</small></button>
+        <button type="button" class="scenario-option active" data-scenario="general" onclick="selectDecisionScenario('general', this)"><span class="ui-icon" aria-hidden="true"><svg><use href="#icon-card"/></svg></span><span>實體店面消費</span></button>
+        <button type="button" class="scenario-option" data-scenario="merchant" onclick="selectDecisionScenario('merchant', this)"><span class="ui-icon" aria-hidden="true"><svg><use href="#icon-store"/></svg></span><span>特約商店</span></button>
+        <button type="button" class="scenario-option" data-scenario="paypay" onclick="selectDecisionScenario('paypay', this)"><span class="ui-icon" aria-hidden="true"><svg><use href="#icon-phone"/></svg></span><span>PayPay</span></button>
+        <button type="button" class="scenario-option" data-scenario="transit" onclick="selectDecisionScenario('transit', this)"><span class="ui-icon" aria-hidden="true"><svg><use href="#icon-train"/></svg></span><span>交通卡</span></button>
       </div>
 
       <!-- 付款管道 -->
@@ -1614,43 +2247,14 @@
         </select>
       </div>
 
-      <!-- 2. 店家類別 -->
-      <div class="form-group" id="storeGroup" style="display:none;">
-        <label><span>店家（由你確認符合哪些活動）</span><span style="font-size:0.72rem; color:var(--primary); cursor:pointer;" onclick="switchTab('guide')"><span class="ui-icon" aria-hidden="true"><svg><use href="#icon-info"/></svg></span> 查看攻略</span></label>
-        <div id="merchantChoiceList" class="merchant-choice-list" role="group" aria-label="特約商店清單"></div>
-        <select id="merchantChoice" onchange="calculate()" hidden aria-hidden="true" tabindex="-1"><option value="">選擇店家</option></select>
-        <small style="color:var(--text-secondary);">清單是目前維護的特約店參考；店家資格與交易分類請自行確認。</small>
+      <!-- 舊計算器相容欄位：不顯示，只保留既有事件/資料流程 -->
+      <div id="legacyDecisionFields" hidden aria-hidden="true">
+        <input type="hidden" id="merchantChoice" value="">
         <select id="storeType" onchange="calculate()" hidden aria-hidden="true" tabindex="-1"><option value="normal">一般店家</option><option value="kuma_shop">特約商店</option></select>
-      </div>
-
-      <!-- 店家位置 (陷阱防呆) -->
-      <div class="form-group" id="locationGroup" style="display:none;">
-        <label for="locationType"><span>店家位置</span></label>
         <select id="locationType" onchange="calculate()" hidden aria-hidden="true" tabindex="-1">
           <option value="street">獨立路邊門市 (具獨立特店 MCC)</option>
           <option value="department">百貨公司 / 商場美食街內 (百貨統收陷阱，熊本熊加碼失效)</option>
         </select>
-      </div>
-
-      <!-- 警示訊息區塊 -->
-      <div class="alert-box" id="deptAlert">
-        <span class="ui-icon" aria-hidden="true"><svg><use href="#icon-alert"/></svg></span>
-        <span id="deptAlertText"></span>
-      </div>
-
-      <div class="alert-box" id="transitAlert">
-        <span class="ui-icon" aria-hidden="true"><svg><use href="#icon-info"/></svg></span>
-        <span id="transitAlertText"><b>交通卡門檻提醒：</b>富邦 J 卡儲值交通卡必須<b>單筆滿 NT$2,000</b>（約 9,700 日圓）方享淨 8.5% 加碼！</span>
-      </div>
-
-      <div class="alert-box" id="jcardAlert">
-        <span class="ui-icon" aria-hidden="true"><svg><use href="#icon-info"/></svg></span>
-        <span id="jcardAlertText"></span>
-      </div>
-
-      <div class="alert-box" id="paypayQuotaAlert" style="display:none;">
-        <span class="ui-icon" aria-hidden="true"><svg><use href="#icon-alert"/></svg></span>
-        <span id="paypayQuotaAlertText"></span>
       </div>
 
       <!-- 結帳金額 -->
@@ -1677,20 +2281,30 @@
 
       <!-- 備註 (選填) -->
       <div class="form-group">
-        <label for="memo">消費項目 / 店名 (記帳備註，選填)</label>
-        <input type="text" id="memo" placeholder="例如：Suica 儲值、松本清合利他命、敘敘苑燒肉">
+        <label for="memo">消費明細（選填）</label>
+        <input type="text" id="memo" placeholder="例如：唐吉訶德、松本清合利他命、敘敘苑燒肉">
       </div>
 
       <!-- 拆刷模式選擇 -->
       <div class="form-group">
-        <label for="splitMode">
+        <div class="split-mode-heading">
           <span>拆刷模式</span>
-          <span style="font-size:0.72rem; color:var(--text-secondary);">優先最高回饋率卡片</span>
-        </label>
-        <select id="splitMode" onchange="calculate()">
-          <option value="auto">自動最佳化（允許拆刷以最大化回饋）</option>
-          <option value="single">強制整筆刷單張卡（不拆分）</option>
-        </select>
+          <span class="split-mode-heading-note">切換看單卡與拆刷的差異</span>
+        </div>
+        <input type="hidden" id="splitMode" value="auto" onchange="calculate()">
+        <div class="split-mode-tabs" role="tablist" aria-label="拆刷模式">
+          <button type="button" class="split-mode-tab active" id="splitModeAuto" role="tab" aria-selected="true" aria-controls="splitModeHint" onclick="setSplitMode('auto')" onkeydown="handleSplitTabKey(event)">
+            <span class="split-mode-tab-label">拆分最佳化</span>
+            <span class="split-mode-tab-sub">多卡拆刷</span>
+          </button>
+          <button type="button" class="split-mode-tab" id="splitModeSingle" role="tab" aria-selected="false" aria-controls="splitModeHint" onclick="setSplitMode('single')" onkeydown="handleSplitTabKey(event)">
+            <span class="split-mode-tab-label">整筆刷</span>
+            <span class="split-mode-tab-sub">單卡</span>
+          </button>
+        </div>
+        <div class="split-mode-hint" id="splitModeHint" role="tabpanel" aria-live="polite">
+          <b>拆分最佳化</b>：依所有方案當下可用的加碼額度與淨回饋率重新分配，不是固定卡片順序。
+        </div>
       </div>
 
       <!-- 決策建議框 -->
@@ -1701,7 +2315,6 @@
               <span id="bestCardIcon" class="ui-icon card-icon" aria-hidden="true"><svg><use href="#icon-card"/></svg></span>
               <span id="bestCard">請輸入金額</span>
             </div>
-            <div class="result-reward" id="bestReward"></div>
           </div>
           <span class="rate-badge" id="rateBadge">--</span>
         </div>
@@ -1724,8 +2337,32 @@
           <div id="overLimitMsg"></div>
         </div>
 
+        <div class="result-plan-label" id="resultPlanLabel" hidden></div>
         <div class="result-desc" id="cardDesc">輸入日幣金額後，立即計算最佳刷卡組合</div>
+        <div class="result-total" id="bestReward" aria-live="polite"></div>
         <div class="result-sub-advice" id="subAdvice"></div>
+        <div class="result-store-note" id="resultStoreNote" hidden></div>
+        <details class="result-merchant-panel" id="resultMerchantTrigger" hidden ontoggle="onResultMerchantPanelToggle()">
+          <summary class="result-merchant-trigger">
+            <span class="result-merchant-trigger-label"><span class="ui-icon" aria-hidden="true"><svg><use href="#icon-store"/></svg></span> <span id="resultMerchantTriggerText">這家店有符合嗎？</span></span>
+            <span class="result-merchant-trigger-meta" id="resultMerchantTriggerMeta">查看特約商店</span>
+          </summary>
+          <div class="result-merchant-body">
+            <div class="merchant-lookup-recommend" id="resultMerchantRecommend"></div>
+            <div class="merchant-lookup-memo" id="resultMerchantMemoBox" hidden>
+              <div class="merchant-lookup-section-label">你填的消費明細</div>
+              <div class="merchant-memo-text" id="resultMerchantMemo"></div>
+              <p class="merchant-lookup-hint">店家原文有打中搜尋字串，就會納入推薦；同時比較特店加碼與實體一般消費。</p>
+            </div>
+            <input type="search" id="resultMerchantSearch" class="merchant-search" placeholder="輸入店名或活動原文關鍵字" oninput="renderResultMerchantPanel()" onkeydown="if(event.key==='Enter'){event.preventDefault();applyUniqueMerchantMatch();}">
+            <div id="resultMerchantFeedback"></div>
+            <div class="merchant-list merchant-lookup-list" id="resultMerchantList"></div>
+            <div class="merchant-lookup-footer">
+              <button type="button" class="btn-small" onclick="clearMerchantLookupConditions()">清除店家條件</button>
+              <span class="merchant-lookup-hint">不符合可切換下方卡片</span>
+            </div>
+          </div>
+        </details>
         <div id="thresholdOpportunity" class="alert-box" style="display:none; flex-direction:column; align-items:stretch; gap:8px; margin-top:10px;">
           <div id="thresholdOpportunityText"></div>
           <div style="display:flex; flex-wrap:wrap; gap:8px;">
@@ -1735,19 +2372,20 @@
         </div>
       </div>
 
-      <!-- 確認記帳按鈕 -->
+      <!-- 已刷卡：直接記帳並跳到明細 -->
       <div id="singleRecordAction">
         <button class="btn-main" onclick="recordExpense()">
           <span class="ui-icon" aria-hidden="true"><svg><use href="#icon-check"/></svg></span>
           <span>已刷卡</span>
         </button>
       </div>
+      <p class="decision-disclaimer">本工具僅依你設定的規則估算，不代表銀行最終認列或回饋保證；活動資格、登錄、店家 MCC 與實際入帳請以銀行公告為準。</p>
     </div>
   </main>
 
   <!-- TAB 2: 額度看板 -->
   <section id="tab-quotas" style="display:none;">
-    <div class="card">
+    <div class="card page-shell">
       <div class="card-title">
         <span><span class="ui-icon" aria-hidden="true"><svg><use href="#icon-gauge"/></svg></span> 額度看板</span>
         <button class="btn-small" onclick="resetAllQuotas()"><span class="ui-icon" aria-hidden="true"><svg><use href="#icon-refresh"/></svg></span> 全部重置</button>
@@ -1760,7 +2398,7 @@
 
   <!-- TAB 3: 記帳明細 -->
   <section id="tab-ledger" style="display:none;">
-    <div class="card">
+    <div class="card page-shell">
       <div class="card-title">
         <span><iconify-icon class="library-icon" icon="lucide:coins" aria-hidden="true"></iconify-icon> 消費明細</span>
         <button class="btn-small" onclick="exportData()">匯出備份</button>
@@ -1784,7 +2422,7 @@
 
       <!-- 明細列表 -->
       <div id="ledgerEmpty" style="text-align:center; padding:24px; color:var(--text-secondary); font-size:0.85rem;">
-        尚無消費紀錄。在櫃檯速查點擊「確認記帳」後會出現在這裡！
+        尚無消費紀錄。在櫃檯速查點擊「已刷卡」後會出現在這裡！
       </div>
       <div class="ledger-list" id="ledgerList"></div>
 
@@ -1794,7 +2432,7 @@
 
   <!-- TAB 4: 攻略守則 -->
   <section id="tab-guide" style="display:none;">
-    <div class="card">
+    <div class="card page-shell">
       <div class="card-title">
         <span><span class="ui-icon" aria-hidden="true"><svg><use href="#icon-book"/></svg></span> 攻略守則</span>
         <div class="guide-head-actions">
@@ -1834,39 +2472,6 @@
       </div>
     </div>
 
-    <div class="card" id="kumaGuideCard">
-      <div class="card-title">
-        <span><span class="ui-icon" aria-hidden="true"><svg><use href="#icon-store"/></svg></span> <span id="kumaGuideTitle">玉山熊本熊指定特店完整清單</span></span>
-      </div>
-      <details class="guide-details">
-        <summary>展開看指定特店與交通加值</summary>
-        <div style="font-size:0.83rem; line-height:1.6;">
-          <p><b>藥妝/量販：</b>松本清 (Matsumoto Kiyoshi)、Cocokara Fine、唐吉訶德 (Don Don Donki)、大國藥妝</p>
-          <p><b>電器量販：</b>BicCamera、Yodobashi、Edion、K's Denki</p>
-          <p><b>交通必用：</b>Apple Pay 綁熊本熊卡直接加值 <b>Suica / PASMO / ICOCA</b> 享 <b id="kumaTransitNet"></b> 回饋！(無最低儲值金額限制)</p>
-          <p><b>服飾/生活：</b>UNIQLO、GU (注意：必須為街邊獨立門市才算！)</p>
-        </div>
-      </details>
-    </div>
-
-    <div class="card">
-      <div class="card-title">
-        <span><span class="ui-icon" aria-hidden="true"><svg><use href="#icon-card"/></svg></span> 嚴謹收銀台與四大場景決策守則</span>
-      </div>
-      <details class="guide-details">
-        <summary>目前規則摘要</summary>
-        <div id="ruleGuideSummary" style="font-size:0.83rem; line-height:1.65; color:var(--text);"></div>
-      </details>
-      <details class="guide-details">
-        <summary>場景四：第二趟北海道額度沒重置 / 加碼全爆掉</summary>
-        <div style="font-size:0.83rem; line-height:1.65; color:var(--text);">
-          <p><b><span class="ui-icon" aria-hidden="true"><svg><use href="#icon-refresh"/></svg></span> 【場景四：第二趟北海道額度沒重置 / 加碼全爆掉】</b><br>
-          • <b>臺銀即期賣出 > 0.202</b>：建議使用 <b>雙幣外幣帳戶</b> 直接扣換好的 <b>$0.199 便宜日幣</b>（免 1.5% 手續費）。<br>
-          • <b>臺銀即期賣出 ≤ 0.202</b>：建議刷 <b>國泰 CUBE 卡（趣旅行 3% - 1.5% = 淨 1.5%）</b> 保底。</p>
-        </div>
-      </details>
-    </div>
-
   </section>
 
   <!-- 新增信用卡頁：整頁取代底部導覽列，不是彈窗；送出後直接進那張卡的編輯頁 -->
@@ -1897,12 +2502,12 @@
   </div>
 
   <!-- 單卡編輯頁：從攻略頁每張卡的「編輯」按鈕進入，只處理這一張卡 -->
-  <div class="editor-overlay" id="cardEditorOverlay" role="dialog" aria-modal="true" aria-labelledby="cardEditorTitle" onclick="if(event.target===this)closeCardEditor()" hidden>
+  <div class="editor-overlay" id="cardEditorOverlay" role="dialog" aria-modal="true" aria-labelledby="cardEditorTitle" hidden>
     <div class="editor-panel">
       <header class="editor-header">
-        <div>
-          <h2 id="cardEditorTitle"><span class="ui-icon" aria-hidden="true"><svg><use href="#icon-card"/></svg></span> <span id="cardEditorName">編輯卡片</span></h2>
-          <p>這一頁只維護這一張卡。設定會直接影響刷卡決策頁的試算與額度計算；已記錄的消費明細不會被回溯改寫。</p>
+        <div style="min-width:0;">
+          <h2 id="cardEditorTitle" style="margin:0; line-height:1.25;"><span class="ui-icon" aria-hidden="true"><svg><use href="#icon-card"/></svg></span> <span id="cardEditorName" style="font-weight:800;">編輯卡片</span></h2>
+          <p style="margin:6px 0 0; color:var(--text-secondary); font-size:0.82rem;">這一頁只維護這一張卡。設定會影響刷卡決策試算；已記錄的消費明細不會被回溯改寫。</p>
         </div>
         <button class="btn-small" type="button" onclick="closeCardEditor()"><span class="ui-icon" aria-hidden="true"><svg><use href="#icon-close"/></svg></span> 關閉</button>
       </header>
@@ -1911,7 +2516,7 @@
         <section class="editor-section">
           <div class="editor-section-head"><h3>卡片設定</h3><button class="btn-small" type="button" id="cardEditorOpenCardSettings">設定</button></div>
           <div class="editor-card-fields">
-            <label>卡片名稱<input type="text" id="cardEditorNameInput"></label>
+            <label>卡片名稱<input type="text" id="cardEditorNameInput" style="font-size:1rem; font-weight:700;"></label>
             <label>基本回饋率（%）<input type="number" id="cardEditorBaseRate" min="0" step="0.01"></label>
             <label class="toggle toggle-row toggle-wide"><span class="toggle-text">收海外手續費 1.5%</span><input type="checkbox" id="cardEditorBaseFee"><span class="toggle-track"></span></label>
           </div>
@@ -1936,7 +2541,7 @@
   </div>
 
   <!-- 卡片設定頁（獨立） -->
-  <div class="editor-overlay" id="cardSettingsOverlay" role="dialog" aria-modal="true" aria-labelledby="cardSettingsTitle" onclick="if(event.target===this)closeCardSettings()" hidden>
+  <div class="editor-overlay" id="cardSettingsOverlay" role="dialog" aria-modal="true" aria-labelledby="cardSettingsTitle" hidden>
     <div class="editor-panel">
       <header class="editor-header">
         <div>
@@ -1967,63 +2572,65 @@
   </div>
 
   <!-- 加碼活動設定頁（獨立） -->
-  <div class="editor-overlay" id="planEditorOverlay" role="dialog" aria-modal="true" aria-labelledby="planEditorTitle" onclick="if(event.target===this)closePlanEditor()" hidden>
+  <div class="editor-overlay" id="planEditorOverlay" role="dialog" aria-modal="true" aria-labelledby="planEditorTitle" hidden>
     <div class="editor-panel">
       <header class="editor-header">
-        <div>
+        <div style="min-width:0;">
           <h2 id="planEditorTitle"><span class="ui-icon" aria-hidden="true"><svg><use href="#icon-book"/></svg></span> <span id="planEditorTitleText">加碼活動設定</span></h2>
-          <p>僅調整此加碼活動的規則。</p>
+          <p id="planEditorCardContext" style="margin:6px 0 0; font-size:0.95rem; font-weight:700; color:var(--text); line-height:1.35;"><span style="color:var(--text-secondary); font-weight:600;">卡片：</span><span id="planEditorCardName">—</span></p>
         </div>
-        <button class="btn-small" type="button" onclick="closePlanEditor()"><span class="ui-icon" aria-hidden="true"><svg><use href="#icon-close"/></svg></span> 關閉</button>
+        <button class="btn-small" type="button" onclick="requestClosePlanEditor()"><span class="ui-icon" aria-hidden="true"><svg><use href="#icon-close"/></svg></span> 關閉</button>
       </header>
       <div class="editor-body">
         <section class="editor-section">
           <form id="planEditorForm" class="rule-form activity-form" style="margin:0;border:0;padding:0">
             <input type="hidden" name="editingPlanId" value="">
             <input type="hidden" name="cardId" value="">
+            <div class="activity-field" style="margin-bottom:14px;">
+              <label class="field-label" for="planEditorName" style="font-size:1rem; font-weight:800;">加碼活動名稱</label>
+              <input id="planEditorName" name="name" placeholder="例如：交通卡加值" style="width:100%; box-sizing:border-box; font-size:1rem; font-weight:700;">
+            </div>
             <div class="activity-field">
-              <span class="field-label">適用情境</span>
-              <div class="context-switch" role="radiogroup" aria-label="適用情境">
-                <label><input type="radio" name="context" value="general" checked><span>實體店面消費</span></label>
-                <label><input type="radio" name="context" value="transit"><span>交通卡</span></label>
-                <label><input type="radio" name="context" value="merchant"><span>特約商店</span></label>
-                <label><input type="radio" name="context" value="paypay"><span>PayPay</span></label>
+              <span class="field-label">適用情境 <small class="field-hint" style="font-weight:400;opacity:.75;">（可複選；同一活動若跨情境共用額度，請一起勾選）</small></span>
+              <div class="context-switch" role="group" aria-label="適用情境">
+                <label><input type="checkbox" name="context" value="general" checked><span>實體店面消費</span></label>
+                <label><input type="checkbox" name="context" value="transit"><span>交通卡</span></label>
+                <label><input type="checkbox" name="context" value="merchant"><span>特約商店</span></label>
+                <label><input type="checkbox" name="context" value="paypay"><span>PayPay</span></label>
               </div>
             </div>
             <div class="activity-field" id="planEditorMerchantLabel" hidden>
-              <span class="field-label">適用店家（點選可複選）</span>
-              <div id="planEditorMerchantChoices" class="merchant-choice-list" role="group" aria-label="方案適用店家"></div>
-              <div class="merchant-add">
-                <input id="planEditorMerchantInput" placeholder="新增參考店家" aria-label="新增參考店家" autocomplete="off">
-                <button class="btn-small" type="button" id="planEditorMerchantButton">加入店家</button>
-              </div>
-              <small class="rules-disclaimer">加入清單不代表銀行確認該店符合活動。</small>
+              <label class="field-label" for="planEditorMerchants">適用店家/通路備註（自行填寫）</label>
+              <textarea id="planEditorMerchants" name="merchants" rows="2" placeholder="直接貼活動原文，例如：指定特店：松本清、BicCamera…（系統只做字串比對）" style="width:100%; box-sizing:border-box; resize:none; display:block;"></textarea>
+              <small class="rules-disclaimer">請自行填寫並確認店家/通路是否符合銀行活動與實際交易分類。</small>
             </div>
             <div class="rule-form-grid">
-              <label>活動名稱<input name="name" placeholder="例如：交通卡加值"></label>
               <label>加碼回饋率（%）<input name="rate" type="number" min="0" step="0.01" value="1" required></label>
               <label>方案基本回饋率（%）<input name="baseRate" type="number" min="0" step="0.01" placeholder="留白＝沿用卡片基本回饋"></label>
               <label>單筆門檻（NT$）<input name="threshold" type="number" min="0" step="1" value="0"></label>
               <label>門檻方式<select name="thresholdType"><option value="single">單筆</option><option value="cumulative">週期累積</option></select></label>
-              <label>回饋上限（NT$）<input name="cap" type="number" min="0" step="1" placeholder="留白 = 無上限"></label>
-              <label>重置週期<select name="cycle"><option value="month">每月</option><option value="quarter">每季</option><option value="billing">帳單週期</option><option value="campaign">活動期間</option><option value="none">不重置</option></select></label>
+              <label id="planEditorCapField">回饋上限（NT$）<input name="cap" type="number" min="0" step="1" placeholder="留白 = 無上限"></label>
+              <label id="planEditorCycleField">重置週期<select name="cycle"><option value="month">每月</option><option value="quarter">每季</option><option value="billing">帳單週期</option><option value="campaign">活動期間</option><option value="none">不重置</option></select></label>
               <label id="planEditorStatementDayField" hidden>帳單結帳日（1–31 日）<input name="statementDay" type="number" min="1" max="31" step="1"></label>
-              <label>活動截止日期<input name="end" type="date"></label>
+              <label id="planEditorEndField">活動截止日期<input name="end" type="date"></label>
+            </div>
+            <div class="activity-field" style="margin-top:12px;">
+              <span class="field-label">加碼用完或不符合加碼條件</span>
+              <div class="context-switch" role="radiogroup" aria-label="加碼用完或不符合加碼條件">
+                <label><input type="radio" name="fallback" value="base" checked><span>依基本回饋計算</span></label>
+                <label><input type="radio" name="fallback" value="none"><span>不回饋</span></label>
+              </div>
             </div>
             <div class="activity-toggles">
               <label class="toggle toggle-row"><span class="toggle-text">收海外手續費（1.5%）</span><input name="fee" type="checkbox" checked><span class="toggle-track"></span></label>
               <label class="toggle toggle-row"><span class="toggle-text">需手動登錄或切換權益</span><input name="notice" type="checkbox"><span class="toggle-track"></span></label>
             </div>
-            <details class="activity-advanced">
-              <summary>進階設定</summary>
-              <div class="rule-form-grid">
-                <label>加碼用完後<select name="fallback"><option value="base">依基本回饋計算</option><option value="none">不回饋</option></select></label>
-                <label>官方規則來源<input name="sourceUrl" type="url" placeholder="https://"></label>
-              </div>
-            </details>
-            <div class="activity-actions">
+            <div class="rule-form-grid" style="margin-top:12px;">
+              <label style="grid-column:1/-1;">官方規則來源<input name="sourceUrl" type="url" placeholder="https://"></label>
+            </div>
+            <div class="activity-actions" style="margin-top:12px;">
               <button class="btn-main" type="submit" id="planEditorSubmitBtn">儲存活動</button>
-              <button class="btn-small" type="button" onclick="closePlanEditor()">取消</button>
+              <button class="btn-small" type="button" onclick="requestClosePlanEditor()">取消</button>
               <button class="btn-small btn-danger" type="button" id="planEditorDeleteBtn" style="margin-left:auto;" hidden>刪除此活動</button>
             </div>
           </form>
@@ -2031,7 +2638,7 @@
       </div>
       <div class="editor-foot">
         <button class="btn-main" type="submit" form="planEditorForm">儲存活動</button>
-        <button class="btn-small" type="button" onclick="closePlanEditor()">取消</button>
+        <button class="btn-small" type="button" id="cancelPlanEdit" onclick="requestClosePlanEditor()">取消</button>
       </div>
     </div>
   </div>
@@ -2052,19 +2659,6 @@
     </div>
   </div>
 
-  <div class="modal-backdrop" id="clearLedgerModal" role="dialog" aria-modal="true" aria-labelledby="clearLedgerTitle">
-    <div class="modal-box" style="max-width:440px;">
-      <div class="modal-title" id="clearLedgerTitle">清空消費明細</div>
-      <p id="clearLedgerSummary" style="font-size:0.84rem; line-height:1.5;"></p>
-      <p style="font-size:0.76rem; color:var(--text-secondary); line-height:1.5;">只清除明細會保留目前剩餘額度；若要重新開始一趟旅程，可同時把所有有上限卡片重置到上限。</p>
-      <div style="display:flex; flex-direction:column; gap:8px;">
-        <button type="button" class="btn-main" style="margin:0;" onclick="confirmClearLedger('keep')">清除明細</button>
-        <button type="button" class="btn-secondary" style="margin:0;" onclick="confirmClearLedger('reset')">清除並重置額度</button>
-        <button type="button" class="btn-secondary" style="margin:0;" onclick="closeClearLedgerModal()">取消</button>
-      </div>
-    </div>
-  </div>
-
   <div class="modal-backdrop" id="appDialogModal" role="dialog" aria-modal="true" aria-labelledby="appDialogTitle">
     <div class="modal-box" style="max-width:420px;">
       <div class="modal-title" id="appDialogTitle"></div>
@@ -2073,6 +2667,26 @@
       <div style="display:flex; flex-direction:column; gap:8px;">
         <button type="button" class="btn-main" id="appDialogConfirm" style="margin:0;"></button>
         <button type="button" class="btn-secondary" id="appDialogCancel" style="margin:0;">取消</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 編輯消費明細 Modal -->
+  <div class="modal-backdrop" id="ledgerEditModal" role="dialog" aria-modal="true" aria-labelledby="ledgerEditTitle">
+    <div class="modal-box" style="max-width:420px;">
+      <div class="modal-title" id="ledgerEditTitle">編輯消費明細</div>
+      <div class="form-group">
+        <label class="field-label" for="ledgerEditMemo">明細名稱</label>
+        <input id="ledgerEditMemo" type="text" maxlength="80" placeholder="例如：唐吉訶德">
+      </div>
+      <div class="form-group">
+        <label class="field-label" for="ledgerEditDate">日期與時間</label>
+        <input id="ledgerEditDate" type="datetime-local">
+      </div>
+      <p style="font-size:0.76rem; color:var(--text-secondary); line-height:1.5; margin:-4px 0 14px;">只會更新明細顯示與同步，不會重算已扣除的額度。</p>
+      <div style="display:flex; flex-direction:column; gap:8px;">
+        <button type="button" class="btn-main" id="ledgerEditSave" style="margin:0;" onclick="saveLedgerEdit()">儲存</button>
+        <button type="button" class="btn-secondary" id="ledgerEditCancel" style="margin:0;" onclick="closeLedgerEdit()">取消</button>
       </div>
     </div>
   </div>
@@ -2179,6 +2793,7 @@
   <!-- Toast Notification -->
   <div class="toast" id="toast">已更新！</div>
 
+  <script src="engine.js"></script>
   <script>
     // ============================================================
     // 版本策略：統一使用下方 STORAGE_KEY 物件管理 localStorage key
@@ -2191,6 +2806,7 @@
       quotaMigration: 'japan_card_quota_migration_v1',
       billingPromptDismissed: 'japan_card_billing_prompt_dismissed_v1',
       ledger:  'japan_card_ledger_v2',
+      ledgerUpdatedAt: 'japan_card_ledger_updated_at_v1',
       rate:    'japan_card_rate',
       rateLive:'japan_card_rate_is_live',
       rateTime:'japan_card_rate_time',
@@ -2236,7 +2852,6 @@
       return {
         version: 1,
         updatedAt: 0,
-        merchants: [...FEATURED_MERCHANTS],
         cards: [
           {
             id: 'fubon_j', name: '富邦 J 卡', issuer: '富邦', network: 'Visa',
@@ -2265,7 +2880,7 @@
               {
                 id: 'plan-kuma', legacyKey: 'kuma', name: '玉山熊本熊卡 (指定特店 / 交通)',
                 contexts: ['transit', 'merchant'], includeBaseReward: true, foreignFeeApplies: true, noticeFlags: false,
-                merchants: [...FEATURED_MERCHANTS], locationNotice: true, thresholdTwd: 0, thresholdType: 'single',
+                merchantText: FEATURED_MERCHANTS.join('、'), locationNotice: true, thresholdTwd: 0, thresholdType: 'single',
                 capAmount: 500, cycle: 'billing', statementDay: null, capBasis: 'bonus', fallbackBase: true, enabled: true,
                 rewardParts: [makePart('part-kuma', '加碼回饋', 6, 500, 'billing', 0)]
               },
@@ -2317,13 +2932,15 @@
         plans: (Array.isArray(card.plans) ? card.plans : []).map(plan => ({
           ...plan, contexts: (Array.isArray(plan.contexts) ? plan.contexts : [plan.context || 'general']).map(context=>context==='direct'?'general':context), cycle:normalizeV3Cycle(plan.cycle),
           includeBaseReward: plan.includeBaseReward !== false, foreignFeeApplies: plan.foreignFeeApplies !== false,
+          merchantText: (typeof plan.merchantText === 'string' && plan.merchantText.trim())
+            ? plan.merchantText
+            : (Array.isArray(plan.merchants) ? plan.merchants.map(name => String(name).trim()).filter(Boolean).join('、') : ''),
           rewardParts: (Array.isArray(plan.rewardParts) ? plan.rewardParts : Array.isArray(plan.parts) ? plan.parts : []).map(part => ({
             ...part, cycle:normalizeV3Cycle(part.cycle||plan.cycle), merchants:part.merchant?String(part.merchant).split(',').map(name=>name.trim()).filter(Boolean):part.merchants, rate: Math.max(0, Number(part.rate) || 0), capAmount: Math.max(0, Number(part.capAmount ?? part.cap) || 0),
             usedReward: Math.max(0, Number(part.usedReward ?? part.used) || 0), thresholdTwd: Math.max(0, Number(part.thresholdTwd ?? part.threshold) || 0)
           }))
         }))
       }));
-      value.merchants=Array.isArray(value.merchants)?[...new Set(value.merchants.map(name=>String(name).trim()).filter(Boolean))]:[...FEATURED_MERCHANTS];
       value.version = 1;
       return value;
     }
@@ -2371,12 +2988,22 @@
     let rateLastRequestAt = Number(localStorage.getItem(STORAGE_KEY.rateRequestAt)) || 0;
     let rateFetchInFlight = false;
     let ledger = JSON.parse(localStorage.getItem(STORAGE_KEY.ledger)) || [];
+    let ledgerUpdatedAt = Number(localStorage.getItem(STORAGE_KEY.ledgerUpdatedAt)) || 0;
     let currentRoom = localStorage.getItem(STORAGE_KEY.room) || '';
     const SUPABASE_URL = 'https://bcxjbeiqunohwpvxzyaf.supabase.co';
     const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_ZY2zF1s--2-anM6HfHhSQw_MSQHajLH';
     let isSyncing = false;
     let ledgerRevision = 0;
     let pendingQuotaReset = null;
+
+    // 記帳明細的本地版本戳：清空／刪除後即使雲端推送失敗，
+    // 下次同步也能判斷本地比較新，不會把舊明細拉回來。
+    function markLedgerChanged() {
+      ledgerRevision++;
+      ledgerUpdatedAt = Math.max(Date.now(), ledgerUpdatedAt + 1);
+      localStorage.setItem(STORAGE_KEY.ledger, JSON.stringify(ledger));
+      localStorage.setItem(STORAGE_KEY.ledgerUpdatedAt, String(ledgerUpdatedAt));
+    }
 
     // 當前試算決策結果快取
     let currentDecision = {
@@ -2389,7 +3016,18 @@
     };
     let currentThresholdOffer = null;
     let currentQuotaThresholdOffer = null;
+    // 保留本次條件下的所有候選方案，讓推薦卡底下的面板可以列出特店與實體一般消費候選。
+    let lastStoreOffers = [];
+    let selectedDecisionContexts = new Set(['general']);
+    // 特約商店查詢：使用者指定店家時，推薦只納入該店可用的方案；
+    // 指定卡片時，則以該卡作為本次試算結果（不再被拆刷最佳化蓋掉）。
+    let decisionPreferredCardId = '';
+    // 相容：部分舊程式碼/測試可能讀取單一情境 key
     let selectedDecisionScenarioKey = 'general';
+    function syncSelectedDecisionScenarioKey() {
+      const arr = [...selectedDecisionContexts];
+      selectedDecisionScenarioKey = arr.length === 1 ? arr[0] : (arr.includes('general') ? 'general' : arr[0] || 'general');
+    }
 
     // ---- v3 額度週期標籤（單一真相：rulesV3）----
     function getV3CycleLabel(plan, part) {
@@ -2443,7 +3081,8 @@
             if (seen.has(displayKey)) continue;
             seen.add(displayKey);
             const members = groupId ? plan.rewardParts.filter(entry => entry.quotaGroupId === groupId) : [part];
-            const cap = Number(members[0] && members[0].capAmount) || 0;
+            const rawCap = members[0] ? members[0].capAmount : undefined;
+            const cap = Number(rawCap !== undefined && rawCap !== null ? rawCap : plan.capAmount) || 0;
             if (cap <= 0) continue;
             const used = Math.min(cap, members.reduce((sum, entry) => sum + Math.max(0, Number(entry.usedReward) || 0), 0));
             const threshold = Math.max(0, Number(part.thresholdTwd !== undefined ? part.thresholdTwd : plan.thresholdTwd) || 0);
@@ -2467,36 +3106,58 @@
         root.appendChild(empty);
         return;
       }
-      for (const entry of entries) {
-        const { card, plan, part, groupId, displayKey, cap, used, threshold, rate } = entry;
-        const remaining = Math.max(0, cap - used);
-        const item = document.createElement('div');
-        item.className = 'quota-item';
 
-        const header = document.createElement('div');
-        header.className = 'quota-header';
-        const label = document.createElement('div');
-        label.className = 'card-label';
-        const name = document.createElement('strong');
-        name.textContent = `${card.name} · ${plan.name} · ${groupId ? '共用加碼額度' : (part.name || '加碼')}`;
-        label.appendChild(name);
-        if (threshold > 0) {
-          const tag = document.createElement('span');
-          tag.className = 'threshold-tag';
-          tag.textContent = `單筆滿 NT$${threshold.toLocaleString()}`;
-          label.appendChild(tag);
+      // 先依卡片分組，再依加碼活動分組；每個活動底下列出自己的進度條。
+      const cardGroups = new Map();
+      for (const entry of entries) {
+        const cardKey = entry.card.id || entry.card.name;
+        let cardGroup = cardGroups.get(cardKey);
+        if (!cardGroup) {
+          cardGroup = { card: entry.card, plans: new Map(), count: 0 };
+          cardGroups.set(cardKey, cardGroup);
         }
-        const cycle = document.createElement('span');
-        cycle.className = 'cycle-tag';
-        cycle.textContent = `${getV3CycleLabel(plan, part)}；下次 ${getV3NextResetLabel(plan, part)}`;
-        label.appendChild(cycle);
+        const planKey = entry.plan.id || entry.plan.name;
+        let planGroup = cardGroup.plans.get(planKey);
+        if (!planGroup) {
+          planGroup = { plan: entry.plan, entries: [] };
+          cardGroup.plans.set(planKey, planGroup);
+        }
+        planGroup.entries.push(entry);
+        cardGroup.count += 1;
+      }
+
+      const makeResetButton = entry => {
         const reset = document.createElement('button');
         reset.type = 'button';
         reset.className = 'btn-small';
         reset.textContent = '重置';
-        reset.dataset.v3Reset = `${card.id}|${plan.id}|${displayKey}`;
-        header.append(label, reset);
+        reset.dataset.v3Reset = `${entry.card.id}|${entry.plan.id}|${entry.displayKey}`;
+        reset.onclick = () => {
+          const [cardId, planId, partId] = reset.dataset.v3Reset.split('|');
+          resetSingle(cardId, planId, partId);
+        };
+        return reset;
+      };
 
+      const makeTags = entry => {
+        const tags = document.createElement('span');
+        tags.className = 'quota-plan-tags';
+        if (entry.threshold > 0) {
+          const threshold = document.createElement('span');
+          threshold.className = 'threshold-tag';
+          threshold.textContent = `單筆滿 NT$${entry.threshold.toLocaleString()}`;
+          tags.appendChild(threshold);
+        }
+        const cycle = document.createElement('span');
+        cycle.className = 'cycle-tag';
+        cycle.textContent = `${getV3CycleLabel(entry.plan, entry.part)}；下次 ${getV3NextResetLabel(entry.plan, entry.part)}`;
+        tags.appendChild(cycle);
+        return tags;
+      };
+
+      const makeProgress = entry => {
+        const { cap, used, rate } = entry;
+        const remaining = Math.max(0, cap - used);
         const progress = document.createElement('div');
         progress.className = 'progress-bar';
         const bar = document.createElement('div');
@@ -2522,16 +3183,69 @@
 
         const note = document.createElement('small');
         note.textContent = '此為依記帳紀錄估算的加碼額度，不是銀行即時餘額。';
+        return { progress, numbers, note };
+      };
 
-        item.append(header, progress, numbers, note);
-        root.appendChild(item);
+      for (const cardGroup of cardGroups.values()) {
+        const section = document.createElement('section');
+        section.className = 'quota-card-group';
+        section.dataset.quotaCard = cardGroup.card.id || cardGroup.card.name;
+
+        const cardHead = document.createElement('div');
+        cardHead.className = 'quota-card-head';
+        const cardName = document.createElement('strong');
+        cardName.className = 'quota-card-name';
+        cardName.textContent = cardGroup.card.name;
+        const cardCount = document.createElement('span');
+        cardCount.className = 'quota-card-count';
+        cardCount.textContent = `${cardGroup.plans.size} 個加碼活動`;
+        cardHead.append(cardName, cardCount);
+        section.appendChild(cardHead);
+
+        for (const planGroup of cardGroup.plans.values()) {
+          const planBlock = document.createElement('div');
+          planBlock.className = 'quota-plan-block';
+
+          const planHead = document.createElement('div');
+          planHead.className = 'quota-plan-head';
+          const planTitle = document.createElement('strong');
+          planTitle.className = 'quota-plan-title';
+          // 卡片已經是分類標題，活動名稱不再重複卡名；也不把「加碼回饋」一直黏在後面。
+          planTitle.textContent = getGuidePlanShortName(cardGroup.card, planGroup.plan);
+          planHead.appendChild(planTitle);
+          if (planGroup.entries.length === 1) {
+            planHead.appendChild(makeTags(planGroup.entries[0]));
+            planHead.appendChild(makeResetButton(planGroup.entries[0]));
+          }
+          planBlock.appendChild(planHead);
+
+          planGroup.entries.forEach((entry, entryIndex) => {
+            const item = document.createElement('div');
+            item.className = 'quota-item';
+
+            if (planGroup.entries.length > 1) {
+              const entryHead = document.createElement('div');
+              entryHead.className = 'quota-entry-head';
+              const entryLabel = document.createElement('span');
+              entryLabel.className = 'quota-entry-label';
+              const rawPartName = String(entry.part.name || '').trim();
+              // 多項目方案才需要項目名稱；泛用的「加碼回饋」不再重複顯示。
+              entryLabel.textContent = entry.groupId
+                ? '共用加碼額度'
+                : (rawPartName && rawPartName !== '加碼回饋' ? rawPartName : `額度 ${entryIndex + 1}`);
+              entryHead.append(entryLabel, makeTags(entry), makeResetButton(entry));
+              item.appendChild(entryHead);
+            }
+
+            const { progress, numbers, note } = makeProgress(entry);
+            item.append(progress, numbers, note);
+            planBlock.appendChild(item);
+          });
+
+          section.appendChild(planBlock);
+        }
+        root.appendChild(section);
       }
-      root.querySelectorAll('[data-v3-reset]').forEach(button => {
-        button.onclick = () => {
-          const [cardId, planId, partId] = button.dataset.v3Reset.split('|');
-          resetSingle(cardId, planId, partId);
-        };
-      });
     }
 
     function getGuideKumaRate() {
@@ -2563,7 +3277,7 @@
       const cardCount = (rulesV3?.cards || []).length;
       const planCount = (rulesV3?.cards || []).reduce((sum, card) => sum + (card.plans || []).length, 0);
       const paragraphs = [
-        '這個頁面的規則與刷卡決策頁共用同一份資料：符合情境的加碼規則都會參與排序；同一張實體卡的多條權益會依各自剩餘額度依序安排。',
+        '這個頁面的規則與刷卡決策頁共用同一份資料：符合情境的加碼規則都會納入試算；同一張實體卡的多條權益會依各自剩餘額度與淨回饋率自動分配。',
         transitText,
         `目前共 ${cardCount} 張卡片、${planCount} 個加碼方案。活動資格、登錄狀態及銀行最終入帳請自行確認。`
       ];
@@ -2572,11 +3286,6 @@
         paragraph.textContent = text;
         return paragraph;
       }));
-      const kumaRate = getGuideKumaRate();
-      const kumaSection = document.getElementById('kumaGuideCard');
-      if (kumaSection) kumaSection.style.display = getEsunKumaCard() ? '' : 'none';
-      document.getElementById('kumaGuideTitle').textContent = `玉山熊本熊 ${formatGuidePercent(kumaRate)}% 指定特店完整清單`;
-      document.getElementById('kumaTransitNet').textContent = `${formatGuidePercent(kumaRate)}%`;
     }
 
     // 玉山熊本熊卡（v3）
@@ -2693,6 +3402,8 @@
           plus.dataset.dir = 'up';
           plus.textContent = '＋';
           plus.setAttribute('aria-label', '增加');
+          const wrap = document.createElement('span');
+          wrap.className = 'stepper';
           input.parentNode.insertBefore(wrap, input);
           wrap.appendChild(minus);
           wrap.appendChild(input);
@@ -3083,7 +3794,8 @@
           try { return JSON.parse(localStorage.getItem(STORAGE_KEY.rulesV3) || 'null'); }
           catch (error) { return null; }
         })(),
-        ledger
+        ledger,
+        ledgerUpdatedAt
       };
     }
 
@@ -3177,8 +3889,10 @@
             localStorage.setItem(STORAGE_KEY.rulesV3, JSON.stringify(rulesV3));
           }
           if (hasRemoteState) {
+            const remoteLedgerUpdatedAt = Number(data.ledgerUpdatedAt) || 0;
             const hasLocalLedgerChanges = ledgerRevision !== ledgerRevisionAtStart;
-            const canApplyCloudState = !hasLocalLedgerChanges;
+            const cloudLedgerStale = remoteLedgerUpdatedAt < ledgerUpdatedAt;
+            const canApplyCloudState = !hasLocalLedgerChanges && !cloudLedgerStale;
             if (canApplyCloudState) {
               const cloudRateTimestamp = Number(data.rateSourceTimestamp) || 0;
               if (data.jpyRate && data.rateSource === 'bot_spot_sell' && cloudRateTimestamp >= rateSourceTimestamp) {
@@ -3195,7 +3909,13 @@
               } else if (data.jpyRate && !isLiveRate) {
                 jpyRate = data.jpyRate;
               }
-              if (Array.isArray(data.ledger)) ledger = data.ledger;
+              if (Array.isArray(data.ledger)) {
+                ledger = data.ledger;
+                if (remoteLedgerUpdatedAt > ledgerUpdatedAt) {
+                  ledgerUpdatedAt = remoteLedgerUpdatedAt;
+                  localStorage.setItem(STORAGE_KEY.ledgerUpdatedAt, String(ledgerUpdatedAt));
+                }
+              }
             }
 
             localStorage.setItem(STORAGE_KEY.ledger, JSON.stringify(ledger));
@@ -3206,7 +3926,7 @@
             updateRateDisplay();
             renderLedger();
             calculate();
-            shouldPushLocal = hasLocalLedgerChanges || rulesV3Revision!==v3RevisionAtStart || cloudV3Stale;
+            shouldPushLocal = hasLocalLedgerChanges || cloudLedgerStale || rulesV3Revision!==v3RevisionAtStart || cloudV3Stale;
             succeeded = true;
           } else {
             shouldPushLocal = true;
@@ -3295,23 +4015,10 @@
     // 同步店家清單：主頁下拉與加碼活動表單的店家按鈕共用同一份名單
     function syncRuleInputs() {
       if (!rulesV3) return;
-      const names = [...new Set([...(rulesV3.merchants || FEATURED_MERCHANTS), ...rulesV3.cards.flatMap(card => (card.plans || []).flatMap(plan => plan.merchants || []))])];
+      // 決策頁特約商店：提示用 + 自填備註，不列舉店家、不影響判斷
       const merchantSelect = document.getElementById('merchantChoice');
-      if (merchantSelect) {
-        const selected = merchantSelect.value;
-        merchantSelect.innerHTML = '<option value="">選擇店家</option>' + names.map(name => `<option value="${escapeHtml(name)}">${escapeHtml(name)}</option>`).join('');
-        if (names.includes(selected)) merchantSelect.value = selected; else merchantSelect.value = '';
-        const choiceList = document.getElementById('merchantChoiceList');
-        choiceList.innerHTML = names.map(name => `<button type="button" class="merchant-choice${selected === name ? ' active' : ''}" data-merchant-choice="${escapeHtml(name)}">${escapeHtml(name)}</button>`).join('');
-        choiceList.querySelectorAll('[data-merchant-choice]').forEach(button => button.addEventListener('click', () => { merchantSelect.value = button.dataset.merchantChoice; choiceList.querySelectorAll('.merchant-choice').forEach(option => option.classList.toggle('active', option === button)); calculate(); }));
-      }
-
-      const planMerchantChoices = document.getElementById('planEditorMerchantChoices');
-      if (planMerchantChoices) {
-        const selected = new Set([...planMerchantChoices.querySelectorAll('.merchant-choice.active')].map(button => button.dataset.planMerchant));
-        planMerchantChoices.innerHTML = names.map(name => `<button type="button" class="merchant-choice${selected.has(name) ? ' active' : ''}" data-plan-merchant="${escapeHtml(name)}">${escapeHtml(name)}</button>`).join('');
-        planMerchantChoices.querySelectorAll('[data-plan-merchant]').forEach(button => button.addEventListener('click', () => button.classList.toggle('active')));
-      }
+      if (merchantSelect) merchantSelect.value = '';
+      // 加碼活動編輯頁適用店家已改為文字框（自行填寫），不在此同步選單
     }
 
     // 刪除一張卡片
@@ -3326,7 +4033,7 @@
       rulesV3.cards = rulesV3.cards.filter(item => item.id !== cardId);
       if (cardEditorCardId === cardId) closeCardEditor();
       closeCardSettings();
-      closePlanEditor();
+      closePlanEditor({ force: true });
       saveRulesV3();
       calculate();
       renderGuideViews();
@@ -3350,7 +4057,7 @@
         calculate();
         if (cardEditorCardId === cardId) renderCardEditor();
         renderGuideViews();
-        closePlanEditor();
+        closePlanEditor({ force: true });
         showToast('已刪除加碼活動，歷史記帳紀錄已保留');
       }
       return true;
@@ -3406,8 +4113,10 @@
     }
 
     // 表格用：只顯示額度上限，並換算成可刷金額（上限 ÷ 加碼率）
-    function getGuidePartLimitText(part) {
-      const cap = Number(part.capAmount) || 0;
+    function getGuidePartLimitText(part, plan) {
+      // 與額度看板、記帳扣抵一致：項目上限未設定時，回退到方案層級上限。
+      const rawCap = part.capAmount;
+      const cap = Number(rawCap !== undefined && rawCap !== null ? rawCap : (plan && plan.capAmount)) || 0;
       if (cap <= 0) return '無上限';
       const rate = Number(part.rate) || 0;
       const spend = rate > 0 ? Math.round(cap / (rate / 100)) : 0;
@@ -3450,7 +4159,7 @@
           const contexts = (plan.contexts && plan.contexts.length) ? plan.contexts : ['general'];
           const contextLabel = contexts.map(c => GUIDE_CONTEXT_LABELS[c] || c).join('、');
           const threshold = getGuidePlanThreshold(plan);
-          const capText = parts.length ? parts.map(part => getGuidePartLimitText(part)).join('；') : '無上限';
+          const capText = parts.length ? parts.map(part => getGuidePartLimitText(part, plan)).join('；') : '無上限';
           const cycleText = getGuideTableCycleText(plan, parts);
           const periodNotes = [];
           parts.forEach(part => {
@@ -3461,6 +4170,15 @@
           const baseNote = plan.includeBaseReward === false ? '不併計基本回饋（僅此加碼）' : '併計基本回饋';
           const feeNote = plan.foreignFeeApplies === false ? '免收手續費' : '含 1.5% 手續費';
           const extras = [contextLabel + '加碼', thresholdText, capText !== '無上限' ? `上限 ${capText}` : '', cycleText !== '—' ? cycleText : '', baseNote, feeNote, noteText].filter(Boolean);
+          // 特約店家直接歸屬在各自的加碼活動底下，原文照登，不拆店名也不建立索引。
+          const merchantText = getPlanMerchantText(plan).trim();
+          const isMerchantPlan = contexts.includes('merchant') || !!merchantText;
+          const merchantBlock = isMerchantPlan
+            ? `<details class="guide-bonus-merchants">
+                <summary><span>特約店家</span><span class="guide-bonus-merchant-count">${merchantText ? '查看原文' : '未限制'}</span></summary>
+                <div class="guide-bonus-merchant-text">${merchantText ? escapeHtml(merchantText) : '未限制店家'}</div>
+              </details>`
+            : '';
           return `<div class="guide-bonus-item">
             <div class="guide-bonus-head">
               <div class="guide-bonus-title-row">
@@ -3473,6 +4191,7 @@
             </div>
             <div class="guide-bonus-meta">${extras.join(' · ')}</div>
             ${periodNotes.length ? `<div class="guide-bonus-meta">${escapeHtml(periodNotes.join(' · '))}</div>` : ''}
+            ${merchantBlock}
           </div>`;
         }).join('');
 
@@ -3593,7 +4312,7 @@
           const parts = getGuidePlanParts(plan);
           const threshold = getGuidePlanThreshold(plan);
           const cycleText = getGuideTableCycleText(plan, parts);
-          const capText = parts.length ? parts.map(part => getGuidePartLimitText(part)).join('；') : '無上限';
+          const capText = parts.length ? parts.map(part => getGuidePartLimitText(part, plan)).join('；') : '無上限';
           const contexts = (plan.contexts && plan.contexts.length) ? plan.contexts : ['general'];
           const context = contexts[0];
           const baseCellText = plan.includeBaseReward !== false ? `${Number(card.baseRate) || 0}%` : '不併計（僅此加碼）';
@@ -3614,6 +4333,307 @@
           const [cardId, planId] = button.dataset.guidePlanSettings.split('|');
           openPlanEditor(cardId, planId);
         };
+      });
+    }
+
+    // 特約店家只保存使用者貼上的原文，不拆店名、不建立商店索引。
+    function getPlanMerchantText(plan) {
+      if (window.RuleEngine && typeof window.RuleEngine.getMerchantText === 'function') {
+        return window.RuleEngine.getMerchantText(plan);
+      }
+      if (!plan) return '';
+      if (typeof plan.merchantText === 'string' && plan.merchantText.trim()) return plan.merchantText;
+      return Array.isArray(plan.merchants) ? plan.merchants.join('、') : '';
+    }
+
+    function planMerchantTextMatches(plan, merchant) {
+      if (window.RuleEngine && typeof window.RuleEngine.merchantTextMatches === 'function') {
+        return window.RuleEngine.merchantTextMatches(plan, merchant);
+      }
+      const text = getPlanMerchantText(plan).trim().toLocaleLowerCase('zh-TW');
+      const query = String(merchant || '').trim().toLocaleLowerCase('zh-TW');
+      if (!query) return true;
+      if (!text) return true;
+      if (text.includes(query)) return true;
+      return query.length >= 2 && text.length >= 2 && query.includes(text);
+    }
+
+    function planHasMerchantContext(plan) {
+      return (plan?.contexts || []).includes('merchant') || !!getPlanMerchantText(plan).trim();
+    }
+
+    // `planMerchantTextMatches` 對空白店家原文會回傳 true，因為一般消費方案也要列入候選。
+    // 這裡要判斷的是「目前推薦是否真的命中這家店」，所以必須額外要求原文非空。
+    function planHasActualMerchantMatch(plan, query) {
+      const text = getPlanMerchantText(plan).trim();
+      return !!text && planMerchantTextMatches(plan, query);
+    }
+
+    function currentRecommendationMatchesMerchant(query) {
+      const store = String(query || '').trim();
+      if (!store) return false;
+      return (currentDecision.v3Allocations || []).some(item => planHasActualMerchantMatch(item.plan, store));
+    }
+
+    // ---- 推薦卡底下的特約商店查詢（內嵌收合，不用彈窗） ----
+    // 使用者只需要：看自己填的明細店家 → 點一下或搜尋 → 有符合就自動換成最適合的卡。
+    // 不符合時，下方仍列出這家店的其他卡片，讓使用者自己切換。
+    let resultMerchantAutoApplying = false;
+
+    function hideDecisionMerchantAccess() {
+      const panel = document.getElementById('resultMerchantTrigger');
+      if (panel) { panel.hidden = true; panel.open = false; }
+      const search = document.getElementById('resultMerchantSearch');
+      if (search) search.value = '';
+      const note = document.getElementById('resultStoreNote');
+      if (note) { note.hidden = true; note.innerHTML = ''; }
+    }
+
+    function updateDecisionMerchantAccess(store, storeBest, totalTwd) {
+      const panel = document.getElementById('resultMerchantTrigger');
+      const note = document.getElementById('resultStoreNote');
+      const baseShow = selectedDecisionContexts.has('merchant') && totalTwd > 0 && !!storeBest;
+      if (!baseShow) {
+        if (panel) { panel.hidden = true; panel.open = false; }
+        if (note) { note.hidden = true; note.innerHTML = ''; }
+        return;
+      }
+
+      const storeText = String(store || '').trim();
+      const currentMatches = currentRecommendationMatchesMerchant(storeText);
+      const showTrigger = !currentMatches;
+      const triggerText = document.getElementById('resultMerchantTriggerText');
+      const meta = document.getElementById('resultMerchantTriggerMeta');
+
+      if (panel) {
+        // 面板一旦被打開，就保留到使用者自己收起或清除條件為止，
+        // 避免在面板裡選卡、重新試算時整個區塊突然消失。
+        const keepOpen = !!panel.open;
+        panel.hidden = !showTrigger && !keepOpen;
+        if (panel.hidden) panel.open = false;
+      }
+      if (triggerText) {
+        triggerText.textContent = currentMatches
+          ? '這家店有符合的推薦卡'
+          : (storeText ? '這家店沒有符合的推薦卡？' : '這家店有符合嗎？');
+      }
+      if (meta) {
+        meta.textContent = currentMatches
+          ? '已符合'
+          : (storeText ? '搜尋其他特約卡' : '查看特約商店');
+      }
+
+      if (!note) return;
+      if (!storeText) { note.hidden = true; note.innerHTML = ''; return; }
+      const chosen = currentDecision.v3Allocations?.[0]?.card || null;
+      const bestName = storeBest.card.name;
+      const bestRate = totalTwd ? storeBest.net / totalTwd * 100 : 0;
+      let text = '';
+      if (chosen && decisionPreferredCardId && chosen.id === decisionPreferredCardId) {
+        if (storeBest.card.id !== chosen.id) {
+          text = `目前依「<b>${escapeHtml(storeText)}</b>」試算，你指定 <b>${escapeHtml(chosen.name)}</b>；這家店的最高淨回饋其實是 <b>${escapeHtml(bestName)}</b>（${formatGuidePercent(bestRate)}%）。`;
+        } else {
+          text = `目前依「<b>${escapeHtml(storeText)}</b>」試算，<b>${escapeHtml(chosen.name)}</b> 是這家店的最高淨回饋（${formatGuidePercent(bestRate)}%）。`;
+        }
+      } else {
+        text = `目前依「<b>${escapeHtml(storeText)}</b>」試算，這家店最高淨回饋是 <b>${escapeHtml(bestName)}</b>（${formatGuidePercent(bestRate)}%）。`;
+      }
+      note.innerHTML = `<div>${text}</div><button type="button" class="btn-small" onclick="clearMerchantLookupConditions()">清除</button>`;
+      note.hidden = false;
+    }
+
+    function onResultMerchantPanelToggle() {
+      const panel = document.getElementById('resultMerchantTrigger');
+      if (!panel) return;
+      const currentStore = document.getElementById('merchantChoice')?.value || '';
+      if (!panel.open) {
+        // 目前推薦已命中時，收起面板就等於不需要再搜尋其他卡，直接隱藏入口。
+        if (currentRecommendationMatchesMerchant(currentStore)) panel.hidden = true;
+        return;
+      }
+      const search = document.getElementById('resultMerchantSearch');
+      if (search && !search.value.trim() && currentStore) search.value = currentStore;
+      renderResultMerchantPanel();
+    }
+
+    function searchResultMerchantTerm(term) {
+      const search = document.getElementById('resultMerchantSearch');
+      if (!search) return;
+      search.value = String(term || '');
+      renderResultMerchantPanel();
+    }
+
+    function clearMerchantLookupConditions() {
+      const merchant = document.getElementById('merchantChoice');
+      if (merchant) merchant.value = '';
+      decisionPreferredCardId = '';
+      const panel = document.getElementById('resultMerchantTrigger');
+      if (panel) { panel.open = false; panel.hidden = true; }
+      const search = document.getElementById('resultMerchantSearch');
+      if (search) search.value = '';
+      calculate();
+      renderResultMerchantPanel();
+      showToast('已清除店家條件，回到一般推薦');
+    }
+
+    function applyMerchantStoreChoice(store, cardId, silent) {
+      const merchant = document.getElementById('merchantChoice');
+      if (!merchant || !store) return;
+      merchant.value = store;
+      decisionPreferredCardId = cardId || '';
+      const wantedCard = cardId ? (rulesV3.cards || []).find(card => card.id === cardId) : null;
+      calculate();
+      const panel = document.getElementById('resultMerchantTrigger');
+      if (panel && panel.open) renderResultMerchantPanel();
+      if (silent) return;
+      if (cardId && decisionPreferredCardId !== cardId) {
+        showToast(`${wantedCard?.name || '這張卡'} 在這家店沒有可用方案，已改用此店最高回饋`);
+      } else if (cardId) {
+        showToast(`已用「${store}」試算 ${wantedCard?.name || '指定卡片'}`);
+      } else {
+        showToast(`已用「${store}」找此店最高回饋`);
+      }
+    }
+
+    function getMerchantMatchedPlans(query) {
+      const needle = String(query || '').trim();
+      if (!needle) return [];
+      const matches = [];
+      for (const card of rulesV3.cards || []) {
+        for (const plan of card.plans || []) {
+          if (plan.enabled === false) continue;
+          if (!planHasMerchantContext(plan)) continue;
+          if (!planMerchantTextMatches(plan, needle)) continue;
+          matches.push({ card, plan });
+        }
+      }
+      return matches;
+    }
+
+    function applyUniqueMerchantMatch() {
+      const search = document.getElementById('resultMerchantSearch');
+      const query = String(search?.value || '').trim();
+      if (!query) return;
+      applyMerchantStoreChoice(query, '', false);
+    }
+
+    function renderResultMerchantPanel() {
+      if (!rulesV3) return;
+      const list = document.getElementById('resultMerchantList');
+      const recommend = document.getElementById('resultMerchantRecommend');
+      const feedback = document.getElementById('resultMerchantFeedback');
+      const memoBox = document.getElementById('resultMerchantMemoBox');
+      const memoList = document.getElementById('resultMerchantMemo');
+      const search = document.getElementById('resultMerchantSearch');
+      if (!list) return;
+
+      const currentAllocations = currentDecision.v3Allocations || [];
+      const currentCards = new Map();
+      currentAllocations.forEach(item => { if (item.card?.id) currentCards.set(item.card.id, item.card); });
+      const currentStore = document.getElementById('merchantChoice')?.value || '';
+      const rawQuery = String(search?.value || '').trim();
+      const query = rawQuery.toLocaleLowerCase('zh-TW');
+      const condition = rawQuery || currentStore;
+
+      // 只要搜尋字串和目前條件不同，就直接用這個字串重新試算。
+      // 不拆店名、不找「唯一店家」、不建立商店索引；有打中方案原文就納入推薦。
+      const appliedLower = String(currentStore || '').trim().toLocaleLowerCase('zh-TW');
+      if (query && query !== appliedLower && !resultMerchantAutoApplying) {
+        resultMerchantAutoApplying = true;
+        applyMerchantStoreChoice(rawQuery, '', true);
+        resultMerchantAutoApplying = false;
+        return;
+      }
+
+      if (recommend) {
+        const names = [...new Set(currentAllocations.map(item => item.card?.name).filter(Boolean))];
+        const preferred = decisionPreferredCardId ? (rulesV3.cards || []).find(card => card.id === decisionPreferredCardId) : null;
+        recommend.innerHTML = names.length
+          ? `<b>目前推薦：${names.map(escapeHtml).join(' ＋ ')}</b><small>${currentStore ? `已用「${escapeHtml(currentStore)}」試算；` : ''}特約情境會一起比較特店加碼與實體一般消費。</small>${preferred ? `<small>你指定：${escapeHtml(preferred.name)}</small>` : ''}`
+          : '<b>先在決策頁輸入金額</b><small>有推薦結果後，這裡會顯示目前推薦卡與符合的卡片。</small>';
+      }
+
+      // 明細照使用者輸入的原文顯示；不拆詞、不排序、不歸納。
+      const memoText = String(document.getElementById('memo')?.value || '').trim();
+      if (memoBox && memoList) {
+        memoBox.hidden = !memoText;
+        memoList.textContent = memoText;
+      }
+
+      const matchedPlans = getMerchantMatchedPlans(condition);
+      if (feedback) {
+        if (!condition) {
+          feedback.innerHTML = '<p class="merchant-lookup-hint">輸入店名，或看上方你填的消費明細。只要方案原文有這段字，就會一起比較實體一般消費回饋。</p>';
+        } else if (rawQuery && !matchedPlans.length) {
+          feedback.innerHTML = `<div class="merchant-lookup-warning">沒有特約方案的文字包含「${escapeHtml(rawQuery)}」。下方仍列出實體一般消費候選卡。</div>`;
+        } else if (rawQuery) {
+          feedback.innerHTML = `<div class="merchant-lookup-warning is-ok">「${escapeHtml(rawQuery)}」命中 ${matchedPlans.length} 個特約方案；已一起比較實體一般消費回饋。</div>`;
+        } else {
+          feedback.innerHTML = `<div class="merchant-lookup-warning is-ok">目前使用「${escapeHtml(currentStore)}」；下方同時列出特店加碼與實體一般消費候選卡。</div>`;
+        }
+      }
+
+      if (!condition) {
+        list.innerHTML = '';
+        return;
+      }
+
+      const offers = Array.isArray(lastStoreOffers) ? lastStoreOffers.slice() : [];
+      const byCard = new Map();
+      offers.forEach(offer => {
+        if (!offer || !offer.card) return;
+        const key = offer.card.id || offer.card.name;
+        let entry = byCard.get(key);
+        if (!entry) {
+          entry = { card: offer.card, offers: [] };
+          byCard.set(key, entry);
+        }
+        entry.offers.push(offer);
+      });
+      const candidates = [...byCard.values()].map(entry => {
+        const ranked = entry.offers.slice().sort((a, b) => b.net - a.net);
+        return { card: entry.card, best: ranked[0], count: entry.offers.length };
+      }).sort((a, b) => b.best.net - a.best.net || String(a.card.name).localeCompare(String(b.card.name), 'zh-Hant'));
+
+      if (!candidates.length) {
+        list.innerHTML = '';
+        return;
+      }
+
+      const totalTwd = Number(currentDecision.twd) || 0;
+      const bestCardId = candidates[0].card.id;
+      const bestRate = totalTwd ? candidates[0].best.net / totalTwd * 100 : 0;
+      list.innerHTML = `<div class="merchant-row">
+        <div class="merchant-row-head">
+          <span class="merchant-name">「${escapeHtml(condition)}」候選卡片</span>
+          <span class="merchant-count">${candidates.length} 張</span>
+        </div>
+        <div class="merchant-lookup-warning is-ok">已一起比較特店加碼與實體一般消費；目前最高是 ${escapeHtml(candidates[0].card.name)}（${formatGuidePercent(bestRate)}%）。</div>
+        <div class="merchant-cards">
+          ${candidates.map(candidate => {
+            const planLabel = candidate.count > 1
+              ? `${candidate.best.plan?.name || '加碼方案'} 等 ${candidate.count} 個方案`
+              : (candidate.best.plan?.name || '基本回饋');
+            const rate = totalTwd ? candidate.best.net / totalTwd * 100 : 0;
+            const isBest = candidate.card.id === bestCardId;
+            const isCurrent = currentCards.has(candidate.card.id);
+            const isPreferred = candidate.card.id === decisionPreferredCardId;
+            const merchantHit = planHasMerchantContext(candidate.best.plan) && planMerchantTextMatches(candidate.best.plan, condition);
+            const flags = [isBest ? '最高' : '', isCurrent ? '目前推薦' : '', isPreferred ? '你指定' : ''].filter(Boolean).join(' · ');
+            return `<button type="button" class="merchant-card-chip merchant-card-button${isBest ? ' is-best' : ''}${isCurrent ? ' is-current' : ''}${isPreferred ? ' is-preferred' : ''}" data-result-merchant-store="${escapeHtml(condition)}" data-result-merchant-card="${escapeHtml(candidate.card.id)}">
+              <b>${escapeHtml(candidate.card.name)}</b>
+              <small>${merchantHit ? '特約命中' : '實體一般'} · ${escapeHtml(planLabel)} · 淨 ${formatGuidePercent(rate)}%${flags ? ` · ${flags}` : ''}</small>
+            </button>`;
+          }).join('')}
+        </div>
+        <div class="merchant-lookup-row-actions"><button type="button" class="btn-small" data-result-merchant-auto="${escapeHtml(condition)}">用這個條件找最高回饋</button></div>
+      </div>`;
+
+      list.querySelectorAll('[data-result-merchant-card]').forEach(button => {
+        button.onclick = () => applyMerchantStoreChoice(button.dataset.resultMerchantStore || '', button.dataset.resultMerchantCard || '', false);
+      });
+      list.querySelectorAll('[data-result-merchant-auto]').forEach(button => {
+        button.onclick = () => applyMerchantStoreChoice(button.dataset.resultMerchantAuto || '', '', false);
       });
     }
 
@@ -3718,7 +4738,8 @@
           const cycleText = planCycle === 'billing'
             ? ` · 帳單週期${Number(plan.statementDay) >= 1 ? `（每月 ${Number(plan.statementDay)} 日結帳）` : '（結帳日未設定）'}`
             : (planCycle !== 'none' ? ` · ${GUIDE_CYCLE_LABELS[planCycle] || planCycle}` : '');
-          const merchantText = (plan.merchants || []).length ? ` · 店家：${(plan.merchants || []).join('、')}` : '';
+          const planMerchantText = getPlanMerchantText(plan).trim();
+          const merchantText = planMerchantText ? ` · 店家：${planMerchantText}` : '';
           const baseInfo = plan.baseRateOverride !== undefined && plan.baseRateOverride !== null ? ` · 方案基本回饋 ${Number(plan.baseRateOverride)||0}%` : '';
           return `<div class="editor-plan-row">
             <div class="editor-plan-info">
@@ -3738,8 +4759,8 @@
     }
 
     function beginEditDynamicPlan(cardId, planId) {
-      closeCardEditor();
-      openPlanEditor(cardId, planId);
+      // deprecated path retained for compatibility; route without recursion
+      try { openPlanEditor(cardId, planId); } catch (e) {}
     }
 
     function cancelDynamicPlanEdit() { /* deprecated */ }
@@ -3770,18 +4791,6 @@
         throw e;
       }
     });
-    document.getElementById('addMerchantButton')?.addEventListener('click', () => {
-      const input = document.getElementById('addMerchantInput');
-      const name = String(input?.value || '').trim();
-      if (!name) return;
-      if (rulesV3.merchants.some(item => item.toLocaleLowerCase() === name.toLocaleLowerCase())) { showToast('這間店已在清單中'); return; }
-      rulesV3.merchants.push(name);
-      input.value = '';
-      saveRulesV3(); calculate();
-      const chip = document.querySelector(`#planEditorMerchantChoices [data-plan-merchant="${CSS.escape(name)}"]`);
-      if (chip) chip.classList.add('active');
-    });
-    document.getElementById('addMerchantInput')?.addEventListener('keydown', event => { if (event.key === 'Enter') { event.preventDefault(); document.getElementById('addMerchantButton')?.click(); } });
     // ---- 單卡編輯頁的欄位與按鈕 ----
     const cardEditorField = (id, apply) => {
       const el = document.getElementById(id);
@@ -3812,78 +4821,121 @@
       const card=getCardEditorCard(); if(!card)return; card.baseFeeApplies=e.target.checked; saveRulesV3();calculate();renderCardEditor();
     });
     document.getElementById('cardSettingsDelete')?.addEventListener('click', ()=>{ if(cardEditorCardId) deleteCardById(cardEditorCardId); closeCardSettings(); });
-    document.getElementById('cardEditorAddActivity')?.addEventListener('click', () => { const cid = cardEditorCardId; closeCardEditor(); openPlanEditor(cid, null); });
+    document.getElementById('cardEditorAddActivity')?.addEventListener('click', () => { openPlanEditor(cardEditorCardId, null); });
     document.getElementById('cardEditorDelete')?.addEventListener('click', () => {
       if (cardEditorCardId) deleteCardById(cardEditorCardId);
     });
 
     // 四大消費情境是決策流程的唯一入口；舊計算器欄位保留作相容層。
-    function selectDecisionScenario(scenario, button) {
-      selectedDecisionScenarioKey = scenario;
-      document.querySelectorAll('.scenario-option').forEach(option => option.classList.toggle('active', option === button));
+    function renderDecisionScenarioSelection() {
+      document.querySelectorAll('.scenario-option[data-scenario]').forEach(option => {
+        option.classList.toggle('active', selectedDecisionContexts.has(option.dataset.scenario));
+      });
+    }
+
+    function applyDecisionScenarioSideEffects() {
       const payType = document.getElementById('payType');
       const storeType = document.getElementById('storeType');
       const locationType = document.getElementById('locationType');
       const merchant = document.getElementById('merchantChoice');
-      if (scenario === 'transit') {
-        payType.value = 'transit'; storeType.value = 'normal';
-      } else if (scenario === 'paypay') {
+      const has = (k) => selectedDecisionContexts.has(k);
+      // 相容舊隱藏欄位（單一語意）
+      if (has('paypay') && !has('transit') && !has('general') && !has('merchant')) {
         payType.value = 'paypay'; storeType.value = 'normal';
-      } else if (scenario === 'merchant') {
+      } else if (has('transit') && !has('paypay')) {
+        payType.value = 'transit'; storeType.value = has('merchant') ? 'kuma_shop' : 'normal';
+      } else if (has('merchant')) {
         payType.value = 'card'; storeType.value = 'kuma_shop';
       } else {
         payType.value = 'card'; storeType.value = 'normal';
       }
-      document.getElementById('storeGroup').style.display = scenario === 'merchant' ? 'flex' : 'none';
-      document.getElementById('locationGroup').style.display = 'none';
-      if (scenario !== 'merchant') merchant.value = '';
-      document.querySelectorAll('#merchantChoiceList .merchant-choice').forEach(option=>option.classList.toggle('active',option.dataset.merchantChoice===merchant.value));
-      if (scenario === 'merchant') locationType.value = 'street';
+      const showMerchant = has('merchant');
+      if (!showMerchant) {
+        // 離開特約情境時，不讓上一間店的條件偷影響一般消費推薦。
+        if (merchant) merchant.value = '';
+        decisionPreferredCardId = '';
+      }
+      if (showMerchant && locationType) locationType.value = 'street';
+      syncSelectedDecisionScenarioKey();
+    }
+
+    // 決策頁一次只選一個消費情境。方案本身仍可有多個 contexts（跨情境共用額度），
+    // 由 calculateRulesV3 以「單一已選情境 vs 方案 contexts」做 OR 匹配。
+    function setDecisionContexts(contexts) {
+      const first = (contexts || []).filter(Boolean)[0] || 'general';
+      selectedDecisionContexts = new Set([first]);
+      renderDecisionScenarioSelection();
+      applyDecisionScenarioSideEffects();
       calculate();
     }
 
-    // 快速情境標籤一鍵套用
+    // 單選入口（按鈕 onclick）
+    function selectDecisionScenario(scenario, button) {
+      setDecisionContexts([scenario]);
+    }
+
+    // 相容舊名稱：舊程式若呼叫 toggle，仍維持單選語意
+    function toggleDecisionScenario(scenario) {
+      selectDecisionScenario(scenario);
+    }
+
+    // 快速情境標籤一鍵套用（決策情境為單選）
     function applyPreset(preset, btnElement) {
       const payType = document.getElementById('payType');
       const storeType = document.getElementById('storeType');
       const locationType = document.getElementById('locationType');
       const memo = document.getElementById('memo');
+      const merchant = document.getElementById('merchantChoice');
+
+      // 快捷標籤視為新的試算起點，不讓上一間店的條件偷偷延續。
+      if (merchant) merchant.value = '';
+      decisionPreferredCardId = '';
+      let presetMerchantQuery = '';
 
       document.querySelectorAll('.quick-tag').forEach(t => t.classList.remove('active'));
       if (btnElement) btnElement.classList.add('active');
 
       if (preset === 'transit') {
+        setDecisionContexts(['transit']);
         payType.value = 'transit';
         memo.value = 'Suica / 交通卡儲值';
       } else if (preset === 'matsukiyo') {
-        payType.value = 'card';
-        storeType.value = 'kuma_shop';
-        locationType.value = 'street';
+        setDecisionContexts(['merchant']);
+        payType.value = 'card'; storeType.value = 'kuma_shop'; locationType.value = 'street';
         memo.value = '松本清藥妝';
+        presetMerchantQuery = '松本清';
       } else if (preset === 'bic') {
-        payType.value = 'card';
-        storeType.value = 'kuma_shop';
-        locationType.value = 'street';
+        setDecisionContexts(['merchant']);
+        payType.value = 'card'; storeType.value = 'kuma_shop'; locationType.value = 'street';
         memo.value = 'BicCamera 電器';
+        presetMerchantQuery = 'BicCamera';
       } else if (preset === 'donki') {
-        payType.value = 'card';
-        storeType.value = 'kuma_shop';
-        locationType.value = 'street';
+        setDecisionContexts(['merchant']);
+        payType.value = 'card'; storeType.value = 'kuma_shop'; locationType.value = 'street';
         memo.value = '唐吉訶德';
+        presetMerchantQuery = '唐吉訶德';
       } else if (preset === 'dept') {
-        payType.value = 'card';
-        storeType.value = 'kuma_shop';
-        locationType.value = 'department';
+        setDecisionContexts(['merchant']);
+        payType.value = 'card'; storeType.value = 'kuma_shop'; locationType.value = 'department';
         memo.value = '百貨美食街 / 專櫃';
       } else if (preset === 'dining') {
-        payType.value = 'card';
-        storeType.value = 'normal';
-        locationType.value = 'street';
+        setDecisionContexts(['general']);
+        payType.value = 'card'; storeType.value = 'normal'; locationType.value = 'street';
         memo.value = '餐廳用餐';
       } else if (preset === 'paypay') {
+        setDecisionContexts(['paypay']);
         payType.value = 'paypay';
         memo.value = 'PayPay 掃碼支付';
+      } else {
+        calculate();
+        return;
       }
+      // 快捷標籤若填的是已知店家，直接把店家條件帶進試算；
+      // 這和「先推薦、再從結果查店家」是同一個決策狀態，不會變成兩套邏輯。
+      if (merchant) {
+        merchant.value = selectedDecisionContexts.has('merchant') ? presetMerchantQuery : '';
+      }
+      // setDecisionContexts 已 calculate()；保留 locationType/memo/提示備註等覆寫後再算一次確保一致
       calculate();
     }
 
@@ -3908,6 +4960,9 @@
     }
 
     function getV3PeriodKey(plan, part) {
+      if (window.RuleEngine && typeof window.RuleEngine.getPeriodKey === 'function') {
+        return window.RuleEngine.getPeriodKey(plan, part, getTaipeiDateParts());
+      }
       const cycle=part.cycle||plan.cycle||'none'; const {year,month,day}=getTaipeiDateParts();
       if(cycle==='month') return `${year}-${String(month).padStart(2,'0')}`;
       if(cycle==='quarter') return `${year}-Q${Math.floor((month-1)/3)+1}`;
@@ -3921,19 +4976,45 @@
       return null;
     }
 
-    function evaluateV3Plan(card, plan, spendTwd, merchant, context) {
+    function evaluateV3Plan(card, plan, spendTwd, merchant, evalContexts) {
+      if (window.RuleEngine && typeof window.RuleEngine.evaluatePlan === 'function') {
+        const result = window.RuleEngine.evaluatePlan({
+          card, plan, spendTwd, merchant,
+          contexts: evalContexts,
+          today: getV3Today(),
+          dateParts: getTaipeiDateParts()
+        });
+        for (const change of result.partChanges || []) {
+          const part = (plan.rewardParts || []).find(item => item.id === change.partId);
+          if (!part) continue;
+          if (change.periodKey !== undefined) part.periodKey = change.periodKey;
+          if (change.cumulativePeriodKey !== undefined) part.cumulativePeriodKey = change.cumulativePeriodKey;
+          if (change.usedReward !== undefined) part.usedReward = change.usedReward;
+          if (change.cumulativeSpendTwd !== undefined) part.cumulativeSpendTwd = change.cumulativeSpendTwd;
+        }
+        if (result.periodReset) v3PeriodResetOccurred = true;
+        return result.offer;
+      }
+      return evaluateV3PlanLegacy(card, plan, spendTwd, merchant, evalContexts);
+    }
+
+    function evaluateV3PlanLegacy(card, plan, spendTwd, merchant, evalContexts) {
+      const evalArr = Array.isArray(evalContexts) ? evalContexts : (evalContexts ? [String(evalContexts)] : ['general']);
       const today = getV3Today();
       const matchedParts = [];
       const cumulativePartIds = [];
       const notes = [];
       const quotaGroups = new Map();
+      // 通用：若方案同時符合其他已選情境（如 特約商店+交通卡共用），不因特約商店店家未命中而擋掉整體資格
+      const hasNonMerchantQual = (plan.contexts || []).some(c => c !== 'merchant' && evalArr.includes(c));
+      const enforceMerchantList = evalArr.includes('merchant') && (plan.contexts || []).includes('merchant') && !hasNonMerchantQual;
       for (const part of plan.rewardParts || []) {
         const periodKey=getV3PeriodKey(plan,part);
         if(periodKey){if(part.periodKey&&part.periodKey!==periodKey){part.usedReward=0;v3PeriodResetOccurred=true;}part.periodKey=periodKey;}
         else if((part.cycle||plan.cycle)==='billing'&&!plan.statementDay) notes.push('尚未設定結帳日，請自行確認並手動重置額度');
         if(periodKey){if(part.cumulativePeriodKey&&part.cumulativePeriodKey!==periodKey)part.cumulativeSpendTwd=0;part.cumulativePeriodKey=periodKey;}
         if (part.start && today < part.start || part.end && today > part.end) continue;
-        if (context==='merchant' && plan.merchants?.length && !plan.merchants.includes(merchant)) continue;
+        if (enforceMerchantList && merchant && !planMerchantTextMatches(plan, merchant)) continue;
         const partThreshold = part.thresholdTwd !== undefined ? Math.max(0,Number(part.thresholdTwd)||0) : Math.max(0,Number(plan.thresholdTwd)||0);
         const thresholdType=part.thresholdType||plan.thresholdType||'single';
         if(thresholdType==='cumulative')cumulativePartIds.push(part.id);
@@ -3973,48 +5054,80 @@
 
     function calculateRulesV3() {
       v3PeriodResetOccurred=false;
+      lastStoreOffers=[];
+      const selectedContexts = [...(selectedDecisionContexts && selectedDecisionContexts.size ? selectedDecisionContexts : new Set(['general']))];
+      syncSelectedDecisionScenarioKey();
       const scenario = selectedDecisionScenarioKey;
       const jpy = Number(document.getElementById('jpyAmount').value)||0;
       const totalTwd = Math.max(0, Math.round(jpy * jpyRate));
       const merchant = document.getElementById('merchantChoice').value;
-      const context = scenario === 'merchant' ? 'merchant' : scenario;
       document.getElementById('twdDisplay').innerText = `NT$${totalTwd.toLocaleString()}`;
-      document.getElementById('storeGroup').style.display = scenario === 'merchant' ? 'flex' : 'none';
-      document.getElementById('locationGroup').style.display = 'none';
-      ['deptAlert','transitAlert','jcardAlert','paypayQuotaAlert','overLimitAlert','thresholdOpportunity','quotaThresholdOpportunity'].forEach(id => { const el=document.getElementById(id); if(el) el.style.display='none'; });
+      ['overLimitAlert','thresholdOpportunity','quotaThresholdOpportunity'].forEach(id => { const el=document.getElementById(id); if(el) el.style.display='none'; });
       document.getElementById('resultQuotaBox').style.display='none';
       const resultBox=document.getElementById('resultBox'); resultBox.className='result-box';
+      const resultPlanLabel=document.getElementById('resultPlanLabel');
       if (jpy <= 0) {
+        lastStoreOffers=[];
         currentDecision={ cardKey:'',cardName:'',ratePercent:0,jpy:0,twd:0,rewardTwd:0,v3Allocations:[] };
         document.getElementById('bestCard').innerText='請輸入金額試算';
         document.getElementById('bestCardIcon').innerHTML=lineIconSvg('card');
         document.getElementById('rateBadge').innerText='--'; document.getElementById('bestReward').innerText='';
         document.getElementById('cardDesc').innerText='選好消費情境並輸入金額，查看依卡片規則估算的回饋。';
+        resultPlanLabel.hidden=true; resultPlanLabel.textContent='';
         document.getElementById('subAdvice').innerText=''; document.getElementById('singleRecordAction').style.display='block';
+        hideDecisionMerchantAccess();
         return;
       }
+      const planMatchesSelection = (plan) => {
+        if (window.RuleEngine && typeof window.RuleEngine.planMatchesContexts === 'function') {
+          return window.RuleEngine.planMatchesContexts(plan.contexts || [], selectedContexts, { merchantIncludesGeneral: true });
+        }
+        const pcs = plan.contexts || [];
+        return pcs.some(c => selectedContexts.includes(c) || (selectedContexts.includes('merchant') && c === 'general'));
+      };
       let offers=[];
       for (const card of rulesV3.cards) {
-        const plans=card.plans.filter(plan=>plan.enabled!==false && ((plan.contexts||[]).includes(context) || context==='merchant' && (plan.contexts||[]).includes('general')));
+        const plans=card.plans.filter(plan=>plan.enabled!==false && planMatchesSelection(plan));
         for (const plan of plans) {
-          if (context==='merchant' && plan.merchants?.length && merchant && !plan.merchants.includes(merchant)) continue;
-          const offer=evaluateV3Plan(card,plan,totalTwd,merchant,context);
+          const hasNonMerchantQual = (plan.contexts || []).some(c => c !== 'merchant' && selectedContexts.includes(c));
+          const enforceMerchantPre = selectedContexts.includes('merchant') && (plan.contexts || []).includes('merchant') && !hasNonMerchantQual;
+          if (enforceMerchantPre && merchant && !planMerchantTextMatches(plan, merchant)) continue;
+          const offer=evaluateV3Plan(card,plan,totalTwd,merchant,selectedContexts);
           if (offer.net > 0 || offer.base > 0 || offer.matchedParts.length) offers.push(offer);
         }
-        if (!plans.length && card.baseRate>0 && context!=='paypay') {
-          const basePlan={id:`base-${card.id}`,legacyKey:null,name:'基本回饋',contexts:[context],includeBaseReward:true,foreignFeeApplies:card.baseFeeApplies,rewardParts:[],enabled:true};
-          offers.push(evaluateV3Plan(card,basePlan,totalTwd,merchant,context));
+        if (!plans.length && card.baseRate>0 && !(selectedContexts.length === 1 && selectedContexts.includes('paypay'))) {
+          const fallbackCtx = selectedContexts.includes('general') ? 'general' : (selectedContexts.find(c=>c!=='paypay') || 'general');
+          const basePlan={id:`base-${card.id}`,legacyKey:null,name:'基本回饋',contexts:[fallbackCtx],includeBaseReward:true,foreignFeeApplies:card.baseFeeApplies,rewardParts:[],enabled:true};
+          offers.push(evaluateV3Plan(card,basePlan,totalTwd,merchant,selectedContexts));
         }
       }
       // 同一張實體卡的不同方案（例如 J 卡「交通卡 AP 儲值」與「日韓實體一般消費」）
       // 是各自獨立的加碼權益，拆刷時都要保留，不做實體卡去重。
       offers.sort((a,b)=>b.net-a.net);
+      // 先保留「依目前店家條件的所有候選」，再套用使用者指定的卡片。
+      lastStoreOffers=offers.slice();
+      // 先記住「依目前店家條件的最高回饋」，再套用使用者指定的卡片。
+      const storeBest=offers[0];
+      let preferredApplied=false;
+      if (decisionPreferredCardId) {
+        const preferredOffer=offers.find(offer=>offer.card.id===decisionPreferredCardId);
+        if (preferredOffer) {
+          offers=[preferredOffer,...offers.filter(offer=>offer!==preferredOffer)];
+          preferredApplied=true;
+        } else {
+          decisionPreferredCardId='';
+        }
+      }
       if (!offers.length) {
+        lastStoreOffers=[];
         if(v3PeriodResetOccurred){rulesV3.updatedAt=Date.now();localStorage.setItem(STORAGE_KEY.rulesV3,JSON.stringify(rulesV3));pushToCloud();renderGuideViews();renderQuotaCards();}
         currentDecision={cardKey:'',cardName:'',ratePercent:0,jpy,twd:totalTwd,rewardTwd:0,v3Allocations:[]};
         document.getElementById('bestCard').innerText='沒有符合的持卡方案'; document.getElementById('bestReward').innerText='';
         document.getElementById('cardDesc').innerText='請在「攻略守則」加入持有卡片及相應情境的回饋方案。'; document.getElementById('subAdvice').innerText='';
-        document.getElementById('singleRecordAction').style.display='none'; return;
+        resultPlanLabel.hidden=true; resultPlanLabel.textContent='';
+        document.getElementById('singleRecordAction').style.display='none';
+        hideDecisionMerchantAccess();
+        return;
       }
       const best=offers[0];
       // 拆刷排序依「淨回饋率」＝ 基本回饋% + 加碼回饋% - 手續費%
@@ -4035,7 +5148,7 @@
       const offerKey=(offer)=>`${offer.card.id}::${offer.plan.id}`;
       const splitCandidates=[...offers].sort((a,b)=>offerNetRate(b)-offerNetRate(a)||b.net-a.net);
       let allocations=[{offer:best,amount:totalTwd}];
-      if (document.getElementById('splitMode').value==='auto' && splitCandidates.length>1) {
+      if (!preferredApplied && document.getElementById('splitMode').value==='auto' && splitCandidates.length>1) {
         // 每個方案拆成「加碼段」（容量＝剩餘加碼額度能支應的消費額）
         // 與「基本回饋段」（容量無限，只拿基本回饋減手續費），
         // 所有段落依淨回饋率由高到低填補：回饋率高的先刷，加碼額度用完才輪到下一張。
@@ -4083,15 +5196,15 @@
           left-=amount;
         }
         for (const entry of bucket.values()) {
-          const recalculated=evaluateV3Plan(entry.offer.card,entry.offer.plan,entry.amount,merchant,context);
+          const recalculated=evaluateV3Plan(entry.offer.card,entry.offer.plan,entry.amount,merchant,selectedContexts);
           if(recalculated.net<=0) continue;
           split.push({offer:recalculated,amount:entry.amount});
         }
         if (left>0) {
           const fallback=splitCandidates.find(offer=>offer.includeBase) || splitCandidates[0];
           const existing=split.find(item=>offerKey(item.offer)===offerKey(fallback));
-          if (existing) { existing.amount+=left; existing.offer=evaluateV3Plan(existing.offer.card,existing.offer.plan,existing.amount,merchant,context); }
-          else split.push({offer:evaluateV3Plan(fallback.card,fallback.plan,left,merchant,context),amount:left});
+          if (existing) { existing.amount+=left; existing.offer=evaluateV3Plan(existing.offer.card,existing.offer.plan,existing.amount,merchant,selectedContexts); }
+          else split.push({offer:evaluateV3Plan(fallback.card,fallback.plan,left,merchant,selectedContexts),amount:left});
           left=0;
         }
         const splitReward=split.reduce((sum,item)=>sum+item.offer.net,0);
@@ -4099,17 +5212,91 @@
       }
       const totalReward=allocations.reduce((sum,item)=>sum+item.offer.net,0);
       const isSplit=allocations.length>1;
+      const splitHint=document.getElementById('splitModeHint');
+      if(splitHint){
+        if(document.getElementById('splitMode').value==='single'){
+          splitHint.innerHTML='<b>整筆刷</b>：目前以單卡計算；切到拆分最佳化可比較多卡拆刷的回饋差異。';
+        }else if(isSplit){
+          const saved=Math.max(0,Math.round(totalReward-best.net));
+          splitHint.innerHTML=`<b>拆分最佳化</b>：依淨回饋率與可用額度自動分配（不是固定卡片順序），本次拆成 ${allocations.length} 段，比整筆刷多省 NT$${saved.toLocaleString()}。`;
+        }else{
+          splitHint.innerHTML='<b>拆分最佳化</b>：依淨回饋率比較後，本筆拆刷未優於整筆刷，維持單卡計算。';
+        }
+      }
       currentDecision={cardKey:best.plan.legacyKey||`v3-${best.plan.id}`,cardName:best.card.name,ratePercent:totalTwd?totalReward/totalTwd*100:0,jpy,twd:totalTwd,rewardTwd:Math.round(totalReward),v3Allocations:allocations.map(({offer,amount})=>({card:offer.card,plan:offer.plan,amount,reward:offer.net,parts:offer.matchedParts,cumulativePartIds:offer.cumulativePartIds||[],notes:offer.notes,base:offer.base,fee:offer.fee}))};
-      document.getElementById('bestCard').innerText=isSplit?'最佳拆刷順序':best.card.name;
+      // 拆刷時標題直接列出參與的卡片；「最佳拆刷順序」不是資訊，改成卡片名稱才看得懂。
+      const splitCardNames=[...new Set(currentDecision.v3Allocations.map(item=>item.card.name))];
+      document.getElementById('bestCard').innerText=isSplit?splitCardNames.join(' ＋ '):best.card.name;
       document.getElementById('bestCardIcon').innerHTML=getCardIcon(best.plan.legacyKey||'');
       document.getElementById('rateBadge').innerText=`淨回饋 ${currentDecision.ratePercent.toFixed(2)}%`;
-      document.getElementById('bestReward').innerText=`預估淨回饋 NT$${Math.round(totalReward).toLocaleString()}`;
-      const lines=currentDecision.v3Allocations.map((item,index)=>`${index+1}. ${escapeHtml(item.card.name)}｜${escapeHtml(item.plan.name)}｜NT$${item.amount.toLocaleString()}｜約 NT$${Math.round(item.reward).toLocaleString()}`).join('<br>');
-      const ranked=splitCandidates.map((offer,index)=>`<div class="dynamic-plan">${index+1}. ${escapeHtml(offer.card.name)} · ${escapeHtml(offer.plan.name)} · 淨率 ${offerNetRate(offer).toFixed(2)}% · 淨回饋約 NT$${Math.round(offer.net).toLocaleString()}</div>`).join('');
-      document.getElementById('cardDesc').innerHTML=`${lines}<details style="margin-top:12px"><summary>查看情境加碼排序（依淨回饋率）</summary>${ranked}</details>`;
+      document.getElementById('bestReward').innerHTML=`<span>整筆預估淨回饋</span><b>NT$${Math.round(totalReward).toLocaleString()}</b>`;
+      const displayPlanName=(cardName,planName)=>{
+        const card=String(cardName||'').trim();
+        let name=String(planName||'').trim();
+        if(card && name.startsWith(card)) name=name.slice(card.length).trim();
+        name=name.replace(/^[（(]\s*([\s\S]*?)\s*[）)]\s*$/,'$1').trim();
+        return name || String(planName||'');
+      };
+      // 特約情境才把原文掛在推薦方案底下；摘要先顯示一行，預設收合。
+      const renderPlanMerchant=(item)=>{
+        if (!selectedContexts.includes('merchant')) return '';
+        const merchantText = getPlanMerchantText(item.plan).trim();
+        if (!merchantText) {
+          return `<div class="result-plan-merchant is-empty">
+            <span class="result-plan-merchant-label">特約原文</span>
+            <span class="result-plan-merchant-preview">未限制店家（實體一般消費）</span>
+          </div>`;
+        }
+        return `<details class="result-plan-merchant">
+          <summary class="result-plan-merchant-summary">
+            <span class="result-plan-merchant-label">特約原文</span>
+            <span class="result-plan-merchant-preview">${escapeHtml(merchantText)}</span>
+          </summary>
+          <div class="result-plan-merchant-text">${escapeHtml(merchantText)}</div>
+        </details>`;
+      };
+      const lines=currentDecision.v3Allocations.map((item,index)=>`<div class="result-plan-line">
+        <span>${index+1}. ${escapeHtml(item.card.name)}｜${escapeHtml(displayPlanName(item.card.name,item.plan.name))}｜消費 NT$${item.amount.toLocaleString()}｜回饋約 NT$${Math.round(item.reward).toLocaleString()}</span>
+        ${renderPlanMerchant(item)}
+      </div>`).join('');
+      let planHtml=lines;
+      if (isSplit) {
+        resultPlanLabel.hidden=false;
+        resultPlanLabel.textContent='推薦拆刷方案';
+        const cardGroups=[];
+        const cardGroupMap=new Map();
+        currentDecision.v3Allocations.forEach(item=>{
+          const key=item.card.id||item.card.name;
+          let group=cardGroupMap.get(key);
+          if(!group){
+            group={card:item.card,items:[],reward:0};
+            cardGroupMap.set(key,group);
+            cardGroups.push(group);
+          }
+          group.items.push(item);
+          group.reward+=item.reward;
+        });
+        planHtml=cardGroups.map((group,index)=>`<div class="split-card-group">
+          <div class="split-card-heading">
+            <div class="split-card-heading-main">
+              <span class="split-card-index">${index+1}</span>
+              <span class="split-card-name">${escapeHtml(group.card.name)}</span>
+            </div>
+            <span class="split-card-total">約 NT$${Math.round(group.reward).toLocaleString()}</span>
+          </div>
+          ${group.items.map(item=>`<div class="split-card-plan">
+            <span class="split-card-plan-name">${escapeHtml(displayPlanName(item.card.name,item.plan.name))}</span>
+            <span class="split-card-plan-amount">消費 NT$${item.amount.toLocaleString()}</span>
+            <span class="split-card-plan-reward">回饋約 NT$${Math.round(item.reward).toLocaleString()}</span>
+            ${renderPlanMerchant(item)}
+          </div>`).join('')}
+        </div>`).join('');
+      } else {
+        resultPlanLabel.hidden=true;
+        resultPlanLabel.textContent='';
+      }
+      document.getElementById('cardDesc').innerHTML=planHtml;
       const risk=[];
-      if (scenario==='merchant') risk.push(merchant?`已選「${merchant}」；店家是否符合活動及實際交易分類請自行確認。`:'請從特約商店清單選擇店家。');
-      if (scenario==='merchant') risk.push('若店家位於百貨、商場或美食街，收單分類可能不同，請向店家／發卡銀行確認；本工具不替你判定。');
       currentDecision.v3Allocations.forEach(item=>{
         if(item.plan.noticeFlags) risk.push(`${item.card.name}：需手動登錄活動或切換權益，請自行確認。`);
         risk.push(...(item.notes||[]).map(note=>`${item.card.name}：${note}`));
@@ -4131,10 +5318,44 @@
         const capacity=rewardRate>0&&Number.isFinite(remaining)?remaining/(rewardRate/100):Infinity;
         if((part.thresholdType||offer.plan.thresholdType)!=='cumulative'&&threshold>0&&remaining>1&&capacity<threshold){const prefix=allocation?'本次安排後的':'目前';risk.push(`${offer.card.name}：${prefix}加碼餘額約只能支應 NT$${Math.floor(capacity).toLocaleString()} 消費，低於單筆門檻 NT$${threshold.toLocaleString()}；若無法湊足門檻，餘額可能無法換成加碼回饋。`);}
       }
-      document.getElementById('subAdvice').innerHTML=`${[...new Set(risk)].map(text=>`<div class="scenario-risk-note">${escapeHtml(text)}</div>`).join('')}<div class="scenario-risk-note">此為依目前規則的回饋估算，不代表銀行確認或保證入帳。請自行確認活動資格、登錄、期間與交易條件。</div>`;
+      const uniqueRisk=[...new Set(risk)].filter(Boolean);
+      document.getElementById('subAdvice').innerHTML=uniqueRisk.length?`<div class="scenario-risk-note">${uniqueRisk.map(text=>`<div>${escapeHtml(text)}</div>`).join('')}</div>`:'';
       document.getElementById('singleRecordAction').style.display='block';
+      updateDecisionMerchantAccess(merchant, storeBest, totalTwd);
       updateThresholdOpportunity(totalTwd, jpy);
       if(v3PeriodResetOccurred){rulesV3.updatedAt=Date.now();localStorage.setItem(STORAGE_KEY.rulesV3,JSON.stringify(rulesV3));pushToCloud();renderGuideViews();renderQuotaCards();}
+    }
+
+    function setSplitMode(mode) {
+      const normalized = mode === 'single' ? 'single' : 'auto';
+      const isAuto = normalized === 'auto';
+      const hidden = document.getElementById('splitMode');
+      if (hidden) hidden.value = normalized;
+      const autoTab = document.getElementById('splitModeAuto');
+      const singleTab = document.getElementById('splitModeSingle');
+      if (autoTab) {
+        autoTab.classList.toggle('active', isAuto);
+        autoTab.setAttribute('aria-selected', String(isAuto));
+      }
+      if (singleTab) {
+        singleTab.classList.toggle('active', !isAuto);
+        singleTab.setAttribute('aria-selected', String(!isAuto));
+      }
+      const hint = document.getElementById('splitModeHint');
+      if (hint) {
+        hint.innerHTML = isAuto
+          ? '<b>拆分最佳化</b>：依所有方案當下可用的加碼額度與淨回饋率重新分配，不是固定卡片順序。'
+          : '<b>整筆刷</b>：整筆消費只選一張卡，適合不想拆刷、店家限制或想保留其他卡額度。';
+      }
+      calculate();
+    }
+
+    function handleSplitTabKey(event) {
+      if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') return;
+      event.preventDefault();
+      const next = event.currentTarget.id === 'splitModeAuto' ? 'splitModeSingle' : 'splitModeAuto';
+      setSplitMode(next === 'splitModeAuto' ? 'auto' : 'single');
+      document.getElementById(next).focus();
     }
 
     function calculate() { return calculateRulesV3(); }
@@ -4214,32 +5435,176 @@
       recordExpenseV3();
     }
 
-    async function recordExpenseV3() {
-      calculate();const decision=currentDecision; if(!decision.v3Allocations?.length||decision.twd<=0){showToast('請先完成回饋試算');return;}
-      const confirmed=await showAppDialog({title:'記錄實際刷卡',message:'記帳會依目前規則扣除本工具估算的加碼額度，不代表銀行確認回饋資格或入帳。請確認你已完成交易及必要活動條件。',confirmText:'記錄已刷'});
-      if(!confirmed)return;
-      const baseMemo=document.getElementById('memo').value.trim()||getDefaultMemo();let allocatedJpy=0;const records=[];
-      for(let i=0;i<decision.v3Allocations.length;i++){
-        const allocation=decision.v3Allocations[i];const last=i===decision.v3Allocations.length-1;
-        const amountJpy=last?decision.jpy-allocatedJpy:Math.round(decision.jpy*allocation.amount/decision.twd);allocatedJpy+=amountJpy;
-        const reward=Math.round(allocation.reward);const usage=[];
-        for(const partId of allocation.cumulativePartIds||[]){const part=allocation.plan.rewardParts.find(item=>item.id===partId);if(!part)continue;part.cumulativeSpendTwd=(Number(part.cumulativeSpendTwd)||0)+allocation.amount;part.cumulativePeriodKey=part.periodKey||getV3PeriodKey(allocation.plan,part);let usageRecord=usage.find(item=>item.partId===part.id);if(!usageRecord){usageRecord={partId:part.id,amount:0};usage.push(usageRecord);}usageRecord.cumulativeSpendTwd=(Number(usageRecord.cumulativeSpendTwd)||0)+allocation.amount;}
-        for(const earned of allocation.parts){const part=allocation.plan.rewardParts.find(item=>item.id===earned.partId);if(!part)continue;if(Number(part.capAmount)>0){const used=Math.min(Number(part.capAmount),Number(part.usedReward||0)+earned.reward);part.usedReward=used;let usageRecord=usage.find(item=>item.partId===part.id);if(!usageRecord){usageRecord={partId:part.id,amount:0};usage.push(usageRecord);}usageRecord.amount+=earned.reward;}}
-        records.push({id:Date.now()+i,date:new Date().toLocaleString('zh-TW',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'}),memo:decision.v3Allocations.length>1?`${baseMemo}（拆刷 ${i+1}/${decision.v3Allocations.length}）`:baseMemo,cardKey:`v3-${allocation.card.id}`,physicalCardId:allocation.card.id,v3PlanId:allocation.plan.id,cardName:allocation.card.name,ratePercent:allocation.amount?Math.round(reward/allocation.amount*10000)/100:0,jpy:amountJpy,twd:allocation.amount,rewardTwd:reward,ruleSnapshot:{v3:true,planName:allocation.plan.name,baseRate:allocation.card.baseRate,foreignFeeApplies:allocation.plan.foreignFeeApplies,capBasis:'bonus'},v3Usage:usage});
-      }
-      ledger.unshift(...records);ledgerRevision++;localStorage.setItem(STORAGE_KEY.ledger,JSON.stringify(ledger));saveRulesV3(false);pushToCloud();
-      document.getElementById('jpyAmount').value='';document.getElementById('memo').value='';calculate();renderLedger();
-      showToast(`已記錄 ${records.length} 筆，估算加碼額度已更新`);
+    function padLedger2(value) {
+      return String(value).padStart(2, '0');
     }
 
-    function getDefaultMemo() {
-      const payType = document.getElementById('payType').value;
-      const storeType = document.getElementById('storeType').value;
-      if (payType === 'transit') return 'Suica / 交通卡儲值';
-      if (payType === 'paypay') return 'PayPay 店家消費';
-      if (storeType === 'kuma_shop') return '熊本熊指定店消費';
-      return '一般店家消費';
+    function formatLedgerDate(date) {
+      return `${padLedger2(date.getMonth() + 1)}/${padLedger2(date.getDate())} ${padLedger2(date.getHours())}:${padLedger2(date.getMinutes())}`;
     }
+
+    function toDateTimeLocalValue(date) {
+      return `${date.getFullYear()}-${padLedger2(date.getMonth() + 1)}-${padLedger2(date.getDate())}T${padLedger2(date.getHours())}:${padLedger2(date.getMinutes())}`;
+    }
+
+    function ledgerDateInputValue(item) {
+      if (item.dateISO) return item.dateISO;
+      const raw = String(item.date || '');
+      const match = raw.match(/(\d{1,2})\/(\d{1,2})(?:\s*(上午|下午|AM|PM))?\s*(\d{1,2}):(\d{2})(?:\s*(AM|PM))?/i);
+      if (!match) return toDateTimeLocalValue(new Date());
+      const now = new Date();
+      const period = match[3] || match[6] || '';
+      let hour = Number(match[4]);
+      if ((period === '下午' || period.toUpperCase() === 'PM') && hour < 12) hour += 12;
+      if ((period === '上午' || period.toUpperCase() === 'AM') && hour === 12) hour = 0;
+      const date = new Date(now.getFullYear(), Number(match[1]) - 1, Number(match[2]), hour, Number(match[5]));
+      // 舊資料只有「月/日 時:分」；若解析出來比現在晚一天以上，視為去年的紀錄。
+      if (date.getTime() > now.getTime() + 86400000) date.setFullYear(now.getFullYear() - 1);
+      return toDateTimeLocalValue(date);
+    }
+
+    function recordExpenseV3() {
+      calculate();
+      const decision = currentDecision;
+      if (!decision.v3Allocations?.length || decision.twd <= 0) {
+        showToast('請先完成回饋試算');
+        return;
+      }
+      // 明細名稱只採用使用者自己填的文字；沒填就標示未填，不自動替使用者取名字。
+      const baseMemo = document.getElementById('memo').value.trim() || '未填寫明細';
+      const recordedAt = new Date();
+      let allocatedJpy = 0;
+      const records = [];
+      for (let i = 0; i < decision.v3Allocations.length; i++) {
+        const allocation = decision.v3Allocations[i];
+        const last = i === decision.v3Allocations.length - 1;
+        const amountJpy = last ? decision.jpy - allocatedJpy : Math.round(decision.jpy * allocation.amount / decision.twd);
+        allocatedJpy += amountJpy;
+        const reward = Math.round(allocation.reward);
+        const usage = [];
+
+        // 累積門檻需要一起記住本期的累積消費。
+        for (const partId of allocation.cumulativePartIds || []) {
+          const part = allocation.plan.rewardParts.find(item => item.id === partId);
+          if (!part) continue;
+          part.cumulativeSpendTwd = (Number(part.cumulativeSpendTwd) || 0) + allocation.amount;
+          part.cumulativePeriodKey = part.periodKey || getV3PeriodKey(allocation.plan, part);
+          let usageRecord = usage.find(item => item.partId === part.id);
+          if (!usageRecord) { usageRecord = { partId: part.id, amount: 0 }; usage.push(usageRecord); }
+          usageRecord.cumulativeSpendTwd = (Number(usageRecord.cumulativeSpendTwd) || 0) + allocation.amount;
+        }
+
+        // 有效上限可能寫在 part，也可能只寫在 plan；以試算當下的 earned.cap 為準。
+        for (const earned of allocation.parts || []) {
+          const part = allocation.plan.rewardParts.find(item => item.id === earned.partId);
+          if (!part) continue;
+          const cap = Number(earned.cap ?? part.capAmount ?? allocation.plan.capAmount) || 0;
+          if (cap <= 0) continue;
+          const used = Math.min(cap, Number(part.usedReward || 0) + Number(earned.reward || 0));
+          part.usedReward = used;
+          let usageRecord = usage.find(item => item.partId === part.id);
+          if (!usageRecord) { usageRecord = { partId: part.id, amount: 0 }; usage.push(usageRecord); }
+          usageRecord.amount += Number(earned.reward) || 0;
+        }
+
+        records.push({
+          id: Date.now() + i,
+          date: formatLedgerDate(recordedAt),
+          dateISO: toDateTimeLocalValue(recordedAt),
+          memo: decision.v3Allocations.length > 1 ? `${baseMemo}（拆刷 ${i + 1}/${decision.v3Allocations.length}）` : baseMemo,
+          cardKey: `v3-${allocation.card.id}`,
+          physicalCardId: allocation.card.id,
+          v3PlanId: allocation.plan.id,
+          cardName: allocation.card.name,
+          ratePercent: allocation.amount ? Math.round(reward / allocation.amount * 10000) / 100 : 0,
+          jpy: amountJpy,
+          twd: allocation.amount,
+          rewardTwd: reward,
+          ruleSnapshot: { v3: true, planName: allocation.plan.name, baseRate: allocation.card.baseRate, foreignFeeApplies: allocation.plan.foreignFeeApplies, capBasis: 'bonus' },
+          v3Usage: usage
+        });
+      }
+      ledger.unshift(...records);
+      markLedgerChanged();
+      saveRulesV3(false);
+      pushToCloud();
+      document.getElementById('jpyAmount').value = '';
+      document.getElementById('memo').value = '';
+      calculate();
+      switchTab('ledger');
+      showToast(`已記錄 ${records.length} 筆，估算加碼額度已更新`);
+      // 最新一筆在 ledger 最前面；切到明細後直接帶到該筆，避免使用者還要自己找。
+      requestAnimationFrame(() => {
+        const newest = document.querySelector('#ledgerList .ledger-item');
+        if (!newest) return;
+        newest.classList.add('ledger-item-new');
+        newest.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        setTimeout(() => newest.classList.remove('ledger-item-new'), 2400);
+      });
+    }
+
+    // 編輯明細：只改顯示用的名稱與日期，不動已扣除的額度。
+    let editingLedgerId = null;
+    function openLedgerEdit(id) {
+      const item = ledger.find(entry => entry.id === id);
+      if (!item) return;
+      editingLedgerId = id;
+      document.getElementById('ledgerEditMemo').value = item.memo || '';
+      document.getElementById('ledgerEditDate').value = ledgerDateInputValue(item);
+      const modal = document.getElementById('ledgerEditModal');
+      modal.style.display = 'flex';
+      modal.onclick = event => { if (event.target === modal) closeLedgerEdit(); };
+      const memoInput = document.getElementById('ledgerEditMemo');
+      setTimeout(() => { memoInput.focus(); memoInput.select(); }, 0);
+    }
+
+    function closeLedgerEdit() {
+      const modal = document.getElementById('ledgerEditModal');
+      if (!modal) return;
+      modal.style.display = 'none';
+      modal.onclick = null;
+      editingLedgerId = null;
+    }
+
+    function saveLedgerEdit() {
+      const id = editingLedgerId;
+      if (id === null) return;
+      const item = ledger.find(entry => entry.id === id);
+      if (!item) { closeLedgerEdit(); return; }
+      const memoInput = document.getElementById('ledgerEditMemo');
+      const dateInput = document.getElementById('ledgerEditDate');
+      const memo = memoInput.value.trim() || '未填寫明細';
+      const dateValue = dateInput.value;
+      if (!dateValue) {
+        showToast('請選擇日期與時間');
+        dateInput.focus();
+        return;
+      }
+      const date = new Date(dateValue);
+      if (Number.isNaN(date.getTime())) {
+        showToast('日期格式不正確');
+        dateInput.focus();
+        return;
+      }
+      item.memo = memo;
+      item.dateISO = dateValue;
+      item.date = formatLedgerDate(date);
+      markLedgerChanged();
+      pushToCloud();
+      renderLedger();
+      closeLedgerEdit();
+      showToast('已更新明細');
+    }
+
+    ['ledgerEditMemo', 'ledgerEditDate'].forEach(id => {
+      const input = document.getElementById(id);
+      if (input) input.addEventListener('keydown', event => {
+        if (event.key === 'Enter') {
+          event.preventDefault();
+          saveLedgerEdit();
+        }
+      });
+    });
 
     // 渲染記帳歷史清單
     function renderLedger() {
@@ -4270,7 +5635,11 @@
                              item.cardKey === 'costco' ? 'costco' :
                              item.cardKey === 'paypay' ? 'paypay' : 'backup';
 
-          const cardShortName = stripCardNameIcon(item.cardName).split('(')[0].trim();
+          // 卡片改名時，舊明細跟著顯示目前卡名；找不到才退回記帳當下的快照。
+          const currentCard = item.physicalCardId ? (rulesV3.cards || []).find(card => card.id === item.physicalCardId) : null;
+          const displayCardName = currentCard ? currentCard.name : item.cardName;
+          const cardShortName = stripCardNameIcon(displayCardName || '').split('(')[0].trim();
+          const memoText = item.memo || '未填寫明細';
 
           const itemEl = document.createElement('div');
           itemEl.className = 'ledger-item';
@@ -4283,8 +5652,8 @@
           itemEl.innerHTML = `
             <div class="ledger-info">
               <h4>
-                <span>${escapeHtml(item.memo)}</span>
-                <span class="badge-soft ${badgeClass}">${cardShortName}</span>
+                <span>${escapeHtml(memoText)}</span>
+                <span class="badge-soft ${badgeClass}">${escapeHtml(cardShortName)}</span>
               </h4>
               <span>${item.date} · 預估淨省 NT$${(item.rewardTwd || 0).toLocaleString()}${breakdownText}</span>
             </div>
@@ -4292,7 +5661,10 @@
               <span class="ledger-jpy">¥${item.jpy.toLocaleString()}</span>
               <span class="ledger-twd">≈ NT$${item.twd.toLocaleString()}</span>
             </div>
-            <div class="ledger-actions"><button class="ledger-del" title="刪除並返還額度" onclick="deleteLedgerItem(${item.id})">刪除</button></div>
+            <div class="ledger-actions">
+              <button class="ledger-action" title="修改名稱與日期" onclick="openLedgerEdit(${item.id})">編輯</button>
+              <button class="ledger-action ledger-del" title="刪除並返還額度" onclick="deleteLedgerItem(${item.id})">刪除</button>
+            </div>
           `;
           listEl.appendChild(itemEl);
         });
@@ -4311,61 +5683,43 @@
       const item = ledger[idx];
       showAppDialog({
         title: '刪除消費紀錄',
-        message: `確定要刪除「${item.memo}」這筆紀錄嗎？\n原扣除的 NT$${item.twd} 額度會自動歸還至該卡片。`,
+        message: `確定要刪除「${item.memo || '未填寫明細'}」這筆紀錄嗎？\n原扣除的 NT$${item.twd} 額度會自動歸還至該卡片。`,
         confirmText: '刪除並返還額度'
       }).then(confirmed => {
         if (!confirmed) return;
         const currentIdx = ledger.findIndex(entry => entry.id === id);
         if (currentIdx === -1) return;
         const currentItem = ledger[currentIdx];
-        if (currentItem.v3Usage?.length) {
+        const quotaChanged = !!(currentItem.v3Usage && currentItem.v3Usage.length);
+        if (quotaChanged) {
           const card=rulesV3.cards.find(entry=>entry.id===currentItem.physicalCardId);
           const plan=card?.plans.find(entry=>entry.id===currentItem.v3PlanId);
           for(const usage of currentItem.v3Usage){const part=plan?.rewardParts.find(entry=>entry.id===usage.partId);if(part){part.usedReward=Math.max(0,Number(part.usedReward||0)-Number(usage.amount||0));if(usage.cumulativeSpendTwd)part.cumulativeSpendTwd=Math.max(0,Number(part.cumulativeSpendTwd||0)-Number(usage.cumulativeSpendTwd));}}
-          saveRulesV3(false);pushToCloud();
         }
         ledger.splice(currentIdx, 1);
-        ledgerRevision++;
-        localStorage.setItem(STORAGE_KEY.ledger, JSON.stringify(ledger));
+        markLedgerChanged();
+        if (quotaChanged) saveRulesV3(false);
+        // 必須在 ledger / 額度都改完後才送出，否則雲端會保留刪除前的舊明細，
+        // 下一次同步又把它拉回來。
+        pushToCloud();
         renderLedger();
         calculate();
         showToast("已刪除並返還額度！");
       });
     }
 
-    // 清空記帳歷史
+    // 清空記帳歷史：明細與額度是連動的，清空時直接一併重置。
     function clearLedger() {
-      if (ledger.length === 0) return;
-      const totalSpend = ledger.reduce((sum, item) => sum + (Number(item.twd) || 0), 0);
-      document.getElementById('clearLedgerSummary').innerText = `即將清除 ${ledger.length} 筆消費明細，共 NT$${totalSpend.toLocaleString()}。請選擇額度要保留或重置。`;
-      document.getElementById('clearLedgerModal').style.display = 'flex';
-    }
-
-    function closeClearLedgerModal() {
-      document.getElementById('clearLedgerModal').style.display = 'none';
-    }
-
-    function confirmClearLedger(mode) {
-      if (ledger.length === 0) {
-        closeClearLedgerModal();
-        return;
-      }
-
+      const count = ledger.length;
       ledger = [];
-      ledgerRevision++;
-      localStorage.setItem(STORAGE_KEY.ledger, JSON.stringify(ledger));
-
-      if (mode === 'reset') {
-        resetAllV3Quotas();
-        saveRulesV3(false);
-      } else {
-        pushToCloud();
-      }
-
-      closeClearLedgerModal();
+      markLedgerChanged();
+      resetAllV3Quotas();
+      saveRulesV3(false);
+      // 必須在 ledger / 額度都改完後才送出，否則雲端會保留清空前的舊資料。
+      pushToCloud();
       renderLedger();
       calculate();
-      showToast(mode === 'reset' ? '明細已清空，所有額度已重置' : '明細已清空，剩餘額度保留');
+      showToast(count ? `已清空 ${count} 筆明細，所有額度已重置` : '明細已清空，所有額度已重置');
     }
 
     // 單項重置（v3：以 cardId|planId|partId 定位）
@@ -4530,14 +5884,28 @@
     let suppressTimer = null;
     let closingForHistory = false;   // 正在處理「上一頁」時，分頁切換用取代而不是新增
 
-    const LAYER_IDS = [];
+    const LAYER_IDS = [
+      'appDialogModal','ledgerEditModal','planEditorOverlay','cardSettingsOverlay','rateModal','syncModal',
+      'quotaResetModal','cardEditorOverlay','addCardOverlay',
+      'duplicateModal','resetModal','splitWarningModal','billingSetupModal'
+    ];
 
     function isLayerOpen(id) {
-      return false;
+      try {
+        if (id === 'appDialogModal') return !!appDialogResolver;
+        const el = document.getElementById(id);
+        if (!el) return false;
+        if (el.hasAttribute('hidden')) return !el.hidden;
+        if (el.classList && el.classList.contains('modal-backdrop')) {
+          return el.style.display === 'flex' || el.classList.contains('show');
+        }
+        const style = window.getComputedStyle ? getComputedStyle(el) : el.style;
+        return style && style.display !== 'none' && style.visibility !== 'hidden';
+      } catch (_) { return false; }
     }
 
     function anyLayerOpen() {
-      return false;
+      return LAYER_IDS.some(isLayerOpen);
     }
 
     // file:// 或沙箱環境可能不允許 pushState，失敗就退回「沒有歷史」的模式
@@ -4558,13 +5926,13 @@
       try {
         if (appDialogResolver) { closeAppDialog(false); return true; }
 
+        if (isLayerOpen('planEditorOverlay')) { try { requestClosePlanEditor(); } catch (e) {} return true; }
         const upperLayers = [
-          ['planEditorOverlay', closePlanEditor],
+          ['ledgerEditModal', closeLedgerEdit],
           ['cardSettingsOverlay', closeCardSettings],
           ['rateModal', closeRateModal],
           ['syncModal', closeSyncModal],
-          ['quotaResetModal', closeQuotaResetModal],
-          ['clearLedgerModal', closeClearLedgerModal]
+          ['quotaResetModal', closeQuotaResetModal]
         ];
         for (const [id, close] of upperLayers) {
           if (isLayerOpen(id)) { try { close(); } catch (e) {} return true; }
@@ -4675,37 +6043,33 @@
       if (overlay) overlay.hidden = true;
       if (cardEditorCardId) renderCardEditor();
     }
-    function syncPlanEditorMerchants(selectedList = []) {
-      const choices = document.getElementById('planEditorMerchantChoices');
-      if (!choices || !rulesV3) return;
-      const names = [...new Set([...(rulesV3.merchants || FEATURED_MERCHANTS), ...rulesV3.cards.flatMap(c => (c.plans || []).flatMap(p => p.merchants || []))])];
-      const selected = new Set(selectedList);
-      choices.innerHTML = names.map(name => `<button type="button" class="merchant-choice${selected.has(name) ? ' active' : ''}" data-plan-merchant="${escapeHtml(name)}">${escapeHtml(name)}</button>`).join('');
-      choices.querySelectorAll('[data-plan-merchant]').forEach(btn => {
-        btn.onclick = () => btn.classList.toggle('active');
-      });
+    function parsePlanMerchantText(text) {
+      if (window.RuleEngine && typeof window.RuleEngine.parseMerchantText === 'function') {
+        return window.RuleEngine.parseMerchantText(text);
+      }
+      return [...new Set(String(text || '').split(/[\n,，、;；]+/).map(s => s.trim()).filter(Boolean))];
     }
 
-    document.getElementById('planEditorMerchantButton')?.addEventListener('click', () => {
-      const input = document.getElementById('planEditorMerchantInput');
-      const name = String(input?.value || '').trim();
-      if (!name) return;
-      if (!rulesV3.merchants.some(item => item.toLocaleLowerCase() === name.toLocaleLowerCase())) {
-        rulesV3.merchants.push(name);
-        saveRulesV3(); calculate();
-      }
-      input.value = '';
-      syncRuleInputs();
-      const currentSelected = [...(document.querySelectorAll('#planEditorMerchantChoices .merchant-choice.active') || [])].map(b => b.dataset.planMerchant);
-      syncPlanEditorMerchants(currentSelected.concat(name));
-    });
-    document.getElementById('planEditorMerchantInput')?.addEventListener('keydown', e => {
-      if (e.key === 'Enter') { e.preventDefault(); document.getElementById('planEditorMerchantButton')?.click(); }
-    });
+    function syncPlanEditorMerchants(text = '') {
+      const input = document.getElementById('planEditorMerchants');
+      if (!input) return;
+      input.value = String(text || '');
+    }
+
+    // 加碼活動適用店家改為純文字框（自行填寫），不使用點選/加入店家按鈕。
 
     function openPlanEditor(cardId, planId = null) {
       const card = rulesV3.cards.find(c => c.id === cardId);
       if (!card) return;
+      // 從單卡編輯頁進入加碼活動頁時，先關閉單卡編輯頁，避免雙層 overlay 互擋（符合卡片編輯測試與手機單頁操作）
+      planEditorReturnCardId = null;
+      try {
+        const cardEditor = document.getElementById('cardEditorOverlay');
+        if (cardEditor && !cardEditor.hidden) {
+          planEditorReturnCardId = cardEditorCardId || cardId;
+          closeCardEditor();
+        }
+      } catch (_) {}
       const isEditing = Boolean(planId);
       const plan = isEditing ? card.plans.find(p => p.id === planId) : null;
       const form = document.getElementById('planEditorForm');
@@ -4713,6 +6077,8 @@
 
       const titleEl = document.getElementById('planEditorTitleText');
       if (titleEl) titleEl.textContent = isEditing ? '編輯加碼活動' : '新增加碼活動';
+      const cardNameEl = document.getElementById('planEditorCardName');
+      if (cardNameEl) cardNameEl.textContent = card.name || '—';
       const submitBtn = document.getElementById('planEditorSubmitBtn');
       if (submitBtn) submitBtn.textContent = isEditing ? '儲存活動' : '新增活動';
 
@@ -4720,8 +6086,14 @@
       form.elements.namedItem('cardId').value = card.id;
       const set = (n, v) => { const el = form.elements.namedItem(n); if (el && 'value' in el) el.value = v ?? ''; };
       set('name', plan ? (plan.name || '') : '');
-      const ctx = plan?.contexts?.[0] || 'general';
-      form.querySelectorAll('input[name="context"]').forEach(r => { r.checked = (r.value === ctx); });
+      // 支援多情境共用額度（例：玉山熊本熊卡 特約商店+交通卡一起起算）
+      const selectedContexts = (plan?.contexts && plan.contexts.length)
+        ? plan.contexts.map(c => c === 'direct' ? 'general' : c)
+        : ['general'];
+      form.querySelectorAll('input[name="context"]').forEach(r => { r.checked = selectedContexts.includes(r.value); });
+      if (!form.querySelector('input[name="context"]:checked')) {
+        const g = form.querySelector('input[name="context"][value="general"]'); if (g) g.checked = true;
+      }
       set('rate', plan ? (plan.rewardParts?.[0]?.rate ?? 1) : 1);
       set('baseRate', plan?.baseRateOverride ?? '');
       set('threshold', plan ? (plan.rewardParts?.[0]?.thresholdTwd ?? plan.thresholdTwd ?? 0) : 0);
@@ -4735,18 +6107,35 @@
       if (form.elements.namedItem('fee')) form.elements.namedItem('fee').checked = plan ? (plan.foreignFeeApplies !== false) : true;
       if (form.elements.namedItem('notice')) form.elements.namedItem('notice').checked = Boolean(plan?.noticeFlags);
 
+      const hasMerchant = () => !!form.querySelector('input[name="context"][value="merchant"]:checked');
       const merchantLabel = document.getElementById('planEditorMerchantLabel');
-      if (merchantLabel) merchantLabel.hidden = (ctx !== 'merchant');
-      syncPlanEditorMerchants(plan ? (plan.merchants || []) : []);
+      if (merchantLabel) merchantLabel.hidden = !hasMerchant();
+      syncPlanEditorMerchants(plan ? getPlanMerchantText(plan) : '');
 
+      const cycleField = document.getElementById('planEditorCycleField');
       const sdf = document.getElementById('planEditorStatementDayField');
-      if (sdf) sdf.hidden = ((form.elements.namedItem('cycle')?.value || 'month') !== 'billing');
+      const updateConditionalFields = () => {
+        const hasCap = (Number(form.elements.namedItem('cap')?.value) || 0) > 0;
+        const isCumulative = (form.elements.namedItem('thresholdType')?.value || 'single') === 'cumulative';
+        const needsCycle = hasCap || isCumulative;
+        const isBilling = (form.elements.namedItem('cycle')?.value || 'month') === 'billing';
+        if (cycleField) cycleField.hidden = !needsCycle;
+        if (sdf) sdf.hidden = !needsCycle || !isBilling;
+      };
+      updateConditionalFields();
+      const capInput = form.elements.namedItem('cap');
+      if (capInput) capInput.oninput = updateConditionalFields;
+      const cycleInput = form.elements.namedItem('cycle');
+      if (cycleInput) cycleInput.onchange = updateConditionalFields;
+      const thresholdTypeInput = form.elements.namedItem('thresholdType');
+      if (thresholdTypeInput) thresholdTypeInput.onchange = updateConditionalFields;
 
       form.querySelectorAll('input[name="context"]').forEach(r => {
-        r.onchange = () => { if (merchantLabel) merchantLabel.hidden = (r.value !== 'merchant' || !r.checked); };
-      });
-      form.elements.namedItem('cycle')?.addEventListener('change', () => {
-        if (sdf) sdf.hidden = ((form.elements.namedItem('cycle')?.value || 'month') !== 'billing');
+        r.onchange = () => {
+          // 至少保留一個情境，避免儲存出空 contexts
+          if (!form.querySelector('input[name="context"]:checked')) r.checked = true;
+          if (merchantLabel) merchantLabel.hidden = !hasMerchant();
+        };
       });
 
       const delBtn = document.getElementById('planEditorDeleteBtn');
@@ -4761,6 +6150,7 @@
       const overlay = document.getElementById('planEditorOverlay');
       if (overlay) overlay.hidden = false;
       document.body.classList.add('editor-open');
+      try { planEditorSnapshot = JSON.stringify(new FormData(form).entries ? Array.from(new FormData(form).entries()) : []); } catch(_) { planEditorSnapshot = ''; }
 
       if (isEditing) {
         beginEditDynamicPlan(cardId, planId);
@@ -4769,9 +6159,37 @@
       }
     }
 
-    function closePlanEditor() {
+    function isPlanEditorDirty() {
+      try {
+        const form = document.getElementById('planEditorForm');
+        if (!form || document.getElementById('planEditorOverlay')?.hidden) return false;
+        const now = JSON.stringify(Array.from(new FormData(form).entries()));
+        return !!planEditorSnapshot && now !== planEditorSnapshot;
+      } catch (_) { return false; }
+    }
+
+    async function requestClosePlanEditor() {
+      if (isPlanEditorDirty()) {
+        const ok = await showAppDialog({
+          title: '放棄編輯？',
+          message: '這個加碼活動還沒儲存，離開後輸入的內容會消失。',
+          confirmText: '放棄'
+        });
+        if (!ok) return;
+        showToast('已取消，未儲存的內容已丟棄');
+      }
+      closePlanEditor({ force: true });
+    }
+
+    function closePlanEditor({ reopenCard = true, force = false } = {}) {
       const overlay = document.getElementById('planEditorOverlay');
       if (overlay) overlay.hidden = true;
+      const returnCardId = reopenCard ? planEditorReturnCardId : null;
+      planEditorReturnCardId = null;
+      if (returnCardId && rulesV3.cards.some(c => c.id === returnCardId)) {
+        openCardEditor(returnCardId);
+        return;
+      }
       if (!cardEditorCardId) document.body.classList.remove('editor-open');
       if (cardEditorCardId) renderCardEditor();
     }
@@ -4786,10 +6204,17 @@
       if (!card) return;
       const editingId = String(values.get('editingPlanId') || '');
       const existingPlan = editingId ? card.plans.find(p => p.id === editingId) : null;
-      const context = String(values.get('context'));
-      const merchants = [...(document.querySelectorAll('#planEditorMerchantChoices .merchant-choice.active') || [])].map(b => b.dataset.planMerchant);
-      if (context === 'merchant' && !merchants.length) {
-        showToast('特約商店方案請至少選一間適用店');
+      const contexts = values.getAll('context').map(v => String(v)).filter(Boolean);
+      if (!contexts.length) {
+        showToast('請至少選擇一個適用情境');
+        return;
+      }
+      const hasMerchantContext = contexts.includes('merchant');
+      const merchantText = hasMerchantContext
+        ? String(values.get('merchants') || document.getElementById('planEditorMerchants')?.value || '').trim()
+        : '';
+      if (hasMerchantContext && !merchantText) {
+        showToast('特約商店方案請填寫適用店家/通路原文（自行確認）');
         return;
       }
       const cycle = String(values.get('cycle'));
@@ -4801,7 +6226,8 @@
       const baseRateOverrideRaw = values.get('baseRate');
       const baseRateOverride = (baseRateOverrideRaw === '' || baseRateOverrideRaw === null) ? undefined : Math.max(0, Number(baseRateOverrideRaw) || 0);
       const customName = String(values.get('name') || '').trim();
-      const planName = customName || `${GUIDE_CONTEXT_LABELS[context] || context}加碼`;
+      const defaultContextName = contexts.map(c => GUIDE_CONTEXT_LABELS[c] || c).join('／');
+      const planName = customName || `${defaultContextName || '活動'}加碼`;
       const id = editingId || `plan-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
       const threshold = Math.max(0, Number(values.get('threshold')) || 0);
       const thresholdType = String(values.get('thresholdType') || 'single');
@@ -4813,17 +6239,17 @@
       }
       const oldParts = existingPlan?.rewardParts || [];
       const firstOld = oldParts[0];
-      // includeBaseReward 由情境自動決定：PayPay 不含信用卡基本回饋，其他情境均併計
-      const includeBaseReward = (context !== 'paypay');
+      // includeBaseReward：若包含任何非 PayPay 情境則併計基本回饋；純 PayPay 情境不併計
+      const includeBaseReward = contexts.some(c => c !== 'paypay');
       const nextPlan = {
         id,
         name: planName,
-        contexts: [context],
+        contexts,
         includeBaseReward,
         foreignFeeApplies: values.has('fee'),
         noticeFlags: values.has('notice'),
-        merchants: context === 'merchant' ? merchants : [],
-        locationNotice: context === 'merchant',
+        merchantText,
+        locationNotice: hasMerchantContext,
         thresholdTwd: threshold,
         thresholdType,
         capAmount: cap,
@@ -4854,7 +6280,7 @@
       calculate();
       renderCardEditor();
       renderGuideViews();
-      closePlanEditor();
+      closePlanEditor({ force: true });
       showToast('已儲存加碼活動');
     });
 

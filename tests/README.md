@@ -11,14 +11,19 @@
 
 `run.sh` 會自己起一個本機靜態伺服器（預設 8899 起找空 port）、用 headless Chrome 開每個測試頁、
 把頁面裡 `<pre id="AUDIT">` 的結果抓出來彙總，有失敗會以非 0 exit code 結束。
+每個測試開始前都會清空該 origin 的 `localStorage`（只保留略過首次帳單設定的標記），避免前一個測試留下的 overlay 或編輯狀態污染結果。
 
 需求：Google Chrome（macOS 預設路徑）、python3。
+
+目前全站共 **610 passed, 0 failed**。
 
 ## 測試一覽
 
 | 檔案 | 測什麼 |
 |---|---|
-| `v3only.html` | `rulesV3` 為唯一真相，legacy 欄位不得回來 |
+| `engine.html` | `engine.js` 純函式計算核心 |
+| `v3only.html` | `rulesV3` 為唯一真相、額度分組、方案層級上限、空白明細 |
+| `ledger.html` | 記帳／雲端同步／明細刪除與日期、名稱編輯契約 |
 | `ed2.html` / `ed6.html` | 單卡編輯頁：欄位、加碼活動、刪除卡 |
 | `activityedit.html` | 加碼活動可編輯，且編輯與新增的表單**完全一致** |
 | `carded.html` | 卡片流程（新增 → 編輯 → 加碼 → 刪除） |
@@ -28,7 +33,9 @@
 | `mobile.html` | 手機優先：底部按鈕／鍵盤不擋輸入框 |
 | `migrate.html` | 舊版額度資料一次性遷移 |
 | `struct2.html` | 資料結構完整性 |
-| `final.html` | 綜合回歸 |
+| `final.html` | 綜合回歸（含推薦方案原文內嵌摘要／展開、拆刷時每卡原文、特約未命中才出現的跨卡搜尋按鈕、內嵌商店面板、自動推薦與攻略店家歸屬） |
+| `skin.html` | 視覺契約：token、霓虹、表面分層、結構未變 |
+| `ux.html` | 手感契約：分頁記住、Esc 逐層返回、未儲存確認 |
 | **`dscontract.html`** | **元件契約**：token、跨頁面樣式一致性、字級階梯、結構規則 |
 
 ## 輔助工具（輸出量測結果，不是斷言測試）
@@ -38,7 +45,7 @@
 | `audit_ds.html` | 量測各元件的 computed style，列出不一致的項目 |
 | `measure2.html` | 量測版面幾何（寬度、留白、位置） |
 | `scrollcheck.html` | 驗證加碼活動表單的捲動位置 |
-| `shot.html` | 產生各畫面的截圖（`shot.html#guide` / `#calc` / `#editor` / `#addcard`） |
+| `shot.html` | 產生各畫面的截圖（`shot.html#guide` / `#calc` / `#editor` / `#addcard` / `#merchant`） |
 
 > `shot.html` 的截圖可用 headless Chrome 產生：
 > `"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" --headless=new --hide-scrollbars --virtual-time-budget=9000 --window-size=390,844 --screenshot=out.png "http://127.0.0.1:8766/tests/shot.html#editor"`

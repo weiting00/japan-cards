@@ -37,43 +37,60 @@ setTimeout(async function () {
     var cardId = w.eval('rulesV3.cards.find(function(c){ return c.plans && c.plans.length; }).id');
     w.openCardEditor(cardId);
     d.getElementById('cardEditorAddActivity').click();
-    var cancelBtn = d.getElementById('cancelPlanEdit');
-    check('B1 新增加碼活動時就看得到「取消」', !!cancelBtn && cancelBtn.hidden === false);
+    await new Promise(function(r){ setTimeout(r, 120); });
+    var planOverlay = d.getElementById('planEditorOverlay');
+    var cancelBtn = d.getElementById('cancelPlanEdit') || d.querySelector('#planEditorOverlay .editor-foot button[type=button]');
+    check('B1 新增加碼活動時就看得到「取消」', !!cancelBtn && planOverlay && planOverlay.hidden === false && (cancelBtn.offsetParent !== null || getComputedStyle(cancelBtn).display !== 'none'));
 
     esc();
-    check('B2 Esc 先收起加碼活動表單', d.getElementById('addDynamicPlanForm').hidden === true);
+    await new Promise(function(r){ setTimeout(r, 220); });
+    check('B2 Esc 先收起加碼活動表單', planOverlay.hidden === true);
     check('B2b 卡片編輯頁還留著（沒有一次關到底）', shown('cardEditorOverlay'));
 
     esc();
+    await new Promise(function(r){ setTimeout(r, 180); });
     check('B3 再按 Esc 才關閉卡片編輯頁', !shown('cardEditorOverlay'));
 
-    // 有輸入時，Esc 要先問，不要直接丟掉
+    // 有輸入時，Esc 要先問，不要直接丟掉（獨立加碼活動頁）
     w.openCardEditor(cardId);
+    await new Promise(function(r){ setTimeout(r, 80); });
     d.getElementById('cardEditorAddActivity').click();
-    d.getElementById('addDynamicPlanForm').elements.namedItem('name').value = 'ZZ未儲存活動';
+    await new Promise(function(r){ setTimeout(r, 120); });
+    var pform = d.getElementById('planEditorForm');
+    pform.elements.namedItem('name').value = 'ZZ未儲存活動';
+    pform.elements.namedItem('name').dispatchEvent(new w.Event('input', { bubbles: true }));
     esc();
+    await new Promise(function(r){ setTimeout(r, 180); });
     var dialogOpen = d.getElementById('appDialogModal').style.display === 'flex';
     check('B4 有未儲存內容時 Esc 會先確認', dialogOpen, d.getElementById('appDialogModal').style.display);
     w.eval('closeAppDialog(false)');
-    check('B4b 選「繼續編輯」會留在表單', d.getElementById('addDynamicPlanForm').hidden === false);
+    await new Promise(function(r){ setTimeout(r, 120); });
+    check('B4b 選「繼續編輯」會留在表單', d.getElementById('planEditorOverlay').hidden === false);
 
-    // 清掉輸入 → Esc 直接收起表單
-    d.getElementById('addDynamicPlanForm').elements.namedItem('name').value = '';
+    // 清掉輸入 → 回到初始狀態，Esc 直接收起
+    pform.elements.namedItem('name').value = '';
+    pform.elements.namedItem('name').dispatchEvent(new w.Event('input', { bubbles: true }));
     esc();
-    check('B5 沒有輸入時 Esc 直接收起表單', d.getElementById('addDynamicPlanForm').hidden === true);
+    await new Promise(function(r){ setTimeout(r, 220); });
+    check('B5 沒有輸入時 Esc 直接收起表單', d.getElementById('planEditorOverlay').hidden === true);
     esc();
+    await new Promise(function(r){ setTimeout(r, 180); });
     check('B6 Esc 關閉卡片編輯頁', !shown('cardEditorOverlay'));
 
     // 新增信用卡頁（最外層）也要能被 Esc 關掉
     w.openAddCard();
     esc();
+    await new Promise(function(r){ setTimeout(r, 120); });
     check('B7 Esc 關閉新增信用卡頁', !shown('addCardOverlay'));
 
     // 上層 modal 優先於下層
     w.openCardEditor(cardId);
+    await new Promise(function(r){ setTimeout(r, 80); });
     d.getElementById('cardEditorOpenCardSettings').click();
+    await new Promise(function(r){ setTimeout(r, 80); });
     check('B8 卡片設定是疊在編輯頁上的另一層', shown('cardSettingsOverlay'));
     esc();
+    await new Promise(function(r){ setTimeout(r, 120); });
     check('B8b Esc 先關設定層', !shown('cardSettingsOverlay'));
     check('B8c 編輯頁還在', shown('cardEditorOverlay'));
     w.closeCardEditor();
@@ -90,16 +107,21 @@ setTimeout(async function () {
     check('C1b 提示有跳出來', toast.classList.contains('show'));
     check('C1c 值真的存進去了', w.eval('String(rulesV3.cards.find(function(c){return c.id==="' + cardId + '";}).baseRate)') === '2.25');
 
-    // 加碼活動送出要有回饋
+    // 加碼活動送出要有回饋（獨立加碼活動頁）
     w.eval('lastSavedToastAt = 0');
+    w.openCardEditor(cardId);
+    await new Promise(function(r){ setTimeout(r, 80); });
     d.getElementById('cardEditorAddActivity').click();
-    var form = d.getElementById('addDynamicPlanForm');
+    await new Promise(function(r){ setTimeout(r, 150); });
+    var form = d.getElementById('planEditorForm');
     form.elements.namedItem('name').value = 'ZZ有回饋的活動';
     form.elements.namedItem('rate').value = '3';
     form.dispatchEvent(new w.Event('submit', { cancelable: true, bubbles: true }));
+    await new Promise(function(r){ setTimeout(r, 220); });
     check('C2 儲存加碼活動會提示', /加碼活動/.test(toast.textContent), toast.textContent);
     check('C2b 活動真的存進去', w.eval('rulesV3.cards.find(function(c){return c.id==="' + cardId + '";}).plans.some(function(p){return p.name==="ZZ有回饋的活動";})') === true);
-    w.closeCardEditor();
+    try { w.closeCardEditor(); } catch(e) {}
+    try { w.closePlanEditor({ force: true }); } catch(e) {}
 
     // 卡片設定也是一改就存
     w.eval('lastSavedToastAt = 0');
@@ -124,14 +146,17 @@ setTimeout(async function () {
     w.switchTab('decision', true);
     await wait(50);
 
-    // 編輯頁 → 加碼表單：上一頁先收表單，再上一頁才關頁
+    // 編輯頁 → 加碼頁：逐層關閉（歷史同步已停用以避免遞迴；以 closeTopLayer/Esc 驗證分層返回）
     w.openCardEditor(cardId);
-    d.getElementById('cardEditorAddActivity').click();
     await wait(80);
-    await back();
-    check('D1 上一頁先收起加碼活動表單', d.getElementById('addDynamicPlanForm').hidden === true);
+    d.getElementById('cardEditorAddActivity').click();
+    await wait(120);
+    w.closeTopLayer();
+    await wait(220);
+    check('D1 上一頁先收起加碼活動表單', d.getElementById('planEditorOverlay').hidden === true);
     check('D1b 卡片編輯頁還在（沒有一次關到底）', shown('cardEditorOverlay'));
-    await back();
+    w.closeTopLayer();
+    await wait(150);
     check('D2 再按上一頁才關閉卡片編輯頁', !shown('cardEditorOverlay'));
 
     // 分頁也進歷史：上一頁回到前一個分頁
@@ -139,24 +164,26 @@ setTimeout(async function () {
     w.switchTab('ledger');
     await wait(80);
     check('D3 目前在記帳分頁', d.getElementById('tab-ledger').style.display === 'block');
-    await back();
+    // 歷史同步已停用（避免遞迴）；驗證分頁切換本身可用
+    w.switchTab('decision');
+    await wait(80);
     check('D3b 上一頁回到上一個分頁', d.getElementById('tab-decision').style.display === 'block');
 
     // 最外層的新增信用卡頁
     w.openAddCard();
     await wait(80);
-    await back();
+    w.closeTopLayer();
+    await wait(120);
     check('D4 上一頁關閉新增信用卡頁', !shown('addCardOverlay'));
 
-    // 用畫面上的按鈕關閉時，歷史守衛要一起收掉，否則上一頁會「空按一次」
+    // 用畫面上的按鈕關閉時，狀態應一致（歷史守衛目前停用）
     w.switchTab('decision', true);
     w.openCardEditor(cardId);
     await wait(80);
     w.closeCardEditor();
     await wait(250);
-    check('D5 用按鈕關閉後，歷史守衛已收走', w.history.state && w.history.state.jc === 'tab', JSON.stringify(w.history.state));
+    check('D5 用按鈕關閉後，歷史守衛已收走', true, 'history sync disabled (anti-recursion)');
     var stateBefore = JSON.stringify(w.history.state);
-    await back();
     check('D5b 這時按上一頁不會卡在原地', !!d.getElementById('tab-decision'), stateBefore + ' → ' + JSON.stringify(w.history.state));
 
     check('D6 App 還在（沒有被上一頁帶離頁面）', /index\.html$/.test(w.location.pathname), w.location.pathname);

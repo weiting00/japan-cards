@@ -357,28 +357,6 @@
       line-height: 1.55;
     }
 
-    /* 推薦卡片底下的特約商店查詢入口 */
-    .result-merchant-trigger {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 10px;
-      width: 100%;
-      min-height: 44px;
-      margin-top: 12px;
-      padding: 11px 12px;
-      border: 1px solid var(--a35) !important;
-      border-radius: 12px;
-      background: var(--a07);
-      color: var(--text);
-      text-align: left;
-      cursor: pointer;
-      transition: transform 0.1s, background-color 0.15s;
-    }
-    .result-merchant-trigger:active { transform: translateY(1px); background: var(--a10); }
-    .result-merchant-trigger[hidden] { display: none !important; }
-    .result-merchant-trigger-label { display: flex; align-items: center; gap: 8px; font-size: 0.84rem; font-weight: 800; }
-    .result-merchant-trigger-meta { flex: 0 1 auto; max-width: 45%; overflow: hidden; color: var(--text-secondary); font-size: 0.7rem; text-overflow: ellipsis; white-space: nowrap; }
     .result-store-note {
       display: flex;
       align-items: flex-start;
@@ -394,10 +372,18 @@
     }
     .result-store-note[hidden] { display: none !important; }
     .result-store-note b { color: var(--text); }
+    .result-store-copy { min-width: 0; }
+    .result-store-reason {
+      margin-top: 4px;
+      color: var(--text-secondary);
+      font-size: 0.72rem;
+      line-height: 1.5;
+    }
 
-    /* 推薦方案底下的特約原文：預設收合，summary 先給一行預覽。 */
     .result-plan-line { margin-top: 8px; }
     .result-plan-line:first-child { margin-top: 0; }
+
+    /* 推薦方案底下的特約原文：預設收合，summary 先給一行預覽。 */
     .result-plan-merchant {
       margin-top: 6px;
       border: 1px solid var(--a12);
@@ -458,31 +444,33 @@
     }
     .split-card-plan > .result-plan-merchant { grid-column: 1 / -1; }
 
-    /* 特約商店查詢彈窗 */
-    .merchant-lookup-modal { max-width: 560px; }
-    .merchant-lookup-recommend {
-      margin-bottom: 12px;
-      padding: 11px 12px;
-      border-radius: 12px;
-      background: var(--surface-raised-strong, rgba(11, 14, 24, 0.62));
-      font-size: 0.8rem;
-      line-height: 1.5;
-    }
-    .merchant-lookup-recommend b { color: var(--text); }
-    .merchant-lookup-recommend small { display: block; margin-top: 3px; color: var(--text-secondary); font-size: 0.72rem; }
-    .merchant-lookup-section-label { margin: 0 0 7px; color: var(--text-secondary); font-size: 0.7rem; font-weight: 700; letter-spacing: 0.04em; }
-    .merchant-lookup-memo { margin-bottom: 12px; }
-    .merchant-lookup-memo[hidden] { display: none !important; }
-    .merchant-memo-text {
-      padding: 8px 10px;
-      border-radius: 9px;
-      background: rgba(255, 255, 255, 0.035);
-      color: var(--text);
+    /* 店家明細下方的單一查詢入口：按一下開彈窗。 */
+    .result-merchant-open {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      min-height: 44px;
+      margin-top: 10px;
+      padding: 9px 12px;
+      border: 1px solid var(--a35);
+      border-radius: 10px;
+      background: var(--a07);
+      color: var(--primary);
+      font: inherit;
       font-size: 0.76rem;
-      line-height: 1.55;
-      white-space: pre-wrap;
-      overflow-wrap: anywhere;
+      font-weight: 800;
+      cursor: pointer;
     }
+    .result-merchant-open:active {
+      transform: translateY(1px);
+      background: var(--a10);
+    }
+    .result-merchant-open[hidden] { display: none !important; }
+
+    /* 特約商店查詢：彈窗 */
+    #resultMerchantTrigger.show { display: flex; }
+    .modal-box.merchant-lookup-modal { max-width: 560px; }
     .merchant-lookup-hint { margin: 7px 0 0; color: var(--text-secondary); font-size: 0.68rem; line-height: 1.45; }
     .merchant-lookup-list { max-height: 46vh; }
     .merchant-lookup-warning {
@@ -2121,36 +2109,8 @@
       overflow-wrap: anywhere;
     }
 
-    /* 推薦卡底下的特約商店：內嵌收合面板 */
-    .result-merchant-panel { margin-top: 12px; }
-    .result-merchant-panel[hidden] { display: none !important; }
-    .result-merchant-panel > summary {
-      margin-top: 0;
-      list-style: none;
-      -webkit-appearance: none;
-    }
-    .result-merchant-panel > summary::-webkit-details-marker { display: none; }
-    .result-merchant-panel > summary::after {
-      content: '＋';
-      flex: 0 0 auto;
-      color: var(--primary);
-      font-family: "Space Mono", ui-monospace, monospace;
-      font-size: 0.9rem;
-    }
-    .result-merchant-panel[open] > summary::after { content: '－'; }
-    .result-merchant-panel[open] > summary {
-      border-bottom-left-radius: 0 !important;
-      border-bottom-right-radius: 0 !important;
-    }
-    .result-merchant-body {
-      padding: 12px;
-      border-radius: 0 0 12px 12px;
-      background: rgba(255, 255, 255, 0.022);
-    }
     #resultMerchantFeedback > .merchant-lookup-hint { margin: 8px 0 0; }
     #resultMerchantFeedback > .merchant-lookup-warning { margin-top: 9px; }
-    .result-merchant-body .merchant-lookup-list { max-height: 52vh; }
-    .result-merchant-body .merchant-lookup-footer { margin-top: 10px; }
   </style>
   <!-- Firebase App & Firestore Compat SDK -->
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
@@ -2253,7 +2213,7 @@
         <select id="storeType" onchange="calculate()" hidden aria-hidden="true" tabindex="-1"><option value="normal">一般店家</option><option value="kuma_shop">特約商店</option></select>
         <select id="locationType" onchange="calculate()" hidden aria-hidden="true" tabindex="-1">
           <option value="street">獨立路邊門市 (具獨立特店 MCC)</option>
-          <option value="department">百貨公司 / 商場美食街內 (百貨統收陷阱，熊本熊加碼失效)</option>
+          <option value="department">百貨公司 / 商場美食街內 (百貨統收，部分特店加碼可能失效)</option>
         </select>
       </div>
 
@@ -2339,30 +2299,10 @@
 
         <div class="result-plan-label" id="resultPlanLabel" hidden></div>
         <div class="result-desc" id="cardDesc">輸入日幣金額後，立即計算最佳刷卡組合</div>
+        <button type="button" id="resultMerchantOpen" class="result-merchant-open" onclick="openMerchantLookupPanel()" hidden>用店家搜尋其他卡片</button>
         <div class="result-total" id="bestReward" aria-live="polite"></div>
         <div class="result-sub-advice" id="subAdvice"></div>
         <div class="result-store-note" id="resultStoreNote" hidden></div>
-        <details class="result-merchant-panel" id="resultMerchantTrigger" hidden ontoggle="onResultMerchantPanelToggle()">
-          <summary class="result-merchant-trigger">
-            <span class="result-merchant-trigger-label"><span class="ui-icon" aria-hidden="true"><svg><use href="#icon-store"/></svg></span> <span id="resultMerchantTriggerText">這家店有符合嗎？</span></span>
-            <span class="result-merchant-trigger-meta" id="resultMerchantTriggerMeta">查看特約商店</span>
-          </summary>
-          <div class="result-merchant-body">
-            <div class="merchant-lookup-recommend" id="resultMerchantRecommend"></div>
-            <div class="merchant-lookup-memo" id="resultMerchantMemoBox" hidden>
-              <div class="merchant-lookup-section-label">你填的消費明細</div>
-              <div class="merchant-memo-text" id="resultMerchantMemo"></div>
-              <p class="merchant-lookup-hint">店家原文有打中搜尋字串，就會納入推薦；同時比較特店加碼與實體一般消費。</p>
-            </div>
-            <input type="search" id="resultMerchantSearch" class="merchant-search" placeholder="輸入店名或活動原文關鍵字" oninput="renderResultMerchantPanel()" onkeydown="if(event.key==='Enter'){event.preventDefault();applyUniqueMerchantMatch();}">
-            <div id="resultMerchantFeedback"></div>
-            <div class="merchant-list merchant-lookup-list" id="resultMerchantList"></div>
-            <div class="merchant-lookup-footer">
-              <button type="button" class="btn-small" onclick="clearMerchantLookupConditions()">清除店家條件</button>
-              <span class="merchant-lookup-hint">不符合可切換下方卡片</span>
-            </div>
-          </div>
-        </details>
         <div id="thresholdOpportunity" class="alert-box" style="display:none; flex-direction:column; align-items:stretch; gap:8px; margin-top:10px;">
           <div id="thresholdOpportunityText"></div>
           <div style="display:flex; flex-wrap:wrap; gap:8px;">
@@ -2645,13 +2585,13 @@
 
   <div class="modal-backdrop" id="billingSetupModal" role="dialog" aria-modal="true" aria-labelledby="billingSetupTitle">
     <div class="modal-box" style="max-width:420px;">
-      <div class="modal-title" id="billingSetupTitle">設定玉山信用卡帳單結帳日</div>
-      <p style="font-size:0.82rem; line-height:1.5;">此設定只用於熊本熊卡指定店與交通回饋。PayPay 回饋依每季上限計算，不共用帳單週期。</p>
+      <div class="modal-title" id="billingSetupTitle">設定帳單結帳日</div>
+      <p style="font-size:0.82rem; line-height:1.5;">此設定會套用到所有「帳單週期」方案；每月／每季等其他週期不受影響。</p>
       <div class="form-group">
         <label for="esunStatementDay">每月結帳日（1–31 日）</label>
         <input type="number" id="esunStatementDay" min="1" max="31" step="1" placeholder="未知請留白">
       </div>
-      <p style="font-size:0.76rem; color:var(--text-secondary); line-height:1.5;">例如輸入 30，代表每月 30 日結帳，不是 30 期。留白時不會猜日期，熊本熊卡維持手動重置。</p>
+      <p style="font-size:0.76rem; color:var(--text-secondary); line-height:1.5;">例如輸入 30，代表每月 30 日結帳，不是 30 期。留白時不會猜日期，帳單週期方案維持手動重置。</p>
       <div style="display:flex; flex-direction:column; gap:8px;">
         <button type="button" class="btn-main" style="margin:0;" onclick="saveEsunStatementDay()">儲存結帳日</button>
         <button type="button" class="btn-secondary" style="margin:0;" onclick="deferEsunStatementDay()">稍後設定</button>
@@ -2683,10 +2623,27 @@
         <label class="field-label" for="ledgerEditDate">日期與時間</label>
         <input id="ledgerEditDate" type="datetime-local">
       </div>
-      <p style="font-size:0.76rem; color:var(--text-secondary); line-height:1.5; margin:-4px 0 14px;">只會更新明細顯示與同步，不會重算已扣除的額度。</p>
+      <p style="font-size:0.76rem; color:var(--text-secondary); line-height:1.5; margin:-4px 0 14px;">改名稱不會動額度；日期若跨出目前回饋週期，會把這筆已佔用的加碼額度移出；跨入目前週期則加回。</p>
       <div style="display:flex; flex-direction:column; gap:8px;">
         <button type="button" class="btn-main" id="ledgerEditSave" style="margin:0;" onclick="saveLedgerEdit()">儲存</button>
         <button type="button" class="btn-secondary" id="ledgerEditCancel" style="margin:0;" onclick="closeLedgerEdit()">取消</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 用店家搜尋其他卡片 Modal -->
+  <div class="modal-backdrop" id="resultMerchantTrigger" role="dialog" aria-modal="true" aria-labelledby="resultMerchantTitle" hidden>
+    <div class="modal-box merchant-lookup-modal">
+      <div class="modal-title" id="resultMerchantTitle">
+        <span>用店家搜尋其他卡片</span>
+        <button type="button" class="icon-btn icon-btn-sm" onclick="closeMerchantLookupPanel()" aria-label="關閉特約卡片查詢"><span class="ui-icon" aria-hidden="true"><svg><use href="#icon-close"/></svg></span></button>
+      </div>
+      <input type="search" id="resultMerchantSearch" class="merchant-search" placeholder="輸入店名或活動關鍵字" oninput="renderResultMerchantPanel()" onkeydown="if(event.key==='Enter'){event.preventDefault();applyUniqueMerchantMatch();}">
+      <div id="resultMerchantFeedback"></div>
+      <div class="merchant-list merchant-lookup-list" id="resultMerchantList"></div>
+      <div class="merchant-lookup-footer">
+        <button type="button" class="btn-secondary" onclick="closeMerchantLookupPanel()">關閉</button>
+        <button type="button" class="btn-small" onclick="clearMerchantLookupConditions()">清除店家條件</button>
       </div>
     </div>
   </div>
@@ -3029,69 +2986,9 @@
       selectedDecisionScenarioKey = arr.length === 1 ? arr[0] : (arr.includes('general') ? 'general' : arr[0] || 'general');
     }
 
-    // ---- v3 額度週期標籤（單一真相：rulesV3）----
-    function getV3CycleLabel(plan, part) {
-      const cycle = (part && part.cycle) || (plan && plan.cycle) || 'none';
-      if (cycle === 'month') return '每月；自動重置';
-      if (cycle === 'quarter') return '每季日曆季；自動重置';
-      if (cycle === 'campaign') return '活動期間內計算';
-      if (cycle === 'billing') {
-        const day = Number(plan && plan.statementDay) || 0;
-        return day >= 1 && day <= 31 ? `帳單週期；每月 ${day} 日結帳，次日自動重置` : '帳單週期；結帳日待確認，手動重置';
-      }
-      return '無自動週期；手動重置';
-    }
-
-    function getV3NextResetLabel(plan, part) {
-      const cycle = (part && part.cycle) || (plan && plan.cycle) || 'none';
-      const { year, month, day } = getTaipeiDateParts();
-      if (cycle === 'month') return formatTaipeiDate(new Date(Date.UTC(year, month, 1)));
-      if (cycle === 'quarter') {
-        const nextQuarterMonth = Math.floor((month - 1) / 3) * 3 + 4;
-        return formatTaipeiDate(new Date(Date.UTC(year, nextQuarterMonth - 1, 1)));
-      }
-      if (cycle === 'campaign') return '活動結束後重置';
-      if (cycle === 'billing') {
-        const statementDay = Number(plan && plan.statementDay) || 0;
-        if (statementDay < 1 || statementDay > 31) return '待確認';
-        const daysThisMonth = new Date(Date.UTC(year, month, 0)).getUTCDate();
-        let closeYear = year;
-        let closeMonth = month;
-        if (day > Math.min(statementDay, daysThisMonth)) {
-          closeMonth += 1;
-          if (closeMonth > 12) { closeMonth = 1; closeYear += 1; }
-        }
-        const daysCloseMonth = new Date(Date.UTC(closeYear, closeMonth, 0)).getUTCDate();
-        const closeDay = Math.min(statementDay, daysCloseMonth);
-        return formatTaipeiDate(new Date(Date.UTC(closeYear, closeMonth - 1, closeDay + 1)));
-      }
-      return '手動重置';
-    }
-
-    // 列出所有需要追蹤上限的加碼項目（共用額度以群組為一筆）。
+    // ---- v3 額度狀態（單一真相：engine.js）----
     function getV3QuotaEntries() {
-      const entries = [];
-      for (const card of rulesV3.cards) {
-        for (const plan of card.plans || []) {
-          if (plan.enabled === false) continue;
-          const seen = new Set();
-          for (const part of plan.rewardParts || []) {
-            const groupId = part.quotaGroupId || null;
-            const displayKey = groupId || part.id;
-            if (seen.has(displayKey)) continue;
-            seen.add(displayKey);
-            const members = groupId ? plan.rewardParts.filter(entry => entry.quotaGroupId === groupId) : [part];
-            const rawCap = members[0] ? members[0].capAmount : undefined;
-            const cap = Number(rawCap !== undefined && rawCap !== null ? rawCap : plan.capAmount) || 0;
-            if (cap <= 0) continue;
-            const used = Math.min(cap, members.reduce((sum, entry) => sum + Math.max(0, Number(entry.usedReward) || 0), 0));
-            const threshold = Math.max(0, Number(part.thresholdTwd !== undefined ? part.thresholdTwd : plan.thresholdTwd) || 0);
-            const rate = Math.max(0, Number(part.rate) || 0);
-            entries.push({ card, plan, part, groupId, displayKey, members, cap, used, threshold, rate });
-          }
-        }
-      }
-      return entries;
+      return window.RuleEngine.getQuotaState({ cards: rulesV3.cards, dateParts: getTaipeiDateParts() });
     }
 
     function renderQuotaCards() {
@@ -3150,14 +3047,14 @@
         }
         const cycle = document.createElement('span');
         cycle.className = 'cycle-tag';
-        cycle.textContent = `${getV3CycleLabel(entry.plan, entry.part)}；下次 ${getV3NextResetLabel(entry.plan, entry.part)}`;
+        cycle.textContent = `${entry.cycleLabel}；下次 ${entry.nextResetLabel}`;
         tags.appendChild(cycle);
         return tags;
       };
 
       const makeProgress = entry => {
         const { cap, used, rate } = entry;
-        const remaining = Math.max(0, cap - used);
+        const remaining = entry.remaining !== undefined ? Math.max(0, Number(entry.remaining) || 0) : Math.max(0, cap - used);
         const progress = document.createElement('div');
         progress.className = 'progress-bar';
         const bar = document.createElement('div');
@@ -3248,17 +3145,6 @@
       }
     }
 
-    function getGuideKumaRate() {
-      const card = getEsunKumaCard();
-      if (card) {
-        const plan = (card.plans || [])
-          .filter(item => (item.contexts || []).includes('merchant'))
-          .sort((first, second) => getGuidePlanNet(card, second) - getGuidePlanNet(card, first))[0];
-        if (plan) return getGuidePlanNet(card, plan);
-      }
-      return 0;
-    }
-
     function renderRuleGuideSummary() {
       const root = document.getElementById('ruleGuideSummary');
       if (!root) return;
@@ -3288,20 +3174,35 @@
       }));
     }
 
-    // 玉山熊本熊卡（v3）
+    // 帳單週期提示（通用）：只看 plan 資料，不綁定特定卡片。
+    function getBillingPlanEntries() {
+      const entries = [];
+      for (const card of rulesV3?.cards || []) {
+        for (const plan of card.plans || []) {
+          if (plan.enabled === false) continue;
+          const cycles = new Set([plan.cycle, ...(plan.rewardParts || []).map(part => part.cycle)].filter(Boolean));
+          if (cycles.has('billing')) entries.push({ card, plan });
+        }
+      }
+      return entries;
+    }
+
+    function getBillingPlansMissingStatementDay() {
+      return getBillingPlanEntries().filter(({ plan }) => !(Number(plan.statementDay) >= 1 && Number(plan.statementDay) <= 31));
+    }
+
+    // 保留舊名稱給既有測試／外部呼叫；回傳第一筆已設定的帳單週期結帳日。
     function getEsunKumaCard() {
       return (rulesV3?.cards || []).find(item => item.id === 'esun_kuma' || /熊本熊/.test(item.name || '')) || null;
     }
 
     function getEsunStatementDay() {
-      const card = getEsunKumaCard();
-      if (!card) return 0;
-      const plan = (card.plans || []).find(item => item.cycle === 'billing');
-      return Number(plan && plan.statementDay) || 0;
+      const entry = getBillingPlanEntries().find(({ plan }) => Number(plan.statementDay) >= 1 && Number(plan.statementDay) <= 31);
+      return entry ? Number(entry.plan.statementDay) : 0;
     }
 
     function maybePromptEsunStatementDay() {
-      if (getEsunStatementDay() || localStorage.getItem(STORAGE_KEY.billingPromptDismissed)) return;
+      if (!getBillingPlansMissingStatementDay().length || localStorage.getItem(STORAGE_KEY.billingPromptDismissed)) return;
       document.getElementById('esunStatementDay').value = '';
       document.getElementById('billingSetupModal').style.display = 'flex';
     }
@@ -3315,30 +3216,28 @@
         return;
       }
 
-      const card = getEsunKumaCard();
-      if (card) {
-        for (const plan of card.plans || []) {
-          if (plan.cycle !== 'billing') continue;
-          plan.statementDay = day;
-          for (const part of plan.rewardParts || []) {
-            part.periodKey = getV3PeriodKey(plan, part) || part.periodKey;
-            part.cumulativePeriodKey = part.periodKey;
-          }
+      const missing = getBillingPlansMissingStatementDay();
+      const targets = missing.length ? missing : getBillingPlanEntries();
+      for (const { plan } of targets) {
+        plan.statementDay = day;
+        for (const part of plan.rewardParts || []) {
+          part.periodKey = getV3PeriodKey(plan, part) || part.periodKey;
+          part.cumulativePeriodKey = part.periodKey;
         }
-        saveRulesV3(false);
       }
+      if (targets.length) saveRulesV3(false);
       localStorage.setItem(STORAGE_KEY.billingPromptDismissed, '1');
       document.getElementById('billingSetupModal').style.display = 'none';
       renderRuleGuideSummary();
       calculate();
       pushToCloud();
-      showToast(`已設定熊本熊卡每月 ${day} 日結帳`);
+      showToast(`已設定帳單週期每月 ${day} 日結帳`);
     }
 
     function deferEsunStatementDay() {
       localStorage.setItem(STORAGE_KEY.billingPromptDismissed, '1');
       document.getElementById('billingSetupModal').style.display = 'none';
-      showToast('帳單日尚未確認；熊本熊卡額度維持手動重置');
+      showToast('帳單日尚未確認；帳單週期方案維持手動重置');
     }
 
     // 一次性把舊版（limits/quotas）的已用額度併入 v3 的 rewardParts[].usedReward。
@@ -4338,24 +4237,11 @@
 
     // 特約店家只保存使用者貼上的原文，不拆店名、不建立商店索引。
     function getPlanMerchantText(plan) {
-      if (window.RuleEngine && typeof window.RuleEngine.getMerchantText === 'function') {
-        return window.RuleEngine.getMerchantText(plan);
-      }
-      if (!plan) return '';
-      if (typeof plan.merchantText === 'string' && plan.merchantText.trim()) return plan.merchantText;
-      return Array.isArray(plan.merchants) ? plan.merchants.join('、') : '';
+      return window.RuleEngine.getMerchantText(plan);
     }
 
     function planMerchantTextMatches(plan, merchant) {
-      if (window.RuleEngine && typeof window.RuleEngine.merchantTextMatches === 'function') {
-        return window.RuleEngine.merchantTextMatches(plan, merchant);
-      }
-      const text = getPlanMerchantText(plan).trim().toLocaleLowerCase('zh-TW');
-      const query = String(merchant || '').trim().toLocaleLowerCase('zh-TW');
-      if (!query) return true;
-      if (!text) return true;
-      if (text.includes(query)) return true;
-      return query.length >= 2 && text.length >= 2 && query.includes(text);
+      return window.RuleEngine.merchantTextMatches(plan, merchant);
     }
 
     function planHasMerchantContext(plan) {
@@ -4369,20 +4255,23 @@
       return !!text && planMerchantTextMatches(plan, query);
     }
 
-    function currentRecommendationMatchesMerchant(query) {
-      const store = String(query || '').trim();
-      if (!store) return false;
-      return (currentDecision.v3Allocations || []).some(item => planHasActualMerchantMatch(item.plan, store));
-    }
-
-    // ---- 推薦卡底下的特約商店查詢（內嵌收合，不用彈窗） ----
-    // 使用者只需要：看自己填的明細店家 → 點一下或搜尋 → 有符合就自動換成最適合的卡。
-    // 不符合時，下方仍列出這家店的其他卡片，讓使用者自己切換。
+    // ---- 用店家搜尋其他卡片（店家明細下方的一顆按鈕 → 彈窗） ----
+    // 推薦方案底下照原本方式顯示店家原文；使用者輸入店名後，有符合就自動換成最適合的卡。
+    // 不符合時，彈窗仍列出這家店的其他卡片，讓使用者自己切換。
     let resultMerchantAutoApplying = false;
 
-    function hideDecisionMerchantAccess() {
+    function setMerchantLookupPanelOpen(open) {
       const panel = document.getElementById('resultMerchantTrigger');
-      if (panel) { panel.hidden = true; panel.open = false; }
+      if (!panel) return;
+      panel.hidden = !open;
+      panel.classList.toggle('show', !!open);
+      if (!open) panel.onclick = null;
+    }
+
+    function hideDecisionMerchantAccess() {
+      const openBtn = document.getElementById('resultMerchantOpen');
+      if (openBtn) openBtn.hidden = true;
+      setMerchantLookupPanelOpen(false);
       const search = document.getElementById('resultMerchantSearch');
       if (search) search.value = '';
       const note = document.getElementById('resultStoreNote');
@@ -4390,41 +4279,24 @@
     }
 
     function updateDecisionMerchantAccess(store, storeBest, totalTwd) {
-      const panel = document.getElementById('resultMerchantTrigger');
+      const openBtn = document.getElementById('resultMerchantOpen');
       const note = document.getElementById('resultStoreNote');
+      const storeText = String(store || '').trim();
       const baseShow = selectedDecisionContexts.has('merchant') && totalTwd > 0 && !!storeBest;
       if (!baseShow) {
-        if (panel) { panel.hidden = true; panel.open = false; }
+        if (openBtn) openBtn.hidden = true;
+        setMerchantLookupPanelOpen(false);
+        if (note) { note.hidden = true; note.innerHTML = ''; }
+        return;
+      }
+      if (openBtn) openBtn.hidden = false;
+      // 尚未輸入店家時，按鈕仍可打開彈窗；不要因為重新試算就把它關掉。
+      if (!storeText) {
         if (note) { note.hidden = true; note.innerHTML = ''; }
         return;
       }
 
-      const storeText = String(store || '').trim();
-      const currentMatches = currentRecommendationMatchesMerchant(storeText);
-      const showTrigger = !currentMatches;
-      const triggerText = document.getElementById('resultMerchantTriggerText');
-      const meta = document.getElementById('resultMerchantTriggerMeta');
-
-      if (panel) {
-        // 面板一旦被打開，就保留到使用者自己收起或清除條件為止，
-        // 避免在面板裡選卡、重新試算時整個區塊突然消失。
-        const keepOpen = !!panel.open;
-        panel.hidden = !showTrigger && !keepOpen;
-        if (panel.hidden) panel.open = false;
-      }
-      if (triggerText) {
-        triggerText.textContent = currentMatches
-          ? '這家店有符合的推薦卡'
-          : (storeText ? '這家店沒有符合的推薦卡？' : '這家店有符合嗎？');
-      }
-      if (meta) {
-        meta.textContent = currentMatches
-          ? '已符合'
-          : (storeText ? '搜尋其他特約卡' : '查看特約商店');
-      }
-
       if (!note) return;
-      if (!storeText) { note.hidden = true; note.innerHTML = ''; return; }
       const chosen = currentDecision.v3Allocations?.[0]?.card || null;
       const bestName = storeBest.card.name;
       const bestRate = totalTwd ? storeBest.net / totalTwd * 100 : 0;
@@ -4438,22 +4310,40 @@
       } else {
         text = `目前依「<b>${escapeHtml(storeText)}</b>」試算，這家店最高淨回饋是 <b>${escapeHtml(bestName)}</b>（${formatGuidePercent(bestRate)}%）。`;
       }
-      note.innerHTML = `<div>${text}</div><button type="button" class="btn-small" onclick="clearMerchantLookupConditions()">清除</button>`;
+      // 特店有命中、但一般消費／基本回饋淨值更高時，明講原因，
+      // 避免使用者以為「符合特店卻沒推特店卡」是漏算。
+      const merchantMatchedOffers = (lastStoreOffers || [])
+        .filter(offer => planHasActualMerchantMatch(offer.plan, storeText))
+        .sort((a, b) => b.net - a.net);
+      const topMerchantMatch = merchantMatchedOffers[0] || null;
+      const bestIsMerchantMatch = planHasActualMerchantMatch(storeBest.plan, storeText);
+      let reason = '';
+      if (topMerchantMatch && !bestIsMerchantMatch && topMerchantMatch.net < storeBest.net - 0.01) {
+        const merchantRate = totalTwd ? topMerchantMatch.net / totalTwd * 100 : 0;
+        reason = `雖然「${escapeHtml(storeText)}」符合 <b>${escapeHtml(topMerchantMatch.card.name)}</b> 的特店條件（淨 ${formatGuidePercent(merchantRate)}%），但 <b>${escapeHtml(bestName)}</b> 的一般消費淨 ${formatGuidePercent(bestRate)}% 更高。`;
+      }
+      note.innerHTML = `<div class="result-store-copy"><div>${text}</div>${reason ? `<div class="result-store-reason">${reason}</div>` : ''}</div><button type="button" class="btn-small" onclick="clearMerchantLookupConditions()">清除</button>`;
       note.hidden = false;
     }
 
-    function onResultMerchantPanelToggle() {
+    function openMerchantLookupPanel() {
       const panel = document.getElementById('resultMerchantTrigger');
-      if (!panel) return;
-      const currentStore = document.getElementById('merchantChoice')?.value || '';
-      if (!panel.open) {
-        // 目前推薦已命中時，收起面板就等於不需要再搜尋其他卡，直接隱藏入口。
-        if (currentRecommendationMatchesMerchant(currentStore)) panel.hidden = true;
-        return;
-      }
       const search = document.getElementById('resultMerchantSearch');
+      const currentStore = document.getElementById('merchantChoice')?.value || '';
       if (search && !search.value.trim() && currentStore) search.value = currentStore;
+      if (!panel) return;
+      setMerchantLookupPanelOpen(true);
+      panel.onclick = event => {
+        if (event.target === panel) closeMerchantLookupPanel();
+      };
+      const box = panel.querySelector('.modal-box');
+      if (box) box.scrollTop = 0;
       renderResultMerchantPanel();
+      if (search) setTimeout(() => { try { search.focus(); search.select(); } catch (e) {} }, 60);
+    }
+
+    function closeMerchantLookupPanel() {
+      setMerchantLookupPanelOpen(false);
     }
 
     function searchResultMerchantTerm(term) {
@@ -4467,8 +4357,7 @@
       const merchant = document.getElementById('merchantChoice');
       if (merchant) merchant.value = '';
       decisionPreferredCardId = '';
-      const panel = document.getElementById('resultMerchantTrigger');
-      if (panel) { panel.open = false; panel.hidden = true; }
+      setMerchantLookupPanelOpen(false);
       const search = document.getElementById('resultMerchantSearch');
       if (search) search.value = '';
       calculate();
@@ -4484,7 +4373,7 @@
       const wantedCard = cardId ? (rulesV3.cards || []).find(card => card.id === cardId) : null;
       calculate();
       const panel = document.getElementById('resultMerchantTrigger');
-      if (panel && panel.open) renderResultMerchantPanel();
+      if (panel && !panel.hidden) renderResultMerchantPanel();
       if (silent) return;
       if (cardId && decisionPreferredCardId !== cardId) {
         showToast(`${wantedCard?.name || '這張卡'} 在這家店沒有可用方案，已改用此店最高回饋`);
@@ -4520,10 +4409,7 @@
     function renderResultMerchantPanel() {
       if (!rulesV3) return;
       const list = document.getElementById('resultMerchantList');
-      const recommend = document.getElementById('resultMerchantRecommend');
       const feedback = document.getElementById('resultMerchantFeedback');
-      const memoBox = document.getElementById('resultMerchantMemoBox');
-      const memoList = document.getElementById('resultMerchantMemo');
       const search = document.getElementById('resultMerchantSearch');
       if (!list) return;
 
@@ -4545,31 +4431,16 @@
         return;
       }
 
-      if (recommend) {
-        const names = [...new Set(currentAllocations.map(item => item.card?.name).filter(Boolean))];
-        const preferred = decisionPreferredCardId ? (rulesV3.cards || []).find(card => card.id === decisionPreferredCardId) : null;
-        recommend.innerHTML = names.length
-          ? `<b>目前推薦：${names.map(escapeHtml).join(' ＋ ')}</b><small>${currentStore ? `已用「${escapeHtml(currentStore)}」試算；` : ''}特約情境會一起比較特店加碼與實體一般消費。</small>${preferred ? `<small>你指定：${escapeHtml(preferred.name)}</small>` : ''}`
-          : '<b>先在決策頁輸入金額</b><small>有推薦結果後，這裡會顯示目前推薦卡與符合的卡片。</small>';
-      }
-
-      // 明細照使用者輸入的原文顯示；不拆詞、不排序、不歸納。
-      const memoText = String(document.getElementById('memo')?.value || '').trim();
-      if (memoBox && memoList) {
-        memoBox.hidden = !memoText;
-        memoList.textContent = memoText;
-      }
-
       const matchedPlans = getMerchantMatchedPlans(condition);
       if (feedback) {
         if (!condition) {
-          feedback.innerHTML = '<p class="merchant-lookup-hint">輸入店名，或看上方你填的消費明細。只要方案原文有這段字，就會一起比較實體一般消費回饋。</p>';
+          feedback.innerHTML = '<p class="merchant-lookup-hint">輸入店名或活動關鍵字開始搜尋。</p>';
         } else if (rawQuery && !matchedPlans.length) {
-          feedback.innerHTML = `<div class="merchant-lookup-warning">沒有特約方案的文字包含「${escapeHtml(rawQuery)}」。下方仍列出實體一般消費候選卡。</div>`;
+          feedback.innerHTML = `<div class="merchant-lookup-warning">搜尋「${escapeHtml(rawQuery)}」：沒有方案原文命中。下方仍是一般消費候選卡。</div>`;
         } else if (rawQuery) {
-          feedback.innerHTML = `<div class="merchant-lookup-warning is-ok">「${escapeHtml(rawQuery)}」命中 ${matchedPlans.length} 個特約方案；已一起比較實體一般消費回饋。</div>`;
+          feedback.innerHTML = `<div class="merchant-lookup-warning is-ok">搜尋「${escapeHtml(rawQuery)}」：${matchedPlans.length} 個方案原文命中。</div>`;
         } else {
-          feedback.innerHTML = `<div class="merchant-lookup-warning is-ok">目前使用「${escapeHtml(currentStore)}」；下方同時列出特店加碼與實體一般消費候選卡。</div>`;
+          feedback.innerHTML = `<div class="merchant-lookup-warning is-ok">目前店家：「${escapeHtml(currentStore)}」。</div>`;
         }
       }
 
@@ -4605,10 +4476,10 @@
       const bestRate = totalTwd ? candidates[0].best.net / totalTwd * 100 : 0;
       list.innerHTML = `<div class="merchant-row">
         <div class="merchant-row-head">
-          <span class="merchant-name">「${escapeHtml(condition)}」候選卡片</span>
+          <span class="merchant-name">「${escapeHtml(condition)}」的卡片</span>
           <span class="merchant-count">${candidates.length} 張</span>
         </div>
-        <div class="merchant-lookup-warning is-ok">已一起比較特店加碼與實體一般消費；目前最高是 ${escapeHtml(candidates[0].card.name)}（${formatGuidePercent(bestRate)}%）。</div>
+        <div class="merchant-lookup-warning is-ok">已比較特店加碼與一般消費；目前最高：${escapeHtml(candidates[0].card.name)}（${formatGuidePercent(bestRate)}%）。</div>
         <div class="merchant-cards">
           ${candidates.map(candidate => {
             const planLabel = candidate.count > 1
@@ -4618,11 +4489,21 @@
             const isBest = candidate.card.id === bestCardId;
             const isCurrent = currentCards.has(candidate.card.id);
             const isPreferred = candidate.card.id === decisionPreferredCardId;
-            const merchantHit = planHasMerchantContext(candidate.best.plan) && planMerchantTextMatches(candidate.best.plan, condition);
+            const planText = getPlanMerchantText(candidate.best.plan).trim();
+            const conditionText = String(condition || '').trim();
+            const planLower = planText.toLocaleLowerCase('zh-TW');
+            const conditionLower = conditionText.toLocaleLowerCase('zh-TW');
+            const merchantHit = planHasActualMerchantMatch(candidate.best.plan, condition);
+            const matchedKeyword = merchantHit && planText
+              ? (planLower.includes(conditionLower) ? conditionText : planText)
+              : '';
+            const merchantLabel = merchantHit
+              ? (matchedKeyword ? `特約命中「${escapeHtml(matchedKeyword)}」` : '特約命中')
+              : '實體一般';
             const flags = [isBest ? '最高' : '', isCurrent ? '目前推薦' : '', isPreferred ? '你指定' : ''].filter(Boolean).join(' · ');
             return `<button type="button" class="merchant-card-chip merchant-card-button${isBest ? ' is-best' : ''}${isCurrent ? ' is-current' : ''}${isPreferred ? ' is-preferred' : ''}" data-result-merchant-store="${escapeHtml(condition)}" data-result-merchant-card="${escapeHtml(candidate.card.id)}">
               <b>${escapeHtml(candidate.card.name)}</b>
-              <small>${merchantHit ? '特約命中' : '實體一般'} · ${escapeHtml(planLabel)} · 淨 ${formatGuidePercent(rate)}%${flags ? ` · ${flags}` : ''}</small>
+              <small>${merchantLabel} · ${escapeHtml(planLabel)} · 淨 ${formatGuidePercent(rate)}%${flags ? ` · ${flags}` : ''}</small>
             </button>`;
           }).join('')}
         </div>
@@ -4889,6 +4770,8 @@
 
       // 快捷標籤視為新的試算起點，不讓上一間店的條件偷偷延續。
       if (merchant) merchant.value = '';
+      const merchantSearch = document.getElementById('resultMerchantSearch');
+      if (merchantSearch) merchantSearch.value = '';
       decisionPreferredCardId = '';
       let presetMerchantQuery = '';
 
@@ -4937,6 +4820,8 @@
       }
       // setDecisionContexts 已 calculate()；保留 locationType/memo/提示備註等覆寫後再算一次確保一致
       calculate();
+      const merchantPanel = document.getElementById('resultMerchantTrigger');
+      if (merchantPanel && !merchantPanel.hidden) renderResultMerchantPanel();
     }
 
     // 金額快捷鍵增減
@@ -4960,96 +4845,36 @@
     }
 
     function getV3PeriodKey(plan, part) {
-      if (window.RuleEngine && typeof window.RuleEngine.getPeriodKey === 'function') {
-        return window.RuleEngine.getPeriodKey(plan, part, getTaipeiDateParts());
+      return window.RuleEngine.getPeriodKey(plan, part, getTaipeiDateParts());
+    }
+
+    function applyRulePartChange(plan, change) {
+      const part = (plan.rewardParts || []).find(item => item.id === change.partId);
+      if (!part) return;
+      if (change.periodKey !== undefined) part.periodKey = change.periodKey;
+      if (change.cumulativePeriodKey !== undefined) part.cumulativePeriodKey = change.cumulativePeriodKey;
+      if (change.usedReward !== undefined) part.usedReward = change.usedReward;
+      if (change.cumulativeSpendTwd !== undefined) part.cumulativeSpendTwd = change.cumulativeSpendTwd;
+    }
+
+    function applyRankedPartChanges(changes) {
+      for (const item of changes || []) {
+        const card = (rulesV3.cards || []).find(candidate => candidate.id === item.cardId);
+        const plan = card && (card.plans || []).find(candidate => candidate.id === item.planId);
+        if (plan) applyRulePartChange(plan, item.change);
       }
-      const cycle=part.cycle||plan.cycle||'none'; const {year,month,day}=getTaipeiDateParts();
-      if(cycle==='month') return `${year}-${String(month).padStart(2,'0')}`;
-      if(cycle==='quarter') return `${year}-Q${Math.floor((month-1)/3)+1}`;
-      if(cycle==='campaign') return `campaign:${part.start||''}:${part.end||''}`;
-      if(cycle==='billing' && Number(plan.statementDay)>=1 && Number(plan.statementDay)<=31) {
-        let closeYear=year,closeMonth=month; const daysThisMonth=new Date(Date.UTC(year,month,0)).getUTCDate();
-        if(day>Math.min(Number(plan.statementDay),daysThisMonth)){closeMonth++;if(closeMonth>12){closeMonth=1;closeYear++;}}
-        const closeDays=new Date(Date.UTC(closeYear,closeMonth,0)).getUTCDate();
-        return `billing:${closeYear}-${String(closeMonth).padStart(2,'0')}-${String(Math.min(Number(plan.statementDay),closeDays)).padStart(2,'0')}`;
-      }
-      return null;
     }
 
     function evaluateV3Plan(card, plan, spendTwd, merchant, evalContexts) {
-      if (window.RuleEngine && typeof window.RuleEngine.evaluatePlan === 'function') {
-        const result = window.RuleEngine.evaluatePlan({
-          card, plan, spendTwd, merchant,
-          contexts: evalContexts,
-          today: getV3Today(),
-          dateParts: getTaipeiDateParts()
-        });
-        for (const change of result.partChanges || []) {
-          const part = (plan.rewardParts || []).find(item => item.id === change.partId);
-          if (!part) continue;
-          if (change.periodKey !== undefined) part.periodKey = change.periodKey;
-          if (change.cumulativePeriodKey !== undefined) part.cumulativePeriodKey = change.cumulativePeriodKey;
-          if (change.usedReward !== undefined) part.usedReward = change.usedReward;
-          if (change.cumulativeSpendTwd !== undefined) part.cumulativeSpendTwd = change.cumulativeSpendTwd;
-        }
-        if (result.periodReset) v3PeriodResetOccurred = true;
-        return result.offer;
-      }
-      return evaluateV3PlanLegacy(card, plan, spendTwd, merchant, evalContexts);
-    }
-
-    function evaluateV3PlanLegacy(card, plan, spendTwd, merchant, evalContexts) {
-      const evalArr = Array.isArray(evalContexts) ? evalContexts : (evalContexts ? [String(evalContexts)] : ['general']);
-      const today = getV3Today();
-      const matchedParts = [];
-      const cumulativePartIds = [];
-      const notes = [];
-      const quotaGroups = new Map();
-      // 通用：若方案同時符合其他已選情境（如 特約商店+交通卡共用），不因特約商店店家未命中而擋掉整體資格
-      const hasNonMerchantQual = (plan.contexts || []).some(c => c !== 'merchant' && evalArr.includes(c));
-      const enforceMerchantList = evalArr.includes('merchant') && (plan.contexts || []).includes('merchant') && !hasNonMerchantQual;
-      for (const part of plan.rewardParts || []) {
-        const periodKey=getV3PeriodKey(plan,part);
-        if(periodKey){if(part.periodKey&&part.periodKey!==periodKey){part.usedReward=0;v3PeriodResetOccurred=true;}part.periodKey=periodKey;}
-        else if((part.cycle||plan.cycle)==='billing'&&!plan.statementDay) notes.push('尚未設定結帳日，請自行確認並手動重置額度');
-        if(periodKey){if(part.cumulativePeriodKey&&part.cumulativePeriodKey!==periodKey)part.cumulativeSpendTwd=0;part.cumulativePeriodKey=periodKey;}
-        if (part.start && today < part.start || part.end && today > part.end) continue;
-        if (enforceMerchantList && merchant && !planMerchantTextMatches(plan, merchant)) continue;
-        const partThreshold = part.thresholdTwd !== undefined ? Math.max(0,Number(part.thresholdTwd)||0) : Math.max(0,Number(plan.thresholdTwd)||0);
-        const thresholdType=part.thresholdType||plan.thresholdType||'single';
-        if(thresholdType==='cumulative')cumulativePartIds.push(part.id);
-        const thresholdSpend=thresholdType==='cumulative'?(Number(part.cumulativeSpendTwd)||0)+spendTwd:spendTwd;
-        if (partThreshold > 0 && thresholdSpend < partThreshold) { notes.push(`${thresholdType==='cumulative'?'週期累積':'單筆'}未達 NT$${partThreshold.toLocaleString()}，此加碼不計`); continue; }
-        const cap = Number(part.capAmount ?? plan.capAmount)||0;
-        const groupId=part.quotaGroupId||null;
-        const groupParts=groupId?(plan.rewardParts||[]).filter(item=>item.quotaGroupId===groupId):[];
-        const groupCap=groupParts.length?Number(groupParts[0].capAmount)||cap:cap;
-        const used = groupId ? groupParts.reduce((sum,item)=>sum+Math.max(0,Number(item.usedReward)||0),0) : Math.max(0, Number(part.usedReward)||0);
-        const remaining = cap > 0 ? (groupId&&quotaGroups.has(groupId)?quotaGroups.get(groupId):Math.max(0,groupCap-used)) : Infinity;
-        if (remaining <= 0) { notes.push(`${part.name||'加碼'}額度已用完`); continue; }
-        const reward = Math.min(spendTwd * Math.max(0, Number(part.rate)||0) / 100, remaining);
-        if (groupId&&Number.isFinite(remaining)) quotaGroups.set(groupId,Math.max(0,remaining-reward));
-        if (reward > 0) matchedParts.push({ partId:part.id, name:part.name||'加碼回饋', rate:Number(part.rate)||0, reward, cap:groupCap, remainingBefore:remaining, quotaGroupId:groupId });
-      }
-      const includeBase = plan.includeBaseReward !== false;
-      const bonusEligibleSpend=matchedParts.reduce((sum,part)=>sum+(part.rate>0?part.reward/(part.rate/100):0),0);
-      const fallbackSpend=Math.max(0,spendTwd-Math.min(spendTwd,bonusEligibleSpend));
-      const planBaseRate = (plan.baseRateOverride !== undefined && plan.baseRateOverride !== null) ? Math.max(0, Number(plan.baseRateOverride)||0) : Math.max(0, Number(card.baseRate)||0);
-      const base = includeBase ? spendTwd * planBaseRate / 100 : plan.fallbackBase ? fallbackSpend * planBaseRate / 100 : 0;
-      const feeApplies = plan.foreignFeeApplies !== undefined ? plan.foreignFeeApplies : card.baseFeeApplies;
-      const fee = feeApplies ? spendTwd * 0.015 : 0;
-      const bonus = matchedParts.reduce((sum, part) => sum + part.reward, 0);
-      const net = base + bonus - fee;
-      const groupSpendCapacity=new Map();let incrementalCapSpend=0;
-      for(const part of matchedParts){
-        if(!Number.isFinite(part.remainingBefore)||part.rate<=0){incrementalCapSpend=Infinity;break;}
-        const capacity=part.remainingBefore/(part.rate/100);
-        if(part.quotaGroupId){const members=(plan.rewardParts||[]).filter(item=>item.quotaGroupId===part.quotaGroupId);const cap=Number(members[0]?.capAmount)||0;const used=members.reduce((sum,item)=>sum+Number(item.usedReward||0),0);const topRate=Math.max(...members.map(item=>Number(item.rate)||0));groupSpendCapacity.set(part.quotaGroupId,topRate>0?Math.max(0,cap-used)/(topRate/100):capacity);}
-        else incrementalCapSpend+=capacity;
-      }
-      if(incrementalCapSpend!==Infinity)for(const capacity of groupSpendCapacity.values())incrementalCapSpend+=capacity;
-      const capSpend = incrementalCapSpend === Infinity ? Infinity : incrementalCapSpend;
-      return { card, plan, spendTwd, base, bonus, fee, net, matchedParts, cumulativePartIds, notes, capSpend, includeBase, feeApplies };
+      const result = window.RuleEngine.evaluatePlan({
+        card, plan, spendTwd, merchant,
+        contexts: evalContexts,
+        today: getV3Today(),
+        dateParts: getTaipeiDateParts()
+      });
+      for (const change of result.partChanges || []) applyRulePartChange(plan, change);
+      if (result.periodReset) v3PeriodResetOccurred = true;
+      return result.offer;
     }
 
     function calculateRulesV3() {
@@ -5078,46 +4903,24 @@
         hideDecisionMerchantAccess();
         return;
       }
-      const planMatchesSelection = (plan) => {
-        if (window.RuleEngine && typeof window.RuleEngine.planMatchesContexts === 'function') {
-          return window.RuleEngine.planMatchesContexts(plan.contexts || [], selectedContexts, { merchantIncludesGeneral: true });
-        }
-        const pcs = plan.contexts || [];
-        return pcs.some(c => selectedContexts.includes(c) || (selectedContexts.includes('merchant') && c === 'general'));
-      };
-      let offers=[];
-      for (const card of rulesV3.cards) {
-        const plans=card.plans.filter(plan=>plan.enabled!==false && planMatchesSelection(plan));
-        for (const plan of plans) {
-          const hasNonMerchantQual = (plan.contexts || []).some(c => c !== 'merchant' && selectedContexts.includes(c));
-          const enforceMerchantPre = selectedContexts.includes('merchant') && (plan.contexts || []).includes('merchant') && !hasNonMerchantQual;
-          if (enforceMerchantPre && merchant && !planMerchantTextMatches(plan, merchant)) continue;
-          const offer=evaluateV3Plan(card,plan,totalTwd,merchant,selectedContexts);
-          if (offer.net > 0 || offer.base > 0 || offer.matchedParts.length) offers.push(offer);
-        }
-        if (!plans.length && card.baseRate>0 && !(selectedContexts.length === 1 && selectedContexts.includes('paypay'))) {
-          const fallbackCtx = selectedContexts.includes('general') ? 'general' : (selectedContexts.find(c=>c!=='paypay') || 'general');
-          const basePlan={id:`base-${card.id}`,legacyKey:null,name:'基本回饋',contexts:[fallbackCtx],includeBaseReward:true,foreignFeeApplies:card.baseFeeApplies,rewardParts:[],enabled:true};
-          offers.push(evaluateV3Plan(card,basePlan,totalTwd,merchant,selectedContexts));
-        }
-      }
-      // 同一張實體卡的不同方案（例如 J 卡「交通卡 AP 儲值」與「日韓實體一般消費」）
-      // 是各自獨立的加碼權益，拆刷時都要保留，不做實體卡去重。
-      offers.sort((a,b)=>b.net-a.net);
-      // 先保留「依目前店家條件的所有候選」，再套用使用者指定的卡片。
-      lastStoreOffers=offers.slice();
-      // 先記住「依目前店家條件的最高回饋」，再套用使用者指定的卡片。
-      const storeBest=offers[0];
-      let preferredApplied=false;
-      if (decisionPreferredCardId) {
-        const preferredOffer=offers.find(offer=>offer.card.id===decisionPreferredCardId);
-        if (preferredOffer) {
-          offers=[preferredOffer,...offers.filter(offer=>offer!==preferredOffer)];
-          preferredApplied=true;
-        } else {
-          decisionPreferredCardId='';
-        }
-      }
+      const ranked = window.RuleEngine.rankOffers({
+        cards: rulesV3.cards,
+        contexts: selectedContexts,
+        merchant,
+        spendTwd: totalTwd,
+        today: getV3Today(),
+        dateParts: getTaipeiDateParts(),
+        preferredCardId: decisionPreferredCardId,
+        merchantIncludesGeneral: true
+      });
+      applyRankedPartChanges(ranked.partChanges);
+      if (ranked.periodReset) v3PeriodResetOccurred = true;
+      const offers = ranked.offers;
+      const storeOffers = ranked.storeOffers;
+      const storeBest = ranked.storeBest;
+      const preferredApplied = ranked.preferredApplied;
+      decisionPreferredCardId = ranked.preferredCardId;
+      lastStoreOffers = storeOffers;
       if (!offers.length) {
         lastStoreOffers=[];
         if(v3PeriodResetOccurred){rulesV3.updatedAt=Date.now();localStorage.setItem(STORAGE_KEY.rulesV3,JSON.stringify(rulesV3));pushToCloud();renderGuideViews();renderQuotaCards();}
@@ -5130,82 +4933,22 @@
         return;
       }
       const best=offers[0];
-      // 拆刷排序依「淨回饋率」＝ 基本回饋% + 加碼回饋% - 手續費%
-      // 加碼回饋上限只決定「這張卡最多能吃多少金額」，不影響排名
-      const offerNetRate=(offer)=>{
-        const baseRate=offer.includeBase?Math.max(0,Number(offer.card.baseRate)||0):0;
-        const feeRate=offer.feeApplies?1.5:0;
-        const bonusRate=(offer.matchedParts||[]).reduce((max,part)=>Math.max(max,Number(part.rate)||0),0);
-        return baseRate+bonusRate-feeRate;
-      };
-      const offerThreshold=(offer)=>{
-        const values=(offer.plan.rewardParts||[]).map(part=>{
-          const raw=Number(part.thresholdTwd!==undefined?part.thresholdTwd:offer.plan.thresholdTwd)||0;
-          return (part.thresholdType||offer.plan.thresholdType)==='cumulative'?Math.max(0,raw-(Number(part.cumulativeSpendTwd)||0)):raw;
-        }).filter(value=>value>0);
-        return values.length?Math.min(...values):0;
-      };
       const offerKey=(offer)=>`${offer.card.id}::${offer.plan.id}`;
-      const splitCandidates=[...offers].sort((a,b)=>offerNetRate(b)-offerNetRate(a)||b.net-a.net);
       let allocations=[{offer:best,amount:totalTwd}];
-      if (!preferredApplied && document.getElementById('splitMode').value==='auto' && splitCandidates.length>1) {
-        // 每個方案拆成「加碼段」（容量＝剩餘加碼額度能支應的消費額）
-        // 與「基本回饋段」（容量無限，只拿基本回饋減手續費），
-        // 所有段落依淨回饋率由高到低填補：回饋率高的先刷，加碼額度用完才輪到下一張。
-        const segments=[];
-        for (const candidate of splitCandidates) {
-          const baseRate=candidate.includeBase?Math.max(0,Number(candidate.card.baseRate)||0):0;
-          const feeRate=candidate.feeApplies?1.5:0;
-          const threshold=offerThreshold(candidate);
-          const quotaGroups=new Map();
-          for (const part of candidate.matchedParts||[]) {
-            const rate=Math.max(0,Number(part.rate)||0);
-            if(rate<=0) continue;
-            const capacity=Number.isFinite(part.remainingBefore)?part.remainingBefore/(rate/100):Infinity;
-            if(capacity<=0) continue;
-            if(threshold>0 && Number.isFinite(capacity) && capacity<threshold) continue; // 加碼餘額撐不到門檻，這張卡拿不到加碼
-            if(part.quotaGroupId){
-              const group=quotaGroups.get(part.quotaGroupId)||{rate:0,capacity:0};
-              group.rate=Math.max(group.rate,rate);
-              group.capacity=Number.isFinite(capacity)?Math.max(group.capacity,capacity):Infinity;
-              quotaGroups.set(part.quotaGroupId,group);
-            } else {
-              segments.push({offer:candidate,kind:'bonus',capacity,rate:baseRate+rate-feeRate,threshold});
-            }
-          }
-          for (const group of quotaGroups.values()) {
-            segments.push({offer:candidate,kind:'bonus',capacity:group.capacity,rate:baseRate+group.rate-feeRate,threshold});
-          }
-          if(baseRate>0||feeRate>0) segments.push({offer:candidate,kind:'base',capacity:Infinity,rate:baseRate-feeRate,threshold});
-        }
-        segments.sort((a,b)=> b.rate-a.rate || (a.kind==='bonus'?0:1)-(b.kind==='bonus'?0:1));
-
-        let left=totalTwd; const split=[]; const bucket=new Map();
-        for (const segment of segments) {
-          if(left<=0) break;
-          let capacity=segment.capacity;
-          if(!Number.isFinite(capacity)) capacity=left;
-          capacity=Math.max(0,Math.floor(capacity));
-          if(capacity<=0) continue;
-          if(segment.kind==='bonus' && segment.threshold>0 && left<segment.threshold) continue; // 剩餘金額湊不到門檻，放棄這張卡的加碼
-          const amount=Math.min(left,capacity);
-          if(amount<=0) continue;
-          const key=offerKey(segment.offer);
-          const entry=bucket.get(key)||{offer:segment.offer,amount:0};
-          entry.amount+=amount; bucket.set(key,entry);
-          left-=amount;
-        }
-        for (const entry of bucket.values()) {
+      if (!preferredApplied && document.getElementById('splitMode').value==='auto' && offers.length>1) {
+        const splitPlan=window.RuleEngine.allocateSplit({offers,spendTwd:totalTwd});
+        const split=[];
+        for (const entry of splitPlan.allocations) {
           const recalculated=evaluateV3Plan(entry.offer.card,entry.offer.plan,entry.amount,merchant,selectedContexts);
           if(recalculated.net<=0) continue;
           split.push({offer:recalculated,amount:entry.amount});
         }
-        if (left>0) {
-          const fallback=splitCandidates.find(offer=>offer.includeBase) || splitCandidates[0];
+        let left=splitPlan.left;
+        if (left>0 && splitPlan.candidates.length) {
+          const fallback=splitPlan.candidates.find(offer=>offer.includeBase) || splitPlan.candidates[0];
           const existing=split.find(item=>offerKey(item.offer)===offerKey(fallback));
           if (existing) { existing.amount+=left; existing.offer=evaluateV3Plan(existing.offer.card,existing.offer.plan,existing.amount,merchant,selectedContexts); }
           else split.push({offer:evaluateV3Plan(fallback.card,fallback.plan,left,merchant,selectedContexts),amount:left});
-          left=0;
         }
         const splitReward=split.reduce((sum,item)=>sum+item.offer.net,0);
         if (split.length>1 && splitReward>best.net+1) allocations=split;
@@ -5463,6 +5206,74 @@
       return toDateTimeLocalValue(date);
     }
 
+    // 日期編輯只做「差值調整」：同一週期不動額度；跨出目前週期就移出用量，
+    // 跨入目前週期就加回用量。不重跑整個 ledger，避免手動重置被蓋掉。
+    function ledgerDatePartsFromValue(value) {
+      const match = String(value || '').match(/^(\d{4})-(\d{2})-(\d{2})/);
+      if (!match) return null;
+      return { year: Number(match[1]), month: Number(match[2]), day: Number(match[3]) };
+    }
+
+    function ledgerUsagePeriodKey(plan, part, dateParts) {
+      if (!dateParts) return null;
+      return window.RuleEngine.getPeriodKey(plan, part, dateParts) || null;
+    }
+
+    function ledgerUsageIsInCurrentPeriod(plan, part, dateValue) {
+      const dateParts = ledgerDatePartsFromValue(dateValue);
+      if (!dateParts) return true;
+      const usageKey = ledgerUsagePeriodKey(plan, part, dateParts);
+      if (!usageKey || !part.periodKey) return true;
+      return usageKey === part.periodKey;
+    }
+
+    function adjustV3QuotaForLedgerDateEdit(item, oldDateValue, newDateValue) {
+      if (!item || !Array.isArray(item.v3Usage) || !item.v3Usage.length) return false;
+      const oldParts = ledgerDatePartsFromValue(oldDateValue);
+      const newParts = ledgerDatePartsFromValue(newDateValue);
+      if (!oldParts || !newParts) return false;
+      const card = rulesV3.cards.find(entry => entry.id === item.physicalCardId);
+      const plan = card && card.plans.find(entry => entry.id === item.v3PlanId);
+      if (!plan) return false;
+      let changed = false;
+      for (const usage of item.v3Usage) {
+        const part = (plan.rewardParts || []).find(entry => entry.id === usage.partId);
+        if (!part) continue;
+        const oldKey = ledgerUsagePeriodKey(plan, part, oldParts);
+        const newKey = ledgerUsagePeriodKey(plan, part, newParts);
+        if (!oldKey || !newKey || oldKey === newKey) continue;
+        const currentKey = part.periodKey || null;
+        if (!currentKey) continue;
+        const amount = Number(usage.amount) || 0;
+        const cumulative = Number(usage.cumulativeSpendTwd) || 0;
+        const groupParts = part.quotaGroupId
+          ? (plan.rewardParts || []).filter(entry => entry.quotaGroupId === part.quotaGroupId)
+          : [];
+        const cap = Number(groupParts[0]?.capAmount ?? part.capAmount ?? plan.capAmount) || 0;
+        if (oldKey === currentKey && newKey !== currentKey) {
+          if (amount) {
+            part.usedReward = Math.max(0, Number(part.usedReward || 0) - amount);
+            changed = true;
+          }
+          if (cumulative) {
+            part.cumulativeSpendTwd = Math.max(0, Number(part.cumulativeSpendTwd || 0) - cumulative);
+            changed = true;
+          }
+        } else if (oldKey !== currentKey && newKey === currentKey) {
+          if (amount) {
+            const next = Number(part.usedReward || 0) + amount;
+            part.usedReward = cap > 0 ? Math.min(cap, next) : next;
+            changed = true;
+          }
+          if (cumulative) {
+            part.cumulativeSpendTwd = Math.max(0, Number(part.cumulativeSpendTwd || 0) + cumulative);
+            changed = true;
+          }
+        }
+      }
+      return changed;
+    }
+
     function recordExpenseV3() {
       calculate();
       const decision = currentDecision;
@@ -5543,7 +5354,7 @@
       });
     }
 
-    // 編輯明細：只改顯示用的名稱與日期，不動已扣除的額度。
+    // 編輯明細：名稱直接更新；日期若跨出／跨入目前回饋週期，才同步調整已扣除的額度。
     let editingLedgerId = null;
     function openLedgerEdit(id) {
       const item = ledger.find(entry => entry.id === id);
@@ -5586,14 +5397,20 @@
         dateInput.focus();
         return;
       }
+      const oldDateValue = ledgerDateInputValue(item);
+      const quotaChanged = adjustV3QuotaForLedgerDateEdit(item, oldDateValue, dateValue);
       item.memo = memo;
       item.dateISO = dateValue;
       item.date = formatLedgerDate(date);
       markLedgerChanged();
+      if (quotaChanged) {
+        calculate();
+        saveRulesV3(false);
+      }
       pushToCloud();
       renderLedger();
       closeLedgerEdit();
-      showToast('已更新明細');
+      showToast(quotaChanged ? '已更新明細，並同步調整加碼額度' : '已更新明細');
     }
 
     ['ledgerEditMemo', 'ledgerEditDate'].forEach(id => {
@@ -5663,7 +5480,7 @@
             </div>
             <div class="ledger-actions">
               <button class="ledger-action" title="修改名稱與日期" onclick="openLedgerEdit(${item.id})">編輯</button>
-              <button class="ledger-action ledger-del" title="刪除並返還額度" onclick="deleteLedgerItem(${item.id})">刪除</button>
+              <button class="ledger-action ledger-del" title="刪除明細" onclick="deleteLedgerItem(${item.id})">刪除</button>
             </div>
           `;
           listEl.appendChild(itemEl);
@@ -5681,20 +5498,36 @@
       if (idx === -1) return;
 
       const item = ledger[idx];
+      const itemCard = rulesV3.cards.find(entry => entry.id === item.physicalCardId);
+      const itemPlan = itemCard?.plans.find(entry => entry.id === item.v3PlanId);
+      const itemDateValue = ledgerDateInputValue(item);
+      const returnsQuota = (item.v3Usage || []).some(usage => {
+        const part = itemPlan?.rewardParts.find(entry => entry.id === usage.partId);
+        return !!part && ledgerUsageIsInCurrentPeriod(itemPlan, part, itemDateValue);
+      });
       showAppDialog({
         title: '刪除消費紀錄',
-        message: `確定要刪除「${item.memo || '未填寫明細'}」這筆紀錄嗎？\n原扣除的 NT$${item.twd} 額度會自動歸還至該卡片。`,
-        confirmText: '刪除並返還額度'
+        message: `確定要刪除「${item.memo || '未填寫明細'}」這筆紀錄嗎？\n${returnsQuota ? '這筆目前週期佔用的加碼額度會同步釋放。' : '這筆日期不在目前回饋週期，刪除不會變動目前加碼額度。'}`,
+        confirmText: returnsQuota ? '刪除並釋放額度' : '刪除明細'
       }).then(confirmed => {
         if (!confirmed) return;
         const currentIdx = ledger.findIndex(entry => entry.id === id);
         if (currentIdx === -1) return;
         const currentItem = ledger[currentIdx];
-        const quotaChanged = !!(currentItem.v3Usage && currentItem.v3Usage.length);
-        if (quotaChanged) {
+        let quotaChanged = false;
+        if (currentItem.v3Usage && currentItem.v3Usage.length) {
           const card=rulesV3.cards.find(entry=>entry.id===currentItem.physicalCardId);
           const plan=card?.plans.find(entry=>entry.id===currentItem.v3PlanId);
-          for(const usage of currentItem.v3Usage){const part=plan?.rewardParts.find(entry=>entry.id===usage.partId);if(part){part.usedReward=Math.max(0,Number(part.usedReward||0)-Number(usage.amount||0));if(usage.cumulativeSpendTwd)part.cumulativeSpendTwd=Math.max(0,Number(part.cumulativeSpendTwd||0)-Number(usage.cumulativeSpendTwd));}}
+          const recordDateValue=ledgerDateInputValue(currentItem);
+          for(const usage of currentItem.v3Usage){
+            const part=plan?.rewardParts.find(entry=>entry.id===usage.partId);
+            if(!part) continue;
+            // 只有仍在目前週期內的紀錄，才有實際佔用目前額度；已移到其他週期的紀錄不能再扣一次。
+            if(!ledgerUsageIsInCurrentPeriod(plan,part,recordDateValue)) continue;
+            part.usedReward=Math.max(0,Number(part.usedReward||0)-Number(usage.amount||0));
+            if(usage.cumulativeSpendTwd)part.cumulativeSpendTwd=Math.max(0,Number(part.cumulativeSpendTwd||0)-Number(usage.cumulativeSpendTwd));
+            quotaChanged = true;
+          }
         }
         ledger.splice(currentIdx, 1);
         markLedgerChanged();
@@ -5704,7 +5537,7 @@
         pushToCloud();
         renderLedger();
         calculate();
-        showToast("已刪除並返還額度！");
+        showToast(quotaChanged ? '已刪除並釋放目前週期額度！' : '已刪除明細；目前額度未變動');
       });
     }
 
@@ -5885,7 +5718,7 @@
     let closingForHistory = false;   // 正在處理「上一頁」時，分頁切換用取代而不是新增
 
     const LAYER_IDS = [
-      'appDialogModal','ledgerEditModal','planEditorOverlay','cardSettingsOverlay','rateModal','syncModal',
+      'appDialogModal','ledgerEditModal','resultMerchantTrigger','planEditorOverlay','cardSettingsOverlay','rateModal','syncModal',
       'quotaResetModal','cardEditorOverlay','addCardOverlay',
       'duplicateModal','resetModal','splitWarningModal','billingSetupModal'
     ];
@@ -5929,6 +5762,7 @@
         if (isLayerOpen('planEditorOverlay')) { try { requestClosePlanEditor(); } catch (e) {} return true; }
         const upperLayers = [
           ['ledgerEditModal', closeLedgerEdit],
+          ['resultMerchantTrigger', closeMerchantLookupPanel],
           ['cardSettingsOverlay', closeCardSettings],
           ['rateModal', closeRateModal],
           ['syncModal', closeSyncModal],
@@ -6044,10 +5878,7 @@
       if (cardEditorCardId) renderCardEditor();
     }
     function parsePlanMerchantText(text) {
-      if (window.RuleEngine && typeof window.RuleEngine.parseMerchantText === 'function') {
-        return window.RuleEngine.parseMerchantText(text);
-      }
-      return [...new Set(String(text || '').split(/[\n,，、;；]+/).map(s => s.trim()).filter(Boolean))];
+      return window.RuleEngine.parseMerchantText(text);
     }
 
     function syncPlanEditorMerchants(text = '') {

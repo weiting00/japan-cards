@@ -18,7 +18,10 @@ setTimeout(function () {
     d.querySelector('[data-scenario="merchant"]').click();
     d.getElementById('jpyAmount').value = '30000';
     w.eval('calculate()');
-    setTimeout(function () { var p = d.getElementById('resultMerchantTrigger'); if (p) { p.open = true; p.dispatchEvent(new w.Event('toggle')); } }, 100);
+    setTimeout(function () {
+      var btn = d.getElementById('resultMerchantOpen');
+      if (btn) btn.click();
+    }, 100);
   }
 }, 2500);
 </script>

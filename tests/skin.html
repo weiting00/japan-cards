@@ -68,7 +68,7 @@ setTimeout(function () {
     log('=== E. 結構未變 ===');
     check('E1 底部導覽仍是 4 個分頁', d.querySelectorAll('.tab-btn').length === 4, d.querySelectorAll('.tab-btn').length + ' 個');
     var oc = d.querySelectorAll('[onclick]').length;
-    check('E2 行內事件數量符合目前結構', oc === 49, oc + ' 個');
+    check('E2 行內事件數量符合目前結構', oc === 52, oc + ' 個');
     check('E3 四個頁面容器都在', ['tab-decision', 'tab-quotas', 'tab-ledger', 'tab-guide'].every(function (id) { return !!d.getElementById(id); }));
     check('E4 兩個主要覆蓋層都在', !!d.getElementById('cardEditorOverlay') && !!d.getElementById('addCardOverlay'));
     check('E5 無 JS 錯誤', errs.length === 0, errs.slice(0, 3).join('; '));

@@ -156,36 +156,152 @@ setTimeout(async function () {
     check('不併基本回饋時 fallbackSpend 為 0', Math.round(nbRes.offer.base) === 0, String(nbRes.offer.base));
     check('不併基本回饋仍計入加碼', Math.round(nbRes.offer.bonus) === 500, String(nbRes.offer.bonus));
 
-    // ---------- 與 legacy 計算本體 parity ----------
-    function parity(planObj, contexts, spend, merchant) {
-      var legacyPlan = JSON.parse(JSON.stringify(planObj));
-      var purePlan = JSON.parse(JSON.stringify(planObj));
-      var legacy = w.evaluateV3PlanLegacy(card, legacyPlan, spend, merchant || '', contexts);
-      var pureRes = E.evaluatePlan({
-        card: card, plan: purePlan, spendTwd: spend, merchant: merchant || '',
-        contexts: contexts, today: w.getV3Today(), dateParts: w.getTaipeiDateParts()
-      });
-      var sameParts = JSON.stringify(legacy.matchedParts.map(function (part) { return { id: part.partId, reward: part.reward, cap: part.cap, remaining: part.remainingBefore, group: part.quotaGroupId }; }))
-        === JSON.stringify(pureRes.offer.matchedParts.map(function (part) { return { id: part.partId, reward: part.reward, cap: part.cap, remaining: part.remainingBefore, group: part.quotaGroupId }; }));
-      return {
-        ok: Math.round(legacy.net) === Math.round(pureRes.offer.net)
-          && Math.round(legacy.bonus) === Math.round(pureRes.offer.bonus)
-          && sameParts
-          && JSON.stringify(legacy.cumulativePartIds) === JSON.stringify(pureRes.offer.cumulativePartIds)
-          && JSON.stringify(legacy.notes) === JSON.stringify(pureRes.offer.notes),
-        detail: 'legacy net=' + legacy.net + ' pure net=' + pureRes.offer.net
-      };
+    // ---------- 多卡排序與最佳方案（純函式） ----------
+    check('RuleEngine 有 rankOffers', typeof E.rankOffers === 'function');
+    var rankCards = [
+      { id: 'rankA', name: '排序卡A', baseRate: 2, baseFeeApplies: false, plans: [
+        { id: 'rankA1', name: 'A一般', contexts: ['general'], includeBaseReward: true, cycle: 'month', rewardParts: [
+          { id: 'rankA1p', name: 'A加碼', rate: 3, capAmount: 100000, periodKey: '2026-11' }
+        ] }
+      ] },
+      { id: 'rankB', name: '排序卡B', baseRate: 1, baseFeeApplies: false, plans: [
+        { id: 'rankB1', name: 'B一般', contexts: ['general'], includeBaseReward: true, cycle: 'month', rewardParts: [
+          { id: 'rankB1p', name: 'B加碼', rate: 8, capAmount: 100000, periodKey: '2026-11' }
+        ] }
+      ] }
+    ];
+    var rank1 = E.rankOffers({ cards: rankCards, contexts: ['general'], spendTwd: 10000, today: '2026-11-09', dateParts: date(2026, 11, 9) });
+    check('rankOffers 依淨回饋由高到低排序', rank1.offers[0].card.id === 'rankB' && rank1.offers[1].card.id === 'rankA', rank1.offers.map(function (o) { return o.card.id + ':' + Math.round(o.net); }).join('|'));
+    check('rankOffers 回傳未套用偏好前的店家候選', rank1.storeOffers[0].card.id === 'rankB' && rank1.storeBest.card.id === 'rankB', rank1.storeOffers.map(function (o) { return o.card.id; }).join('|'));
+    var rankPref = E.rankOffers({ cards: rankCards, contexts: ['general'], spendTwd: 10000, today: '2026-11-09', dateParts: date(2026, 11, 9), preferredCardId: 'rankA' });
+    check('rankOffers 指定卡片會排到最前且不改店家最高', rankPref.offers[0].card.id === 'rankA' && rankPref.preferredApplied === true && rankPref.preferredCardId === 'rankA' && rankPref.storeBest.card.id === 'rankB', rankPref.offers.map(function (o) { return o.card.id; }).join('|'));
+    var rankPrefMiss = E.rankOffers({ cards: rankCards, contexts: ['general'], spendTwd: 10000, today: '2026-11-09', dateParts: date(2026, 11, 9), preferredCardId: 'missing' });
+    check('rankOffers 指定卡片不存在會清除偏好', rankPrefMiss.preferredApplied === false && rankPrefMiss.preferredCardId === '', rankPrefMiss.preferredCardId);
+
+    var rankMerchantCards = [
+      { id: 'rankKuma', name: '熊本熊', baseRate: 2.5, baseFeeApplies: true, plans: [
+        { id: 'rankKumaM', name: '特店方案', contexts: ['merchant'], includeBaseReward: true, cycle: 'month', merchantText: 'BicCamera', rewardParts: [
+          { id: 'rankKumaM1', name: '特店加碼', rate: 6, capAmount: 100000, periodKey: '2026-11' }
+        ] }
+      ] },
+      { id: 'rankGeneral', name: '一般卡', baseRate: 2, baseFeeApplies: false, plans: [
+        { id: 'rankGeneralG', name: '一般方案', contexts: ['general'], includeBaseReward: true, cycle: 'month', rewardParts: [
+          { id: 'rankGeneralG1', name: '一般加碼', rate: 30, capAmount: 100000, periodKey: '2026-11' }
+        ] }
+      ] }
+    ];
+    var rankMiss = E.rankOffers({ cards: rankMerchantCards, contexts: ['merchant'], merchant: '不存在的店', spendTwd: 10000, today: '2026-11-09', dateParts: date(2026, 11, 9) });
+    var kumaMiss = rankMiss.offers.find(function (o) { return o.card.id === 'rankKuma'; });
+    check('rankOffers 特店未命中仍保留該卡基本回饋', !!kumaMiss && kumaMiss.plan.name === '基本回饋' && Math.round(kumaMiss.base) === 250, kumaMiss ? kumaMiss.plan.name + ':' + Math.round(kumaMiss.base) : 'missing');
+    check('rankOffers 特店未命中時一般方案仍參與比較', rankMiss.offers[0].card.id === 'rankGeneral', rankMiss.offers.map(function (o) { return o.card.id + ':' + Math.round(o.net); }).join('|'));
+    var rankHit = E.rankOffers({ cards: rankMerchantCards, contexts: ['merchant'], merchant: 'BicCamera', spendTwd: 10000, today: '2026-11-09', dateParts: date(2026, 11, 9) });
+    var kumaHit = rankHit.offers.find(function (o) { return o.card.id === 'rankKuma'; });
+    check('rankOffers 特店命中時使用特店方案', !!kumaHit && kumaHit.plan.name === '特店方案' && Math.round(kumaHit.bonus) === 600, kumaHit ? kumaHit.plan.name + ':' + Math.round(kumaHit.bonus) : 'missing');
+    check('rankOffers 特店命中時一般高回饋仍可勝出', rankHit.offers[0].card.id === 'rankGeneral', rankHit.offers.map(function (o) { return o.card.id + ':' + Math.round(o.net); }).join('|'));
+    var rankPaypay = E.rankOffers({ cards: rankMerchantCards, contexts: ['paypay'], spendTwd: 10000, today: '2026-11-09', dateParts: date(2026, 11, 9) });
+    check('rankOffers PayPay-only 不加基本回饋 fallback', rankPaypay.offers.length === 0, String(rankPaypay.offers.length));
+
+    var rankResetPlan = { id: 'rankReset', name: '重置方案', contexts: ['general'], includeBaseReward: true, cycle: 'month', rewardParts: [
+      { id: 'rankResetP', name: '重置加碼', rate: 5, capAmount: 100000, periodKey: '2026-10' }
+    ] };
+    var rankResetCard = { id: 'rankResetCard', name: '重置卡', baseRate: 2, baseFeeApplies: false, plans: [rankResetPlan] };
+    var rankResetBefore = JSON.stringify(rankResetCard);
+    var rankResetResult = E.rankOffers({ cards: [rankResetCard], contexts: ['general'], spendTwd: 10000, today: '2026-11-09', dateParts: date(2026, 11, 9) });
+    check('rankOffers 不直接修改卡片，跨週期重置以 partChanges 回傳', JSON.stringify(rankResetCard) === rankResetBefore && rankResetResult.periodReset === true && rankResetResult.partChanges.some(function (item) {
+      return item.cardId === 'rankResetCard' && item.planId === 'rankReset' && item.change.partId === 'rankResetP' && item.change.periodKey === '2026-11' && item.change.usedReward === 0;
+    }), JSON.stringify(rankResetResult.partChanges));
+
+    // ---------- 拆刷配置（純函式） ----------
+    check('RuleEngine 有 allocateSplit', typeof E.allocateSplit === 'function');
+    function offerFor(card, plan, spendTwd) {
+      return E.evaluatePlan({
+        card: card,
+        plan: plan,
+        spendTwd: spendTwd,
+        merchant: '',
+        contexts: ['general'],
+        today: '2026-11-09',
+        dateParts: date(2026, 11, 9)
+      }).offer;
     }
-    var p1 = parity(plan, ['general'], 10000, '');
-    check('評估 parity：一般方案（含跨週期重置）', p1.ok, p1.detail);
-    var p2 = parity(groupPlan, ['transit'], 10000, '');
-    check('評估 parity：共用額度群組', p2.ok, p2.detail);
-    var p3 = parity(merchantPlan, ['merchant'], 10000, '唐吉訶德');
-    check('評估 parity：特店名單未命中', p3.ok, p3.detail);
-    var p4 = parity(cumPlan, ['general'], 500, '');
-    check('評估 parity：累積門檻未達', p4.ok, p4.detail);
-    var p5 = parity(noBasePlan, ['general'], 10000, '');
-    check('評估 parity：不併基本回饋', p5.ok, p5.detail);
+
+    var splitCardA = { id: 'splitA', name: '拆刷卡A', baseRate: 1, baseFeeApplies: false };
+    var splitCardB = { id: 'splitB', name: '拆刷卡B', baseRate: 2, baseFeeApplies: false };
+    var splitPlanA = { id: 'splitA-plan', name: 'A方案', contexts: ['general'], includeBaseReward: true, rewardParts: [
+      { id: 'splitA-part', name: 'A加碼', rate: 10, capAmount: 100, periodKey: '2026-11' }
+    ] };
+    var splitPlanB = { id: 'splitB-plan', name: 'B方案', contexts: ['general'], includeBaseReward: true, rewardParts: [] };
+    var splitOfferA = offerFor(splitCardA, splitPlanA, 5000);
+    var splitOfferB = offerFor(splitCardB, splitPlanB, 5000);
+    var split1 = E.allocateSplit({ offers: [splitOfferA, splitOfferB], spendTwd: 5000 });
+    check('allocateSplit 依淨回饋率排序候選', split1.candidates[0].card.id === 'splitA' && split1.candidates[1].card.id === 'splitB', split1.candidates.map(function (o) { return o.card.id; }).join('|'));
+    check('allocateSplit 先吃滿高淨率加碼額度', split1.allocations[0].offer.card.id === 'splitA' && split1.allocations[0].amount === 1000, split1.allocations.map(function (a) { return a.offer.card.id + ':' + a.amount; }).join('|'));
+    check('allocateSplit 加碼容量用完後接基本回饋段', split1.allocations[1].offer.card.id === 'splitB' && split1.allocations[1].amount === 4000 && split1.left === 0, split1.allocations.map(function (a) { return a.offer.card.id + ':' + a.amount; }).join('|') + ' left=' + split1.left);
+
+    var splitCardG = { id: 'splitG', name: '群組卡', baseRate: 0, baseFeeApplies: false };
+    var splitCardH = { id: 'splitH', name: '對照卡', baseRate: 0, baseFeeApplies: false };
+    var splitPlanG = { id: 'splitG-plan', name: '群組方案', contexts: ['general'], includeBaseReward: true, rewardParts: [
+      { id: 'splitG-p1', name: '群組10%', rate: 10, capAmount: 1000, quotaGroupId: 'g1', periodKey: '2026-11' },
+      { id: 'splitG-p2', name: '群組5%', rate: 5, capAmount: 1000, quotaGroupId: 'g1', periodKey: '2026-11' }
+    ] };
+    var splitPlanH = { id: 'splitH-plan', name: '對照方案', contexts: ['general'], includeBaseReward: true, rewardParts: [
+      { id: 'splitH-p1', name: '對照8%', rate: 8, capAmount: 10000, periodKey: '2026-11' }
+    ] };
+    var splitOfferG = offerFor(splitCardG, splitPlanG, 5000);
+    var splitOfferH = offerFor(splitCardH, splitPlanH, 5000);
+    var split2 = E.allocateSplit({ offers: [splitOfferG, splitOfferH], spendTwd: 5000 });
+    check('allocateSplit 同一 quotaGroup 只保留最高費率段', split2.allocations.length === 1 && split2.allocations[0].offer.card.id === 'splitG' && split2.allocations[0].amount === 5000, split2.allocations.map(function (a) { return a.offer.card.id + ':' + a.amount; }).join('|'));
+
+    var splitCardT1 = { id: 'splitT1', name: '門檻卡', baseRate: 1, baseFeeApplies: false };
+    var splitCardT2 = { id: 'splitT2', name: '高率卡', baseRate: 0, baseFeeApplies: false };
+    var splitCardT3 = { id: 'splitT3', name: '基本卡', baseRate: 2, baseFeeApplies: false };
+    var splitPlanT1 = { id: 'splitT1-plan', name: '門檻方案', contexts: ['general'], includeBaseReward: true, rewardParts: [
+      { id: 'splitT1-p1', name: '門檻10%', rate: 10, capAmount: 1000, thresholdTwd: 2000, periodKey: '2026-11' }
+    ] };
+    var splitPlanT2 = { id: 'splitT2-plan', name: '高率方案', contexts: ['general'], includeBaseReward: true, rewardParts: [
+      { id: 'splitT2-p1', name: '高率20%', rate: 20, capAmount: 700, periodKey: '2026-11' }
+    ] };
+    var splitPlanT3 = { id: 'splitT3-plan', name: '基本方案', contexts: ['general'], includeBaseReward: true, rewardParts: [] };
+    var splitOfferT1 = offerFor(splitCardT1, splitPlanT1, 5000);
+    var splitOfferT2 = offerFor(splitCardT2, splitPlanT2, 5000);
+    var splitOfferT3 = offerFor(splitCardT3, splitPlanT3, 5000);
+    var split3 = E.allocateSplit({ offers: [splitOfferT1, splitOfferT2, splitOfferT3], spendTwd: 5000 });
+    var split3T1 = split3.allocations.find(function (a) { return a.offer.card.id === 'splitT1'; });
+    var split3T2 = split3.allocations.find(function (a) { return a.offer.card.id === 'splitT2'; });
+    var split3T3 = split3.allocations.find(function (a) { return a.offer.card.id === 'splitT3'; });
+    check('allocateSplit 剩餘金額未達門檻時跳過加碼段', !!split3T2 && split3T2.amount === 3500 && !!split3T3 && split3T3.amount === 1500 && !split3T1 && split3.left === 0, split3.allocations.map(function (a) { return a.offer.card.id + ':' + a.amount; }).join('|') + ' left=' + split3.left);
+
+    var splitCardL = { id: 'splitL', name: '剩餘卡', baseRate: 0, baseFeeApplies: false };
+    var splitPlanL = { id: 'splitL-plan', name: '剩餘方案', contexts: ['general'], includeBaseReward: true, rewardParts: [
+      { id: 'splitL-p1', name: '剩餘10%', rate: 10, capAmount: 100, periodKey: '2026-11' }
+    ] };
+    var splitOfferL = offerFor(splitCardL, splitPlanL, 5000);
+    var split4 = E.allocateSplit({ offers: [splitOfferL], spendTwd: 5000 });
+    check('allocateSplit 未分配金額以 left 回傳', split4.allocations.length === 1 && split4.allocations[0].amount === 1000 && split4.left === 4000, split4.allocations.map(function (a) { return a.amount; }).join('|') + ' left=' + split4.left);
+
+    // ---------- 額度／週期狀態（純函式） ----------
+    check('RuleEngine 有 getQuotaState 與週期 helper', typeof E.getQuotaState === 'function' && typeof E.getCycleLabel === 'function' && typeof E.getNextResetLabel === 'function');
+    var quotaCards = [
+      { id: 'quota-card', name: '額度卡', baseRate: 1, plans: [
+        { id: 'quota-plan', name: '額度方案', enabled: true, cycle: 'month', capAmount: 1000, rewardParts: [
+          { id: 'quota-g1', name: '共用A', rate: 10, capAmount: 1000, usedReward: 100, quotaGroupId: 'qg' },
+          { id: 'quota-g2', name: '共用B', rate: 5, capAmount: 1000, usedReward: 50, quotaGroupId: 'qg' },
+          { id: 'quota-solo', name: '獨立', rate: 3, capAmount: 500, usedReward: 200 }
+        ] }
+      ] }
+    ];
+    var quotaState = E.getQuotaState({ cards: quotaCards, dateParts: date(2026, 11, 9) });
+    check('getQuotaState 共用 quotaGroup 只回傳一筆', quotaState.length === 2 && quotaState[0].groupId === 'qg' && quotaState[1].groupId === null, quotaState.map(function (entry) { return entry.groupId || entry.part.id; }).join('|'));
+    check('getQuotaState 共用額度合併 used 並計算 remaining', quotaState[0].cap === 1000 && quotaState[0].used === 150 && quotaState[0].remaining === 850, quotaState[0].cap + '/' + quotaState[0].used + '/' + quotaState[0].remaining);
+    check('getQuotaState 獨立額度 remaining 正確', quotaState[1].cap === 500 && quotaState[1].used === 200 && quotaState[1].remaining === 300, quotaState[1].cap + '/' + quotaState[1].used + '/' + quotaState[1].remaining);
+    check('getQuotaState 附上週期與下次重置日', quotaState[0].cycleLabel === '每月；自動重置' && quotaState[0].nextResetLabel === '2026-12-01', quotaState[0].cycleLabel + ' / ' + quotaState[0].nextResetLabel);
+    check('getNextResetLabel 月週期跨年', E.getNextResetLabel({ cycle: 'month' }, {}, date(2026, 12, 15)) === '2027-01-01', E.getNextResetLabel({ cycle: 'month' }, {}, date(2026, 12, 15)));
+    check('getNextResetLabel 季週期跨年', E.getNextResetLabel({ cycle: 'quarter' }, {}, date(2026, 11, 15)) === '2027-01-01', E.getNextResetLabel({ cycle: 'quarter' }, {}, date(2026, 11, 15)));
+    check('getNextResetLabel 帳單週期用結帳日次日', E.getNextResetLabel({ cycle: 'billing', statementDay: 18 }, {}, date(2026, 11, 9)) === '2026-11-19', E.getNextResetLabel({ cycle: 'billing', statementDay: 18 }, {}, date(2026, 11, 9)));
+    check('getNextResetLabel 帳單週期跨月', E.getNextResetLabel({ cycle: 'billing', statementDay: 18 }, {}, date(2026, 11, 19)) === '2026-12-19', E.getNextResetLabel({ cycle: 'billing', statementDay: 18 }, {}, date(2026, 11, 19)));
+    check('getNextResetLabel 未設定結帳日顯示待確認', E.getNextResetLabel({ cycle: 'billing' }, {}, date(2026, 11, 9)) === '待確認', E.getNextResetLabel({ cycle: 'billing' }, {}, date(2026, 11, 9)));
+    var quotaBilling = E.getQuotaState({ cards: [{ id: 'billing-card', name: '帳單卡', plans: [{ id: 'billing-plan', name: '帳單方案', enabled: true, cycle: 'billing', statementDay: 18, rewardParts: [{ id: 'billing-part', name: '帳單加碼', rate: 5, capAmount: 100, usedReward: 0 }] }] }], dateParts: date(2026, 11, 9) });
+    check('getQuotaState 帳單週期標籤與重置日', quotaBilling.length === 1 && /18 日結帳/.test(quotaBilling[0].cycleLabel) && quotaBilling[0].nextResetLabel === '2026-11-19', quotaBilling[0] ? quotaBilling[0].cycleLabel + ' / ' + quotaBilling[0].nextResetLabel : 'missing');
 
     check('無 JS 錯誤', true);
   } catch (e) { fail++; log('EXCEPTION: ' + e.message + ' | ' + (e.stack || '').split('\n')[1]); }

@@ -310,6 +310,387 @@
     };
   }
 
+  function getCycleLabel(plan, part) {
+    var cycle = (part && part.cycle) || (plan && plan.cycle) || 'none';
+    if (cycle === 'month') return '每月；自動重置';
+    if (cycle === 'quarter') return '每季日曆季；自動重置';
+    if (cycle === 'campaign') return '活動期間內計算';
+    if (cycle === 'billing') {
+      var day = Number(plan && plan.statementDay) || 0;
+      return day >= 1 && day <= 31
+        ? '帳單週期；每月 ' + day + ' 日結帳，次日自動重置'
+        : '帳單週期；結帳日待確認，手動重置';
+    }
+    return '無自動週期；手動重置';
+  }
+
+  function formatDateParts(parts) {
+    return parts.year + '-' + pad2(parts.month) + '-' + pad2(parts.day);
+  }
+
+  /**
+   * 下次重置日（純日曆計算）。回傳 {year, month, day} 或 null（手動／待確認）。
+   */
+  function getNextResetDate(plan, part, dateParts) {
+    if (!dateParts || !dateParts.year || !dateParts.month || !dateParts.day) return null;
+    var year = Number(dateParts.year);
+    var month = Number(dateParts.month);
+    var day = Number(dateParts.day);
+    if (!year || !month || !day) return null;
+    var cycle = (part && part.cycle) || (plan && plan.cycle) || 'none';
+
+    if (cycle === 'month') {
+      var nextMonth = month + 1;
+      var nextYear = year;
+      if (nextMonth > 12) { nextMonth = 1; nextYear += 1; }
+      return { year: nextYear, month: nextMonth, day: 1 };
+    }
+
+    if (cycle === 'quarter') {
+      var nextQuarterMonth = Math.floor((month - 1) / 3) * 3 + 4;
+      var quarterYear = year;
+      if (nextQuarterMonth > 12) { nextQuarterMonth -= 12; quarterYear += 1; }
+      return { year: quarterYear, month: nextQuarterMonth, day: 1 };
+    }
+
+    if (cycle === 'billing') {
+      var statementDay = Number(plan && plan.statementDay) || 0;
+      if (statementDay < 1 || statementDay > 31) return null;
+      var daysThisMonth = daysInMonth(year, month);
+      var closeYear = year;
+      var closeMonth = month;
+      if (day > Math.min(statementDay, daysThisMonth)) {
+        closeMonth += 1;
+        if (closeMonth > 12) { closeMonth = 1; closeYear += 1; }
+      }
+      var daysCloseMonth = daysInMonth(closeYear, closeMonth);
+      var closeDay = Math.min(statementDay, daysCloseMonth);
+      var nextDay = closeDay + 1;
+      if (nextDay > daysCloseMonth) {
+        nextDay = 1;
+        closeMonth += 1;
+        if (closeMonth > 12) { closeMonth = 1; closeYear += 1; }
+      }
+      return { year: closeYear, month: closeMonth, day: nextDay };
+    }
+
+    return null;
+  }
+
+  function getNextResetLabel(plan, part, dateParts) {
+    var cycle = (part && part.cycle) || (plan && plan.cycle) || 'none';
+    if (cycle === 'campaign') return '活動結束後重置';
+    if (cycle === 'none') return '手動重置';
+    var next = getNextResetDate(plan, part, dateParts);
+    if (next) return formatDateParts(next);
+    return cycle === 'billing' ? '待確認' : '手動重置';
+  }
+
+  /**
+   * 額度狀態（純函式）：列出所有需要追蹤上限的加碼項目。
+   * 共用 quotaGroup 只回傳一筆，used 合併、remaining 由 cap - used 計算。
+   *
+   * @param {{cards: object[], dateParts: {year:number, month:number, day:number}}} input
+   * @returns {Array<object>}
+   */
+  function getQuotaState(input) {
+    input = input || {};
+    var cards = Array.isArray(input.cards) ? input.cards : [];
+    var dateParts = input.dateParts || {};
+    var entries = [];
+
+    cards.forEach(function (card) {
+      card = card || {};
+      (card.plans || []).forEach(function (plan) {
+        if (plan.enabled === false) return;
+        var seen = new Set();
+        (plan.rewardParts || []).forEach(function (part) {
+          var groupId = part.quotaGroupId || null;
+          var displayKey = groupId || part.id;
+          if (seen.has(displayKey)) return;
+          seen.add(displayKey);
+
+          var members = groupId
+            ? (plan.rewardParts || []).filter(function (entry) { return entry.quotaGroupId === groupId; })
+            : [part];
+          var rawCap = members[0] ? members[0].capAmount : undefined;
+          var cap = Number(rawCap !== undefined && rawCap !== null ? rawCap : plan.capAmount) || 0;
+          if (cap <= 0) return;
+          var used = Math.min(cap, members.reduce(function (sum, entry) {
+            return sum + Math.max(0, Number(entry.usedReward) || 0);
+          }, 0));
+          var remaining = Math.max(0, cap - used);
+          var threshold = Math.max(0, Number(part.thresholdTwd !== undefined ? part.thresholdTwd : plan.thresholdTwd) || 0);
+          var rate = Math.max(0, Number(part.rate) || 0);
+          var cycle = part.cycle || plan.cycle || 'none';
+
+          entries.push({
+            card: card,
+            plan: plan,
+            part: part,
+            groupId: groupId,
+            displayKey: displayKey,
+            members: members,
+            cap: cap,
+            used: used,
+            remaining: remaining,
+            threshold: threshold,
+            rate: rate,
+            cycle: cycle,
+            cycleLabel: getCycleLabel(plan, part),
+            nextResetDate: getNextResetDate(plan, part, dateParts),
+            nextResetLabel: getNextResetLabel(plan, part, dateParts)
+          });
+        });
+      });
+    });
+
+    return entries;
+  }
+
+  function offerNetRate(offer) {
+    var baseRate = offer.includeBase ? Math.max(0, Number(offer.card.baseRate) || 0) : 0;
+    var feeRate = offer.feeApplies ? 1.5 : 0;
+    var bonusRate = (offer.matchedParts || []).reduce(function (max, part) {
+      return Math.max(max, Number(part.rate) || 0);
+    }, 0);
+    return baseRate + bonusRate - feeRate;
+  }
+
+  function offerThreshold(offer) {
+    var values = (offer.plan.rewardParts || []).map(function (part) {
+      var raw = Number(part.thresholdTwd !== undefined ? part.thresholdTwd : offer.plan.thresholdTwd) || 0;
+      return (part.thresholdType || offer.plan.thresholdType) === 'cumulative'
+        ? Math.max(0, raw - (Number(part.cumulativeSpendTwd) || 0))
+        : raw;
+    }).filter(function (value) { return value > 0; });
+    return values.length ? Math.min.apply(null, values) : 0;
+  }
+
+  function offerKey(offer) {
+    return offer.card.id + '::' + offer.plan.id;
+  }
+
+  /**
+   * 拆刷配置（純函式）：只回傳每個方案被分配的金額，不重新評估回饋。
+   * UI 再以 evaluatePlan 重新試算每段，並處理剩餘金額 fallback。
+   *
+   * @param {{offers: object[], spendTwd: number}} input
+   * @returns {{
+   *   candidates: object[],
+   *   allocations: Array<{offer: object, amount: number}>,
+   *   left: number
+   * }}
+   */
+  function allocateSplit(input) {
+    input = input || {};
+    var offers = Array.isArray(input.offers) ? input.offers : [];
+    var spendTwd = Math.max(0, Number(input.spendTwd) || 0);
+    var splitCandidates = offers.slice().sort(function (a, b) {
+      return offerNetRate(b) - offerNetRate(a) || b.net - a.net;
+    });
+    var segments = [];
+
+    splitCandidates.forEach(function (candidate) {
+      var baseRate = candidate.includeBase ? Math.max(0, Number(candidate.card.baseRate) || 0) : 0;
+      var feeRate = candidate.feeApplies ? 1.5 : 0;
+      var threshold = offerThreshold(candidate);
+      var quotaGroups = new Map();
+
+      (candidate.matchedParts || []).forEach(function (part) {
+        var rate = Math.max(0, Number(part.rate) || 0);
+        if (rate <= 0) return;
+        var capacity = Number.isFinite(part.remainingBefore) ? part.remainingBefore / (rate / 100) : Infinity;
+        if (capacity <= 0) return;
+        if (threshold > 0 && Number.isFinite(capacity) && capacity < threshold) return;
+        if (part.quotaGroupId) {
+          var group = quotaGroups.get(part.quotaGroupId) || { rate: 0, capacity: 0 };
+          group.rate = Math.max(group.rate, rate);
+          group.capacity = Number.isFinite(capacity) ? Math.max(group.capacity, capacity) : Infinity;
+          quotaGroups.set(part.quotaGroupId, group);
+        } else {
+          segments.push({ offer: candidate, kind: 'bonus', capacity: capacity, rate: baseRate + rate - feeRate, threshold: threshold });
+        }
+      });
+
+      quotaGroups.forEach(function (group) {
+        segments.push({ offer: candidate, kind: 'bonus', capacity: group.capacity, rate: baseRate + group.rate - feeRate, threshold: threshold });
+      });
+      if (baseRate > 0 || feeRate > 0) {
+        segments.push({ offer: candidate, kind: 'base', capacity: Infinity, rate: baseRate - feeRate, threshold: threshold });
+      }
+    });
+
+    segments.sort(function (a, b) {
+      return b.rate - a.rate || (a.kind === 'bonus' ? 0 : 1) - (b.kind === 'bonus' ? 0 : 1);
+    });
+
+    var left = spendTwd;
+    var bucket = new Map();
+    segments.forEach(function (segment) {
+      if (left <= 0) return;
+      var capacity = segment.capacity;
+      if (!Number.isFinite(capacity)) capacity = left;
+      capacity = Math.max(0, Math.floor(capacity));
+      if (capacity <= 0) return;
+      if (segment.kind === 'bonus' && segment.threshold > 0 && left < segment.threshold) return;
+      var amount = Math.min(left, capacity);
+      if (amount <= 0) return;
+      var key = offerKey(segment.offer);
+      var entry = bucket.get(key) || { offer: segment.offer, amount: 0 };
+      entry.amount += amount;
+      bucket.set(key, entry);
+      left -= amount;
+    });
+
+    return {
+      candidates: splitCandidates,
+      allocations: Array.from(bucket.values()),
+      left: left
+    };
+  }
+
+  /**
+   * 依情境、店家與金額評估所有卡片方案，回傳排序後候選。
+   * 不修改 cards / plans；週期重置以 partChanges 回傳，由 UI 層套用。
+   *
+   * @param {{
+   *   cards: object[],
+   *   contexts: string[]|Set<string>,
+   *   merchant?: string,
+   *   spendTwd: number,
+   *   today?: string,
+   *   dateParts: {year:number, month:number, day:number},
+   *   preferredCardId?: string,
+   *   merchantIncludesGeneral?: boolean
+   * }} input
+   * @returns {{
+   *   offers: object[],
+   *   storeOffers: object[],
+   *   storeBest: object|null,
+   *   preferredApplied: boolean,
+   *   preferredCardId: string,
+   *   partChanges: Array<{cardId:string, planId:string, change:object}>,
+   *   periodReset: boolean
+   * }}
+   */
+  function rankOffers(input) {
+    input = input || {};
+    var cards = Array.isArray(input.cards) ? input.cards : [];
+    var selectedContexts = Array.isArray(input.contexts)
+      ? input.contexts.slice()
+      : (input.contexts && typeof input.contexts[Symbol.iterator] === 'function'
+        ? Array.from(input.contexts)
+        : (input.contexts ? [String(input.contexts)] : ['general']));
+    var merchant = input.merchant || '';
+    var spendTwd = Math.max(0, Number(input.spendTwd) || 0);
+    var dateParts = input.dateParts || {};
+    var today = input.today || '';
+    if (!today && dateParts.year && dateParts.month && dateParts.day) {
+      today = dateParts.year + '-' + pad2(dateParts.month) + '-' + pad2(dateParts.day);
+    }
+    var merchantIncludesGeneral = input.merchantIncludesGeneral !== false;
+    var offers = [];
+    var partChanges = [];
+    var periodReset = false;
+
+    cards.forEach(function (card) {
+      card = card || {};
+      var plans = (card.plans || []).filter(function (plan) {
+        return plan.enabled !== false && planMatchesContexts(plan.contexts || [], selectedContexts, {
+          merchantIncludesGeneral: merchantIncludesGeneral
+        });
+      });
+      var evaluatedPlanCount = 0;
+
+      plans.forEach(function (plan) {
+        var hasNonMerchantQual = (plan.contexts || []).some(function (context) {
+          return context !== 'merchant' && selectedContexts.indexOf(context) >= 0;
+        });
+        var enforceMerchantPre = selectedContexts.indexOf('merchant') >= 0
+          && (plan.contexts || []).indexOf('merchant') >= 0
+          && !hasNonMerchantQual;
+        if (enforceMerchantPre && merchant && !merchantTextMatches(plan, merchant)) return;
+
+        evaluatedPlanCount += 1;
+        var result = evaluatePlan({
+          card: card,
+          plan: plan,
+          spendTwd: spendTwd,
+          merchant: merchant,
+          contexts: selectedContexts,
+          today: today,
+          dateParts: dateParts
+        });
+        (result.partChanges || []).forEach(function (change) {
+          partChanges.push({ cardId: card.id, planId: plan.id, change: change });
+        });
+        if (result.periodReset) periodReset = true;
+        if (result.offer.net > 0 || result.offer.base > 0 || result.offer.matchedParts.length) {
+          offers.push(result.offer);
+        }
+      });
+
+      // 特店方案全部因店家未命中而被跳過時，仍要用該卡基本回饋參與比較。
+      if (!evaluatedPlanCount && Number(card.baseRate) > 0
+        && !(selectedContexts.length === 1 && selectedContexts.indexOf('paypay') >= 0)) {
+        var fallbackCtx = selectedContexts.indexOf('general') >= 0
+          ? 'general'
+          : (selectedContexts.find(function (context) { return context !== 'paypay'; }) || 'general');
+        var basePlan = {
+          id: 'base-' + card.id,
+          legacyKey: null,
+          name: '基本回饋',
+          contexts: [fallbackCtx],
+          includeBaseReward: true,
+          foreignFeeApplies: card.baseFeeApplies,
+          rewardParts: [],
+          enabled: true
+        };
+        var baseResult = evaluatePlan({
+          card: card,
+          plan: basePlan,
+          spendTwd: spendTwd,
+          merchant: merchant,
+          contexts: selectedContexts,
+          today: today,
+          dateParts: dateParts
+        });
+        (baseResult.partChanges || []).forEach(function (change) {
+          partChanges.push({ cardId: card.id, planId: basePlan.id, change: change });
+        });
+        if (baseResult.periodReset) periodReset = true;
+        offers.push(baseResult.offer);
+      }
+    });
+
+    offers.sort(function (a, b) { return b.net - a.net; });
+    var storeOffers = offers.slice();
+    var storeBest = storeOffers[0] || null;
+    var preferredCardId = input.preferredCardId || '';
+    var preferredApplied = false;
+
+    if (preferredCardId) {
+      var preferredOffer = offers.find(function (offer) { return offer.card.id === preferredCardId; });
+      if (preferredOffer) {
+        offers = [preferredOffer].concat(offers.filter(function (offer) { return offer !== preferredOffer; }));
+        preferredApplied = true;
+      } else {
+        preferredCardId = '';
+      }
+    }
+
+    return {
+      offers: offers,
+      storeOffers: storeOffers,
+      storeBest: storeBest,
+      preferredApplied: preferredApplied,
+      preferredCardId: preferredCardId,
+      partChanges: partChanges,
+      periodReset: periodReset
+    };
+  }
+
   var api = {
     version: VERSION,
     getPeriodKey: getPeriodKey,
@@ -317,7 +698,13 @@
     parseMerchantText: parseMerchantText,
     getMerchantText: getMerchantText,
     merchantTextMatches: merchantTextMatches,
-    evaluatePlan: evaluatePlan
+    evaluatePlan: evaluatePlan,
+    rankOffers: rankOffers,
+    allocateSplit: allocateSplit,
+    getCycleLabel: getCycleLabel,
+    getNextResetDate: getNextResetDate,
+    getNextResetLabel: getNextResetLabel,
+    getQuotaState: getQuotaState
   };
 
   global.RuleEngine = Object.assign(global.RuleEngine || {}, api);

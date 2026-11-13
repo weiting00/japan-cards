@@ -47,7 +47,7 @@ setTimeout(function () {
     check('最下面有固定「新增」鈕', (function(){ var b = d.querySelector('#addCardOverlay .add-card-foot button[type="submit"]'); if (!b) return false; var r = b.getBoundingClientRect(); return r.height >= 40 && r.bottom >= 820 && b.getAttribute('form') === 'addDynamicCardForm'; })());
     check('開啟時底部 tab 隱藏（取代 tab）', w.getComputedStyle(d.querySelector('.nav-tabs')).display === 'none');
     check('舊版規則表已移除', !d.getElementById('ruleGuideRows') && !d.getElementById('toggleRuleEdit') && !d.getElementById('ruleEditActions') && !d.getElementById('ruleChangeModal'));
-    check('保留既有 DOM id', ['addDynamicCardForm','planEditorForm','planEditorMerchantLabel','planEditorMerchants','merchantChoice','cancelPlanEdit','guideCardList','guideV3Rows','resultMerchantTrigger','resultMerchantSearch','resultMerchantList','resultMerchantMemo','resultMerchantFeedback','resultStoreNote'].every(function (id) { return !!d.getElementById(id); }));
+    check('保留既有 DOM id', ['addDynamicCardForm','planEditorForm','planEditorMerchantLabel','planEditorMerchants','merchantChoice','cancelPlanEdit','guideCardList','guideV3Rows','resultMerchantOpen','resultMerchantTrigger','resultMerchantSearch','resultMerchantList','resultMerchantFeedback','resultStoreNote'].every(function (id) { return !!d.getElementById(id); }));
     check('已移除沒有通用性的熊本熊/場景守則區塊', !d.getElementById('kumaGuideCard') && !d.getElementById('ruleGuideSummary'));
     check('已移除攻略頁商店總覽', !d.getElementById('guideMerchantOverview') && !d.getElementById('guideMerchantList'));
 

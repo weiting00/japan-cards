@@ -34,7 +34,7 @@ setTimeout(async function () {
     check('舊版規則編輯函式已移除', typeof w.cancelRuleEdit === 'undefined' && typeof w.toggleRuleEdit === 'undefined' && typeof w.renderRuleGuideTable === 'undefined');
 
     // 保留既有 DOM id（隨獨立加碼活動頁/決策頁提示化調整）
-    check('保留既有 DOM id', ['addDynamicCardForm','planEditorForm','planEditorMerchantLabel','planEditorMerchants','merchantChoice','cancelPlanEdit','guideCardList','guideV3Rows','resultMerchantTrigger','resultMerchantSearch','resultMerchantList','resultMerchantMemo','resultMerchantFeedback','resultStoreNote'].every(function (id) { return !!d.getElementById(id); }));
+    check('保留既有 DOM id', ['addDynamicCardForm','planEditorForm','planEditorMerchantLabel','planEditorMerchants','merchantChoice','cancelPlanEdit','guideCardList','guideV3Rows','resultMerchantOpen','resultMerchantTrigger','resultMerchantSearch','resultMerchantList','resultMerchantFeedback','resultStoreNote'].every(function (id) { return !!d.getElementById(id); }));
     check('已移除沒有通用性的熊本熊/場景守則區塊', !d.getElementById('kumaGuideCard') && !d.getElementById('kumaGuideTitle') && !d.getElementById('ruleGuideSummary'));
     check('信用卡列表 DOM 已移除', !d.getElementById('dynamicCardsList') && !d.getElementById('ruleCardSearch'));
 
@@ -46,7 +46,8 @@ setTimeout(async function () {
     check('決策頁不再有推薦前的商店總覽', !d.getElementById('decisionMerchantOverview') && !d.getElementById('decisionMerchantSearch') && !d.getElementById('decisionMerchantList'));
     check('決策頁不再有重複的自填店家備註欄', !d.getElementById('merchantNote'));
     check('決策頁不再有可選店家清單', !d.getElementById('merchantChoiceList'));
-    check('特約商店查詢入口在推薦結果內', d.getElementById('resultBox').contains(d.getElementById('resultMerchantTrigger')));
+    check('特約商店查詢入口在推薦結果內', d.getElementById('resultBox').contains(d.getElementById('resultMerchantOpen')));
+    check('特約商店查詢彈窗獨立於推薦結果', !d.getElementById('resultBox').contains(d.getElementById('resultMerchantTrigger')));
 
     // 決策情境為單選：點下一個情境會取代上一個，不會同時存在
     w.switchTab('decision');
@@ -69,53 +70,79 @@ setTimeout(async function () {
     var scenarioHeight = d.querySelector('.scenario-option').getBoundingClientRect().height;
     check('情境按鈕高度已縮小', scenarioHeight > 0 && scenarioHeight <= 72, scenarioHeight + 'px');
 
-    // 特約商店查詢：先有推薦，再從推薦卡底下展開內嵌面板；搜尋符合店家會自動推薦
+    // 特約商店查詢：店家原文照原本方式掛在推薦方案底下；明細下方只有一顆按鈕開彈窗
     var memoInput = d.getElementById('memo');
     memoInput.value = '唐吉訶德、松本清合利他命';
-    check('尚未完成試算時不顯示商店查詢', d.getElementById('resultMerchantTrigger').hidden === true);
+    var merchantTrigger = d.getElementById('resultMerchantTrigger');
+    var merchantOpen = d.getElementById('resultMerchantOpen');
+    check('尚未完成試算時不顯示用店家搜尋其他卡片按鈕', merchantOpen.hidden === true);
+    check('尚未完成試算時特約彈窗是關閉的', merchantTrigger.hidden === true);
     var amountInput = d.getElementById('jpyAmount');
     amountInput.value = '10000';
     amountInput.dispatchEvent(new w.Event('input', {bubbles:true}));
     await sleep(80);
     var planMerchant = d.querySelector('#cardDesc .result-plan-merchant');
     var planMerchantPreview = planMerchant && planMerchant.querySelector('.result-plan-merchant-preview');
-    check('推薦方案底下直接顯示原文摘要，不用先搜尋', !!planMerchant && /松本清/.test(planMerchantPreview.textContent), planMerchantPreview ? planMerchantPreview.textContent.slice(0, 80) : '沒有原文區塊');
-    check('推薦卡原文跟著目前推薦卡', /松本清/.test(d.getElementById('cardDesc').textContent) && d.getElementById('cardDesc').textContent.indexOf(d.getElementById('bestCard').textContent.trim()) >= 0, d.getElementById('cardDesc').textContent.slice(0, 100));
+    check('推薦方案底下直接顯示特約原文摘要', !!planMerchant && /松本清/.test(planMerchantPreview.textContent), planMerchantPreview ? planMerchantPreview.textContent.slice(0, 80) : '沒有原文區塊');
     check('推薦原文預設收合', planMerchant.tagName === 'DETAILS' && planMerchant.open === false);
     planMerchant.open = true;
     check('推薦原文可展開並看到完整原文', planMerchant.open === true && /松本清/.test(planMerchant.querySelector('.result-plan-merchant-text').textContent));
     planMerchant.open = false;
     check('推薦原文可再收合', planMerchant.open === false);
-    var planMerchantRect = planMerchant.getBoundingClientRect();
-    check('推薦原文在手機寬度內', planMerchantRect.left >= 0 && planMerchantRect.right <= 390, Math.round(planMerchantRect.left) + '~' + Math.round(planMerchantRect.right));
     check('推薦原文摘要觸控高度 >= 44px', planMerchant.querySelector('.result-plan-merchant-summary').getBoundingClientRect().height >= 44, Math.round(planMerchant.querySelector('.result-plan-merchant-summary').getBoundingClientRect().height) + 'px');
-    var merchantTrigger = d.getElementById('resultMerchantTrigger');
-    check('特約情境有金額後才顯示商店查詢入口', merchantTrigger.hidden === false);
-    check('商店查詢入口依附在推薦卡結果內', d.getElementById('resultBox').contains(merchantTrigger));
-    check('商店查詢入口觸控高度 >= 44px', merchantTrigger.getBoundingClientRect().height >= 44, Math.round(merchantTrigger.getBoundingClientRect().height) + 'px');
-    check('未填店家時入口仍是一般商店查詢', /有符合嗎/.test(d.getElementById('resultMerchantTriggerText').textContent) && d.getElementById('resultMerchantTriggerMeta').textContent === '查看特約商店', d.getElementById('resultMerchantTriggerText').textContent + ' / ' + d.getElementById('resultMerchantTriggerMeta').textContent);
-    merchantTrigger.open = true;
-    merchantTrigger.dispatchEvent(new w.Event('toggle'));
+    check('推薦結果出現單一「用店家搜尋其他卡片」按鈕', merchantOpen.hidden === false && /用店家搜尋其他卡片/.test(merchantOpen.textContent), merchantOpen.textContent);
+    check('用店家搜尋其他卡片按鈕在推薦結果內', d.getElementById('resultBox').contains(merchantOpen));
+    check('用店家搜尋其他卡片按鈕在店家明細下方', d.getElementById('cardDesc').nextElementSibling === merchantOpen);
+    check('用店家搜尋其他卡片按鈕觸控高度 >= 44px', merchantOpen.getBoundingClientRect().height >= 44, Math.round(merchantOpen.getBoundingClientRect().height) + 'px');
+    check('特約查詢是獨立彈窗', !d.getElementById('resultBox').contains(merchantTrigger) && merchantTrigger.classList.contains('modal-backdrop') && merchantTrigger.getAttribute('role') === 'dialog');
+    check('尚未點按鈕時特約彈窗保持關閉', merchantTrigger.hidden === true);
+    merchantOpen.click();
     await sleep(60);
-    check('商店查詢在推薦卡底下展開，不是彈窗', merchantTrigger.open === true && !d.getElementById('merchantLookupModal'));
-    var panelRect = merchantTrigger.getBoundingClientRect();
-    check('展開後的商店查詢在手機寬度內', !!panelRect && panelRect.left >= 0 && panelRect.right <= 390, panelRect ? Math.round(panelRect.left) + '~' + Math.round(panelRect.right) : '沒有面板');
-    check('面板直接顯示使用者填的明細原文', d.querySelectorAll('#resultMerchantMemo .merchant-memo-chip').length === 0 && /唐吉訶德/.test(d.getElementById('resultMerchantMemo').textContent) && /松本清合利他命/.test(d.getElementById('resultMerchantMemo').textContent), d.getElementById('resultMerchantMemo').textContent);
+    check('點按鈕才會打開特約彈窗', merchantTrigger.hidden === false);
+    var lookupBox = merchantTrigger.querySelector('.merchant-lookup-modal');
+    var lookupRect = lookupBox && lookupBox.getBoundingClientRect();
+    check('特約彈窗在手機寬度內', !!lookupRect && lookupRect.left >= 0 && lookupRect.right <= 390, lookupRect ? Math.round(lookupRect.left) + '~' + Math.round(lookupRect.right) : '沒有彈窗');
+    check('彈窗只保留搜尋欄與結果，不顯示店家原文／明細／推薦摘要', !d.getElementById('resultMerchantRaw') && !d.getElementById('resultMerchantMemoBox') && !d.getElementById('resultMerchantRecommend'));
+    check('搜尋欄在彈窗內', !!d.getElementById('resultMerchantSearch') && merchantTrigger.contains(d.getElementById('resultMerchantSearch')));
+    check('尚未輸入關鍵字時提示直接搜尋', /輸入店名或活動關鍵字/.test(d.getElementById('resultMerchantFeedback').textContent), d.getElementById('resultMerchantFeedback').textContent);
+    var modalClose = merchantTrigger.querySelector('.modal-title .icon-btn');
+    if (modalClose) modalClose.click();
+    await sleep(30);
+    check('標題關閉鈕可關閉特約彈窗', !!modalClose && merchantTrigger.hidden === true);
+    merchantOpen.click();
+    await sleep(30);
+    d.dispatchEvent(new w.KeyboardEvent('keydown', {key:'Escape', bubbles:true}));
+    await sleep(30);
+    check('Esc 可關閉特約彈窗', merchantTrigger.hidden === true);
+    merchantOpen.click();
+    await sleep(30);
+    merchantTrigger.click();
+    await sleep(30);
+    check('點彈窗背景可關閉特約彈窗', merchantTrigger.hidden === true);
+    merchantOpen.click();
+    await sleep(30);
 
     // 加入一張同店卡，驗證「同一家店會列出所有適用卡」，而不是只列推薦卡
     w.eval("rulesV3.cards.find(c=>c.id==='fubon_j').plans.push({id:'test-merchant-plan',name:'測試特店方案',contexts:['merchant'],includeBaseReward:true,foreignFeeApplies:true,noticeFlags:false,merchantText:'指定特店：唐吉訶德、BicCamera（活動原文）',merchants:[],thresholdTwd:0,thresholdType:'single',capAmount:0,cycle:'none',statementDay:null,capBasis:'bonus',fallbackBase:true,enabled:true,rewardParts:[{id:'test-merchant-part',name:'特店加碼',rate:1,capAmount:0,usedReward:0,cycle:'none',thresholdTwd:0,thresholdType:'single',start:'',end:''}]})");
     w.calculate();
+    await sleep(40);
+    if (merchantTrigger.hidden) merchantOpen.click();
+    await sleep(40);
     var merchantSearch = d.getElementById('resultMerchantSearch');
     merchantSearch.value = '唐吉訶德';
     merchantSearch.dispatchEvent(new w.Event('input', {bubbles:true}));
     await sleep(140);
     check('搜尋符合店家會自動帶入決策', d.getElementById('merchantChoice').value === '唐吉訶德');
+    var merchantFeedbackText = d.getElementById('resultMerchantFeedback').textContent;
+    var merchantHitChip = Array.from(d.querySelectorAll('#resultMerchantList .merchant-card-button small')).find(function (el) { return /特約命中/.test(el.textContent); });
+    check('搜尋結果直接標出打中的關鍵字', /搜尋「唐吉訶德」/.test(merchantFeedbackText) && !!merchantHitChip && /特約命中「唐吉訶德」/.test(merchantHitChip.textContent), merchantFeedbackText + ' / ' + (merchantHitChip ? merchantHitChip.textContent : '沒有命中卡片'));
     check('搜尋符合後自動推薦最適合的卡', /玉山熊本熊卡/.test(d.getElementById('bestCard').textContent), d.getElementById('bestCard').textContent);
     check('搜尋後結果出現店家註記', d.getElementById('resultStoreNote').hidden === false && /唐吉訶德/.test(d.getElementById('resultStoreNote').textContent));
     var merchantRow = d.querySelector('#resultMerchantList .merchant-row');
     check('商店查詢列出同一家店的所有適用卡', !!merchantRow && merchantRow.querySelectorAll('.merchant-card-chip').length >= 2, merchantRow ? merchantRow.querySelectorAll('.merchant-card-chip').length + ' 張' : '沒有店家');
     check('商店查詢標記最高與目前推薦', !!merchantRow && !!merchantRow.querySelector('.merchant-card-chip.is-best') && !!merchantRow.querySelector('.merchant-card-chip.is-current'));
-    check('命中店家後入口文字改為已符合', /有符合的推薦卡/.test(d.getElementById('resultMerchantTriggerText').textContent) && d.getElementById('resultMerchantTriggerMeta').textContent === '已符合', d.getElementById('resultMerchantTriggerText').textContent + ' / ' + d.getElementById('resultMerchantTriggerMeta').textContent);
+    check('命中店家後仍保留單一找特約卡片入口', merchantOpen.hidden === false);
+    check('命中店家後特約彈窗仍保持開啟', merchantTrigger.hidden === false);
 
     var storeOnlyButton = merchantRow && merchantRow.querySelector('[data-result-merchant-auto]');
     check('商店列有「用這家店找最高回饋」動作', !!storeOnlyButton);
@@ -132,7 +159,8 @@ setTimeout(async function () {
     await sleep(100);
     check('點卡片會指定該卡試算', w.eval('decisionPreferredCardId') === 'fubon_j' && /富邦 J 卡/.test(d.getElementById('bestCard').textContent), d.getElementById('bestCard').textContent);
     check('指定卡後商店註記會說明目前選擇', /富邦 J 卡/.test(d.getElementById('resultStoreNote').textContent));
-    check('切換推薦卡後原文跟著目前方案', /富邦 J 卡/.test(d.getElementById('cardDesc').textContent) && !!d.querySelector('#cardDesc .result-plan-merchant.is-empty') && /未限制店家（實體一般消費）/.test(d.querySelector('#cardDesc .result-plan-merchant.is-empty').textContent), d.getElementById('cardDesc').textContent.replace(/\s+/g, ' ').slice(0, 100));
+    check('切換推薦卡後彈窗仍只更新搜尋結果', !!d.getElementById('resultMerchantSearch') && !d.getElementById('resultMerchantRaw') && /搜尋「唐吉訶德」/.test(d.getElementById('resultMerchantFeedback').textContent), d.getElementById('resultMerchantFeedback').textContent);
+    check('一般消費方案仍可從同一顆按鈕查其他卡', merchantOpen.hidden === false);
 
     // 直接搜尋另一家店：有符合就自動換成該店最高回饋
     merchantSearch = d.getElementById('resultMerchantSearch');
@@ -140,12 +168,14 @@ setTimeout(async function () {
     merchantSearch.dispatchEvent(new w.Event('input', {bubbles:true}));
     await sleep(160);
     check('搜尋另一家店會自動換成該店推薦', d.getElementById('merchantChoice').value === 'BicCamera' && /玉山熊本熊卡/.test(d.getElementById('bestCard').textContent), d.getElementById('bestCard').textContent);
+    check('特店卡本身就是最高回饋時，不顯示一般消費較高的原因', !/一般消費淨/.test(d.getElementById('resultStoreNote').textContent), d.getElementById('resultStoreNote').textContent);
 
     // 特約情境不能只看特店卡：同一筆消費也可能用實體一般消費卡，較高回饋要能勝出
     w.eval("rulesV3.cards.find(c=>c.id==='cathay_cube').plans.push({id:'test-general-high',name:'測試實體高回饋',contexts:['general'],includeBaseReward:false,foreignFeeApplies:false,noticeFlags:false,merchantText:'',merchants:[],thresholdTwd:0,thresholdType:'single',capAmount:0,cycle:'none',statementDay:null,capBasis:'bonus',fallbackBase:false,enabled:true,rewardParts:[{id:'test-general-high-part',name:'實體加碼',rate:30,capAmount:0,usedReward:0,cycle:'none',thresholdTwd:0,thresholdType:'single',start:'',end:''}]})");
     w.calculate();
     await sleep(80);
     check('特約情境會一起比較實體一般消費，較高實體回饋可勝出', /國泰 CUBE 卡/.test(d.getElementById('bestCard').textContent), d.getElementById('bestCard').textContent);
+    check('特店命中但一般消費更高時，結果說明原因', /雖然「BicCamera」符合/.test(d.getElementById('resultStoreNote').textContent) && /國泰 CUBE 卡/.test(d.getElementById('resultStoreNote').textContent) && /一般消費淨/.test(d.getElementById('resultStoreNote').textContent) && /更高/.test(d.getElementById('resultStoreNote').textContent), d.getElementById('resultStoreNote').textContent);
     w.renderResultMerchantPanel();
     check('商店面板也把實體一般消費卡列為候選', Array.from(d.querySelectorAll('#resultMerchantList .merchant-card-chip')).some(function (button) { return button.dataset.resultMerchantCard === 'cathay_cube'; }));
     w.eval("rulesV3.cards.find(c=>c.id==='cathay_cube').plans=rulesV3.cards.find(c=>c.id==='cathay_cube').plans.filter(p=>p.id!=='test-general-high')");
@@ -158,13 +188,20 @@ setTimeout(async function () {
     w.calculate();
     await sleep(40);
     check('清除店家條件後 merchantChoice 回到空值', d.getElementById('merchantChoice').value === '' && w.eval('decisionPreferredCardId') === '');
+    check('清除店家條件後特約彈窗關閉', merchantTrigger.hidden === true);
 
-    // B：店家未命中時，即使沒有任何其他卡命中，也保留搜尋入口讓使用者看候選。
+    // B：店家未命中時，仍保留同一顆「用店家搜尋其他卡片」按鈕。
     d.getElementById('merchantChoice').value = '不存在的店家 XYZ';
     w.calculate();
     await sleep(50);
-    check('店家未命中時仍顯示搜尋入口', merchantTrigger.hidden === false && /沒有符合的推薦卡/.test(d.getElementById('resultMerchantTriggerText').textContent), merchantTrigger.hidden + ' / ' + d.getElementById('resultMerchantTriggerText').textContent);
-    check('未命中入口提示搜尋其他特約卡', d.getElementById('resultMerchantTriggerMeta').textContent === '搜尋其他特約卡', d.getElementById('resultMerchantTriggerMeta').textContent);
+    check('店家未命中時，只有特店方案的卡片仍以基本回饋列入候選', w.eval("lastStoreOffers.some(o=>o.card.id==='esun_kuma' && o.plan.name==='基本回饋' && o.matchedParts.length===0 && o.base>0)"), w.eval("JSON.stringify(lastStoreOffers.map(o=>({card:o.card.name,plan:o.plan.name,base:o.base,bonus:o.bonus})))"));
+    check('店家未命中時仍保留用店家搜尋其他卡片按鈕', merchantOpen.hidden === false);
+    check('未命中時特約彈窗尚未自動打開', merchantTrigger.hidden === true);
+    merchantOpen.click();
+    await sleep(50);
+    check('未命中時點按鈕可打開特約彈窗', merchantTrigger.hidden === false && /不存在的店家 XYZ/.test(d.getElementById('resultMerchantFeedback').textContent), d.getElementById('resultMerchantFeedback').textContent);
+    var kumaBaseChip = d.querySelector('#resultMerchantList [data-result-merchant-card="esun_kuma"] small');
+    check('店家未命中時，基本回饋候選不誤標為特約命中', !!kumaBaseChip && /實體一般/.test(kumaBaseChip.textContent) && !/特約命中/.test(kumaBaseChip.textContent), kumaBaseChip ? kumaBaseChip.textContent : '沒有玉山熊本熊卡');
     w.clearMerchantLookupConditions();
     await sleep(40);
 
@@ -172,10 +209,12 @@ setTimeout(async function () {
     w.applyPreset('donki', null);
     await sleep(40);
     check('店家快捷標籤會把已知店家帶進試算', d.getElementById('merchantChoice').value === '唐吉訶德' && /唐吉訶德/.test(d.getElementById('memo').value));
-    check('目前推薦命中時收起搜尋入口', merchantTrigger.hidden === true, String(merchantTrigger.hidden));
+    check('目前推薦命中時仍保留單一找特約卡片入口', merchantOpen.hidden === false);
+    check('目前推薦命中時特約彈窗保持收起', merchantTrigger.hidden === true, String(merchantTrigger.hidden));
     w.clearMerchantLookupConditions();
     await sleep(30);
-    check('清除後一般商店查詢入口回來', merchantTrigger.hidden === false && /有符合嗎/.test(d.getElementById('resultMerchantTriggerText').textContent), merchantTrigger.hidden + ' / ' + d.getElementById('resultMerchantTriggerText').textContent);
+    check('清除後找特約卡片入口仍在', merchantOpen.hidden === false);
+    check('清除後特約彈窗保持收起', merchantTrigger.hidden === true);
     w.switchTab('guide'); await sleep(50);
     check('攻略頁不再有商店總覽', !d.getElementById('guideMerchantOverview') && !d.getElementById('guideMerchantList'));
     check('攻略頁特約店家歸屬在加碼活動底下', d.querySelectorAll('#guideCardList .guide-bonus-item .guide-bonus-merchants').length > 0 && /特約店家/.test(d.querySelector('#guideCardList .guide-bonus-merchants').textContent));
@@ -196,7 +235,7 @@ setTimeout(async function () {
     await sleep(30);
     check('切回拆分最佳化會同步 hidden 值與選中狀態', d.getElementById('splitModeAuto').getAttribute('aria-selected') === 'true' && d.getElementById('splitModeSingle').getAttribute('aria-selected') === 'false' && d.getElementById('splitMode').value === 'auto');
 
-    // 特約拆刷：原文要跟著每個推薦方案走，不能變成一串獨立卡片的清單
+    // 特約拆刷：原文照原本方式各自掛在推薦方案底下，查詢按鈕仍只有一顆
     w.setDecisionContexts(['merchant']);
     d.getElementById('jpyAmount').value = '50000';
     d.getElementById('jpyAmount').dispatchEvent(new w.Event('input', {bubbles:true}));
@@ -211,6 +250,20 @@ setTimeout(async function () {
     var splitDetailPreview = splitTextDetails[0] && splitTextDetails[0].querySelector('.result-plan-merchant-preview');
     check('特約拆刷原文摘要直接可見', !!splitDetailPreview && /松本清/.test(splitDetailPreview.textContent), splitDetailPreview ? splitDetailPreview.textContent.slice(0, 60) : '沒有摘要');
     check('特約拆刷未限制店家的方案直接顯示實體一般消費', !!d.querySelector('#cardDesc .result-plan-merchant.is-empty') && /未限制店家/.test(d.querySelector('#cardDesc .result-plan-merchant.is-empty').textContent));
+    check('特約拆刷仍只有一顆查詢按鈕且在明細下方', d.querySelectorAll('.result-merchant-open').length === 1 && d.getElementById('cardDesc').nextElementSibling === merchantOpen);
+    merchantOpen.click();
+    await sleep(50);
+    check('特約拆刷的彈窗只保留搜尋欄與結果', !!d.getElementById('resultMerchantSearch') && !d.getElementById('resultMerchantRaw') && !d.getElementById('resultMerchantMemoBox'));
+    var splitSearch = d.getElementById('resultMerchantSearch');
+    splitSearch.value = '松本清';
+    splitSearch.dispatchEvent(new w.Event('input', {bubbles:true}));
+    await sleep(140);
+    var splitFeedbackText = d.getElementById('resultMerchantFeedback').textContent;
+    var splitHitChip = Array.from(d.querySelectorAll('#resultMerchantList .merchant-card-button small')).find(function (el) { return /特約命中/.test(el.textContent); });
+    check('特約拆刷搜尋也直接標出打中的關鍵字', /搜尋「松本清」/.test(splitFeedbackText) && !!splitHitChip && /特約命中「松本清」/.test(splitHitChip.textContent), splitFeedbackText + ' / ' + (splitHitChip ? splitHitChip.textContent : '沒有命中卡片'));
+    check('特約拆刷搜尋結果有候選卡片', d.querySelectorAll('#resultMerchantList .merchant-card-chip').length >= 1, d.querySelectorAll('#resultMerchantList .merchant-card-chip').length + ' 張');
+    w.closeMerchantLookupPanel();
+    await sleep(30);
 
     // 分頁正常
     ['decision','quotas','ledger','guide'].forEach(function(t){ w.switchTab(t); });

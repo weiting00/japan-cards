@@ -63,6 +63,19 @@ setTimeout(async function () {
       var part = plan && (plan.rewardParts || []).find(function(x){ return x.id === ids.partId; });
       return part ? Number(part.usedReward) || 0 : null;
     }
+    function partCumulativeFrom(payload) {
+      if (!payload || !payload.cardRulesV3) return null;
+      var card = (payload.cardRulesV3.cards || []).find(function(c){ return c.id === ids.cardId; });
+      var plan = card && (card.plans || []).find(function(p){ return p.id === ids.planId; });
+      var part = plan && (plan.rewardParts || []).find(function(x){ return x.id === ids.partId; });
+      return part ? Number(part.cumulativeSpendTwd) || 0 : null;
+    }
+    function partState() {
+      return ev('(function(){var c=rulesV3.cards.find(function(c){return c.id===' + JSON.stringify(ids.cardId) + ';});var p=c.plans.find(function(p){return p.id===' + JSON.stringify(ids.planId) + ';});var x=p.rewardParts.find(function(x){return x.id===' + JSON.stringify(ids.partId) + ';});return {used:Number(x.usedReward)||0,cumulative:Number(x.cumulativeSpendTwd)||0,periodKey:x.periodKey||null};})()');
+    }
+    function setPartPeriod(used, cumulative, periodKey) {
+      ev('(function(){var c=rulesV3.cards.find(function(c){return c.id===' + JSON.stringify(ids.cardId) + ';});var p=c.plans.find(function(p){return p.id===' + JSON.stringify(ids.planId) + ';});var x=p.rewardParts.find(function(x){return x.id===' + JSON.stringify(ids.partId) + ';});x.cycle="month";x.capAmount=1000;x.usedReward=' + Number(used) + ';x.cumulativeSpendTwd=' + Number(cumulative) + ';x.periodKey=' + JSON.stringify(periodKey) + ';x.cumulativePeriodKey=' + JSON.stringify(periodKey) + ';})()');
+    }
 
     // ---------- 1. 清除明細直接生效，不再開確認視窗 ----------
     check('清空明細不再有確認 modal', !d.getElementById('clearLedgerModal') && typeof w.confirmClearLedger === 'undefined');
@@ -106,30 +119,80 @@ setTimeout(async function () {
     check('刪除單筆後推送的 ledger 是空的（不是刪除前的舊資料）', !!writeDelete && Array.isArray(writeDelete.ledger) && writeDelete.ledger.length === 0, writeDelete ? 'len=' + (writeDelete.ledger || []).length : '無');
     check('刪除單筆後推送的 usedReward 已返還', partUsedFrom(writeDelete) === 40, String(partUsedFrom(writeDelete)));
 
-    // ---------- 4. 編輯單筆明細：可改名稱與日期，但不重算已扣額度 ----------
-    setPartUsed(50);
+    // ---------- 4. 編輯單筆明細：同週期不改額度；跨週期做差值調整 ----------
+    var pad2 = function (n) { return String(n).padStart(2, '0'); };
+    var tp = ev('getTaipeiDateParts()');
+    var currentPeriodKey = tp.year + '-' + pad2(tp.month);
+    var sameMonthDate = tp.year + '-' + pad2(tp.month) + '-09T12:00';
+    var sameMonthOtherDate = tp.year + '-' + pad2(tp.month) + '-08T08:30';
+    var previousYear = tp.month === 1 ? tp.year - 1 : tp.year;
+    var previousMonth = tp.month === 1 ? 12 : tp.month - 1;
+    var previousMonthDate = previousYear + '-' + pad2(previousMonth) + '-09T12:00';
+
+    setPartPeriod(50, 500, currentPeriodKey);
     ev('saveRulesV3(false);');
-    setLedger(makeLedger(9004, true));
-    ev('ledger[0].date="11/09 12:00"; ledger[0].dateISO="2026-11-09T12:00"; renderLedger();');
+    var editItem = makeLedger(9004, true);
+    editItem.date = pad2(tp.month) + '/09 12:00';
+    editItem.dateISO = sameMonthDate;
+    editItem.v3Usage[0].cumulativeSpendTwd = 100;
+    setLedger(editItem);
     ev('window.__cloudWrites = [];');
     w.openLedgerEdit(9004);
     await sleep(30);
     var editModal = d.getElementById('ledgerEditModal');
     check('點編輯會開啟明細編輯 modal', editModal.style.display === 'flex');
     check('編輯 modal 會帶入目前名稱', d.getElementById('ledgerEditMemo').value === '同步測試 9004', d.getElementById('ledgerEditMemo').value);
-    check('編輯 modal 會帶入目前日期', d.getElementById('ledgerEditDate').value === '2026-11-09T12:00', d.getElementById('ledgerEditDate').value);
+    check('編輯 modal 會帶入目前日期', d.getElementById('ledgerEditDate').value === sameMonthDate, d.getElementById('ledgerEditDate').value);
     d.getElementById('ledgerEditMemo').value = '改後名稱';
-    d.getElementById('ledgerEditDate').value = '2026-11-08T08:30';
+    d.getElementById('ledgerEditDate').value = sameMonthOtherDate;
     w.saveLedgerEdit();
     await sleep(300);
     var edited = ev('ledger[0]');
     check('儲存後名稱已更新', edited.memo === '改後名稱', edited.memo);
-    check('儲存後日期已更新', edited.date === '11/08 08:30', edited.date);
-    check('儲存後保留 dateISO 供下次編輯', edited.dateISO === '2026-11-08T08:30', edited.dateISO);
+    check('儲存後日期已更新', edited.date === pad2(tp.month) + '/08 08:30', edited.date);
+    check('儲存後保留 dateISO 供下次編輯', edited.dateISO === sameMonthOtherDate, edited.dateISO);
     var writeEdit = lastWrite();
-    check('編輯明細後有送出雲端更新', !!writeEdit && writeEdit.ledger[0].memo === '改後名稱' && writeEdit.ledger[0].date === '11/08 08:30', writeEdit ? JSON.stringify(writeEdit.ledger[0]) : '無');
-    check('編輯日期與名稱不會重算已扣額度', partUsedFrom(writeEdit) === 50, String(partUsedFrom(writeEdit)));
+    check('編輯明細後有送出雲端更新', !!writeEdit && writeEdit.ledger[0].memo === '改後名稱' && writeEdit.ledger[0].date === pad2(tp.month) + '/08 08:30', writeEdit ? JSON.stringify(writeEdit.ledger[0]) : '無');
+    check('同一週期內編輯日期與名稱不會重算額度', partUsedFrom(writeEdit) === 50, String(partUsedFrom(writeEdit)));
+    check('同一週期內編輯日期不會重算累積消費', partCumulativeFrom(writeEdit) === 500, String(partCumulativeFrom(writeEdit)));
     check('儲存後編輯 modal 會關閉', editModal.style.display === 'none');
+
+    // 移到上一個週期：目前額度要把這筆用量扣回來
+    w.openLedgerEdit(9004);
+    await sleep(20);
+    d.getElementById('ledgerEditDate').value = previousMonthDate;
+    w.saveLedgerEdit();
+    await sleep(300);
+    var stateOut = partState();
+    check('日期移出目前週期會扣回加碼用量', stateOut.used === 40, JSON.stringify(stateOut));
+    check('日期移出目前週期會扣回累積消費', stateOut.cumulative === 400, JSON.stringify(stateOut));
+    var writeOut = lastWrite();
+    check('移出週期後雲端 usedReward 同步', partUsedFrom(writeOut) === 40, String(partUsedFrom(writeOut)));
+    check('移出週期後雲端累積消費同步', partCumulativeFrom(writeOut) === 400, String(partCumulativeFrom(writeOut)));
+    check('移出週期後明細日期已更新', ev('ledger[0]').dateISO === previousMonthDate, ev('ledger[0]').dateISO);
+
+    // 再移回目前週期：用量要加回來
+    w.openLedgerEdit(9004);
+    await sleep(20);
+    d.getElementById('ledgerEditDate').value = sameMonthDate;
+    w.saveLedgerEdit();
+    await sleep(300);
+    var stateIn = partState();
+    check('日期移回目前週期會加回加碼用量', stateIn.used === 50, JSON.stringify(stateIn));
+    check('日期移回目前週期會加回累積消費', stateIn.cumulative === 500, JSON.stringify(stateIn));
+
+    // 再次移出後刪除：不能重複扣一次已不在目前週期的用量
+    w.openLedgerEdit(9004);
+    await sleep(20);
+    d.getElementById('ledgerEditDate').value = previousMonthDate;
+    w.saveLedgerEdit();
+    await sleep(300);
+    ev('showAppDialog = function(){ return Promise.resolve(true); }; window.__cloudWrites = [];');
+    w.deleteLedgerItem(9004);
+    await sleep(300);
+    var stateDeleteOut = partState();
+    check('刪除已移出週期的明細不會重複扣額度', stateDeleteOut.used === 40, JSON.stringify(stateDeleteOut));
+    check('刪除已移出週期的明細不會重複扣累積消費', stateDeleteOut.cumulative === 400, JSON.stringify(stateDeleteOut));
 
     // 舊明細只有「月/日 下午時:分」時，也要能帶入編輯欄位
     ev('ledger=[{id:9005,date:"11/09 下午02:30",memo:"舊格式",cardKey:"backup",cardName:"舊卡",jpy:1000,twd:209,rewardTwd:10,ruleSnapshot:{v3:true}}]; renderLedger();');

@@ -1,7 +1,7 @@
 # 設計系統 — Cyber Neon Tokyo v1
 
-> 狀態：**第 1 段（皮膚）＋ 1.5 段（手感）已完成；第 2 段（計算純函式化）進行中**。
-> 第 2 段的進度與切片見 [`STAGE-2-PLAN.md`](STAGE-2-PLAN.md)；完成後才進入第 3 段 React + shadcn/ui。
+> 狀態：**第 1 段（皮膚）＋ 1.5 段（手感）＋ 第 2 段（計算純函式化）已完成；第 3 段 React + shadcn/ui 遷移進行中（Slice 3.1 外殼、Slice 3.2 共用資料層、Slice 3.3 決策頁已完成，待實機驗收）**。
+> 第 2 段的進度與切片見 [`STAGE-2-PLAN.md`](STAGE-2-PLAN.md)；第 3 段見 [`STAGE-3-PLAN.md`](STAGE-3-PLAN.md)。
 > 皮膚層（第 1 段）只改 `<style>` 與 meta 顏色，JS 與 HTML 結構 0 改動；
 > 手感層（第 1.5 段）經使用者授權，只動 3 個行為，見第 5.5 節；另加第 4 項「手機上一頁」（UX4）。
 > 用途：① 固定現在的視覺與手感契約 ② 第 3 段換 React + shadcn/ui 時的對照表。
@@ -97,8 +97,9 @@
 本輪新增的四個結構也用同一套分層規則：
 
 - **額度看板**：`.quota-card-group` 是卡片分類標題（透明、只有標題列分隔線）→ `.quota-plan-block`（加碼活動，唯一的背景框）→ `.quota-item`（活動框內的進度列，透明、用分隔線區隔）。同一個活動的多筆進度列只出現在同一個 `.quota-plan-block`；不同活動各自一個框。重置鈕維持 `.btn-small`。
-- **決策頁商店查詢**：`.result-merchant-panel` 是 `.result-box` 底下的內嵌 `<details>`，不是 dialog；summary 沿用 `.result-merchant-trigger`，展開內容用 `.result-merchant-body` 背景分層。
-- **決策頁推薦卡原文**：原文不是獨立區塊，而是掛在每個推薦方案底下：單卡用 `.result-plan-line`，拆刷用 `.split-card-plan`；內層 `.result-plan-merchant` 是 `<details>`，摘要 `.result-plan-merchant-summary` 顯示一行 `.result-plan-merchant-preview`，展開後完整原文用 `.result-plan-merchant-text` 以 `pre-wrap` 呈現。預設收合；未限制店家時用 `.result-plan-merchant.is-empty` 直接顯示「實體一般消費」。跨卡搜尋仍保留在下方 `.result-merchant-panel`。
+- **決策頁推薦方案原文**：原文照原本方式掛在每個推薦方案底下：單卡用 `.result-plan-line`，拆刷用 `.split-card-plan`；內層 `.result-plan-merchant` 是 `<details>`，摘要 `.result-plan-merchant-summary` 顯示一行 `.result-plan-merchant-preview`，展開後完整原文用 `.result-plan-merchant-text` 以 `pre-wrap` 呈現。預設收合；未限制店家時用 `.result-plan-merchant.is-empty` 直接顯示「實體一般消費」。
+- **決策頁特約卡片查詢**：店家明細下方只放一顆 `.result-merchant-open` 按鈕（文字「用店家搜尋其他卡片」）作為唯一入口，放在 `#cardDesc` 之後、`#bestReward` 之前；按鈕最小高度 44px，未完成試算或非特約情境時以 `hidden` 隱藏。按下後打開 `.modal-backdrop#resultMerchantTrigger` 彈窗，內層 `.merchant-lookup-modal` 只保留 `#resultMerchantSearch`、`#resultMerchantFeedback`、`#resultMerchantList` 與關閉／清除動作；不再重複顯示推薦方案原文、推薦摘要或使用者明細。`#resultMerchantFeedback` 直接標出這次打中的搜尋關鍵字與命中方案數；結果卡片的「特約命中」標籤也會顯示實際命中的關鍵字。結果卡片仍可點選切換。彈窗可用關閉按鈕、背景點擊或 Esc 關閉；`#resultMerchantTrigger` 必須列在層級管理中。
+- **決策頁店家試算註記**：`#resultStoreNote` 用 `.result-store-copy` 包住主要說明與 `.result-store-reason`。當特店有命中、但一般消費／基本回饋淨值更高時，`.result-store-reason` 以次要文字（0.72rem、`--text-secondary`）明說「雖然符合某特店條件，但另一張卡的一般消費淨回饋更高」，避免使用者誤以為漏算特店卡；註記右側仍保留清除按鈕。
 - **攻略頁特約店家**：`.guide-bonus-merchants` 掛在 `.guide-bonus-item` 底下，店家原文用 `.guide-bonus-merchant-text` 以 `pre-wrap` 呈現；不拆成 chip、不建立商店索引，也不再有全站商店總覽的獨立區塊。
 
 ---
@@ -149,11 +150,15 @@ cfe777a  UX1 分頁記住
 | `tests/ux.html` | 手感契約：分頁記住、Esc 逐層返回、未儲存確認、存檔提示、上一頁（含守衛回收） |
 | `tests/dscontract.html` | 元件契約：13 階青色 token、欄位/按鈕/開關一致性、高度契約 |
 | `tests/layout2.html` | 版面契約：一般區塊靠背景分層不畫框、編輯頁 panel/section/form 無框、危險區紅框 |
-| 全站 | `./tests/run.sh` → **610 passed, 0 failed** |
+| 全站 | `./tests/run.sh` → **666 passed, 0 failed** |
 
 ---
 
 ## 7. 第 3 段遷移對照（備忘）
+
+第 2 段已完成：`engine.js` 是純計算核心，`index.html` 只保留 adapter 與 DOM 呈現；legacy 計算／排序／拆刷／額度 fallback 已移除。
+
+第 3 段已建立 `app/` Vite + React + TypeScript + Tailwind 外殼與 4 個 route；token bridge 位於 `app/src/styles/globals.css`，`engine.js` 透過 `app/src/lib/engine.ts` 匯入。Slice 3.2 另建立共用資料層：`app/src/lib/rules.ts`（預設卡表與純 normalize）、`storage.ts`（沿用原 key 的 rules／ledger／匯率／room 讀寫）、`app-data.ts` 與 `features/app-data/AppDataProvider.tsx`（React context 與持久化）。Slice 3.3 完成 React 決策頁：`routes/DecisionPage.tsx` 只透過 `features/decision/calculate.ts` 呼叫 `engine.rankOffers()`／`allocateSplit()`／`evaluatePlan()`；`record.ts` 在加入記帳時才建立 ledger 並套用 `partChanges`。決策頁沿用既有 Cyber Neon token，尚未改主題。切換入口前，根目錄 `index.html` 仍是正式版本。
 
 1. `index.html` 的 4 個頁面 → 4 個 route（`decision` / `quotas` / `ledger` / `guide`）
 2. `.tab-btn` 的 `switchTab(name)` → `Tabs` + router；`active` class 由 state 決定

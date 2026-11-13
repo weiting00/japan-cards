@@ -1,0 +1,12 @@
+# Node / Vite
+app/node_modules/
+app/dist/
+app/.vite/
+app/coverage/
+
+# macOS
+.DS_Store
+
+# Local test artifacts
+tests/.out/
+tests/_reset.html
